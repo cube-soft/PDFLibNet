@@ -39,11 +39,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PageViewer.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Include="frmAbout.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmAbout.Designer.cs">
       <DependentUpon>frmAbout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmCurrentView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmCurrentView.Designer.cs">
+      <DependentUpon>frmCurrentView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frmPassword.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPassword.Designer.cs">
+      <DependentUpon>frmPassword.cs</DependentUpon>
     </Compile>
     <Compile Include="frmPDFViewer.cs">
       <SubType>Form</SubType>
@@ -51,22 +66,45 @@
     <Compile Include="frmPDFViewer.Designer.cs">
       <DependentUpon>frmPDFViewer.cs</DependentUpon>
     </Compile>
+    <Compile Include="frmPDFViewerCtrl.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frmPDFViewerCtrl.Designer.cs">
+      <DependentUpon>frmPDFViewerCtrl.cs</DependentUpon>
+    </Compile>
     <Compile Include="frmSearch.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="frmSearch.Designer.cs">
       <DependentUpon>frmSearch.cs</DependentUpon>
     </Compile>
+    <Compile Include="GDI.cs" />
     <Compile Include="HexEncoding.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="PageViewer.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PageViewer.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmAbout.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmAbout.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="frmCurrentView.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmCurrentView.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPassword.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmPassword.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="frmPDFViewer.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmPDFViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmPDFViewerCtrl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmPDFViewerCtrl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmSearch.resx">
       <SubType>Designer</SubType>
@@ -146,6 +184,25 @@
       <WrapperTool>primary</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PrintBrmUi_102_6_16x16x32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tshadowdown.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tshadowdownleft.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tshadowdownright.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\tshadowright.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="Resources\tshadowtopright.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

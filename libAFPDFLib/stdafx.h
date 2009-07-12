@@ -43,4 +43,4 @@
 #include "PSOutputDev.h"
 #include "GlobalParams.h"
 #include "UnicodeMap.h"
-
+#include "PDFDocEncoding.h"

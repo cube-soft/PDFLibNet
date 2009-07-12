@@ -1,33 +1,194 @@
 // AFPDFDoc.cpp : implementation file
 #include "AFPDFDoc.h"
-#define CACHE_BITMAPS
+#include "jpeg.h"
+	//------DECLARATIONS	
 	
-	#define FIND_DPI 300
-	#define PRINT_DPI 72
-	#define SPACE_X 16
-	#define SPACE_Y 16
-	static char EmptyChar[1]={'\0'};
-	
-	#define MAX_BITMAP_CACHE 8
-	static CBitmap *_bitmapCache[MAX_BITMAP_CACHE+1]={0};
-	static int _pageCached[MAX_BITMAP_CACHE+1]={0};
-	static int _countCached =-1;
+	#define			CACHE_BITMAPS
+	#define			MAX_BITMAP_CACHE	8
+	#define			FIND_DPI			150
+	#define			PRINT_DPI			72
+	#define			SPACE_X				16
+	#define			SPACE_Y				16
 
-	void InvalidateBitmapCache(){
-		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
-			if(_bitmapCache[i]!=0){
-				_bitmapCache[i]->DeleteObject();
-				delete _bitmapCache[i];
-			}
-			_pageCached[i]=0;
-			_bitmapCache[i]=0;
+	
+	static char		EmptyChar[1]						={'\0'};
+	static PageMemory	*_bitmapCache[MAX_BITMAP_CACHE+1]	={0};
+	static int		_pageCached[MAX_BITMAP_CACHE+1]		={0};
+	static int		_countCached						=-1;
+
+	//------PRINT INFORMATION
+	static void printInfoString		(FILE *f,Dict *infoDict, char *key, char *text,  UnicodeMap *uMap)
+	{
+	  Object obj;
+	  GString *s1;
+	  GBool isUnicode;
+	  Unicode u;
+	  char buf[8];
+	  int i, n;
+
+	  if (infoDict->lookup(key, &obj)->isString()) {
+		fputs(text, stdout);
+		s1 = obj.getString();
+		if ((s1->getChar(0) & 0xff) == 0xfe &&
+		(s1->getChar(1) & 0xff) == 0xff) {
+		  isUnicode = gTrue;
+		  i = 2;
+		} else {
+		  isUnicode = gFalse;
+		  i = 0;
 		}
+		while (i < obj.getString()->getLength()) {
+		  if (isUnicode) {
+		u = ((s1->getChar(i) & 0xff) << 8) |
+			(s1->getChar(i+1) & 0xff);
+		i += 2;
+		  } else {
+		u = pdfDocEncoding[s1->getChar(i) & 0xff];
+		++i;
+		  }
+		  n = uMap->mapUnicode(u, buf, sizeof(buf));
+		  fwrite(buf, 1, n, stdout);
+		}
+		fputc('\n', stdout);
+	  }
+	  obj.free();
 	}
 
-	void RemoveFromCache(int page){
+	static void parseDateTime(char *datetime, const char *s){
+		if (s[0] == 'D' && s[1] == ':') {
+		  s += 2;
+		}
+		int year, mon, day, hour, min, sec, n;
+		struct tm tmStruct;
+		char buf[256];
+		if ((n = sscanf(s, "%4d%2d%2d%2d%2d%2d",
+				&year, &mon, &day, &hour, &min, &sec)) >= 1) {
+		  switch (n) {
+		  case 1: mon = 1;
+		  case 2: day = 1;
+		  case 3: hour = 0;
+		  case 4: min = 0;
+		  case 5: sec = 0;
+		  }
+		  tmStruct.tm_year = year - 1900;
+		  tmStruct.tm_mon = mon - 1;
+		  tmStruct.tm_mday = day;
+		  tmStruct.tm_hour = hour;
+		  tmStruct.tm_min = min;
+		  tmStruct.tm_sec = sec;
+		  tmStruct.tm_wday = -1;
+		  tmStruct.tm_yday = -1;
+		  tmStruct.tm_isdst = -1;
+		  // compute the tm_wday and tm_yday fields
+		  if (mktime(&tmStruct) != (time_t)-1 &&  strftime(buf, sizeof(buf), "%c", &tmStruct)) {
+			strcpy(datetime,buf);
+		  } else {
+			  strcpy(datetime,s);
+		  }
+		} else {
+		  strcpy(datetime,s);
+		}
+	}
+	static void sprintInfoDate		(char *datetime,Dict *infoDict, char *key, char *text) {
+	  Object obj;
+	  char *s;
+
+	  if (infoDict->lookup(key, &obj)->isString()) {
+		fputs(text, stdout);
+		s = obj.getString()->getCString();
+		parseDateTime(datetime,s);
+	  }
+	  obj.free();
+	}
+	static void printInfoDate		(Dict *infoDict, char *key, char *text) {
+	  char buf[256];
+	  sprintInfoDate(buf,infoDict,key,text);
+	  fputs(buf,stdout);
+	  fputc('\n',stdout);
+	}
+
+	static void printBox			(char *text, PDFRectangle *box) { printf("%s%8.2f %8.2f %8.2f %8.2f\n",
+		 text, box->x1, box->y1, box->x2, box->y2);
+	}
+
+	static void printInfoString		(FILE *f, Dict *infoDict, char *key, char *text1, char *text2, UnicodeMap *uMap) 
+	{
+	  Object obj;
+	  GString *s1;
+	  GBool isUnicode;
+	  Unicode u;
+	  char buf[8];
+	  int i, n;
+
+	  if (infoDict->lookup(key, &obj)->isString()) {
+		fputs(text1, f);
+		s1 = obj.getString();
+		if ((s1->getChar(0) & 0xff) == 0xfe &&
+		(s1->getChar(1) & 0xff) == 0xff) {
+		  isUnicode = gTrue;
+		  i = 2;
+		} else {
+		  isUnicode = gFalse;
+		  i = 0;
+		}
+		while (i < obj.getString()->getLength()) {
+		  if (isUnicode) {
+		u = ((s1->getChar(i) & 0xff) << 8) |
+			(s1->getChar(i+1) & 0xff);
+		i += 2;
+		  } else {
+		u = s1->getChar(i) & 0xff;
+		++i;
+		  }
+		  n = uMap->mapUnicode(u, buf, sizeof(buf));
+		  fwrite(buf, 1, n, f);
+		}
+		fputs(text2, f);
+	  }
+	  obj.free();
+	}
+
+	static void printInfoDate		(FILE *f, Dict *infoDict, char *key, char *fmt) {
+	  Object obj;
+	  char *s;
+
+	  if (infoDict->lookup(key, &obj)->isString()) {
+		s = obj.getString()->getCString();
+		if (s[0] == 'D' && s[1] == ':') {
+		  s += 2;
+		}
+		fprintf(f, fmt, s);
+	  }
+	  obj.free();
+	}
+
+	
+	
+	//------BITMAP CACHE
+	PageMemory *GetBitmapCache(int page){
 		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
 			if(_pageCached[i]==page){
-				_bitmapCache[i]->DeleteObject();
+				return _bitmapCache[i];
+			}
+		}
+		return 0;
+	}
+
+	void		InvalidateBitmapCache(){
+			for(int i=0;i<=MAX_BITMAP_CACHE;i++){
+				if(_bitmapCache[i]!=0){
+					_bitmapCache[i]->Dispose();
+					delete _bitmapCache[i];
+				}
+				_pageCached[i]=0;
+				_bitmapCache[i]=0;
+			}
+		}
+
+	void		RemoveFromCache(int page){
+		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
+			if(_pageCached[i]==page){
+				_bitmapCache[i]->Dispose();
 				delete _bitmapCache[i];
 				_bitmapCache[i]=0;
 				return;
@@ -35,12 +196,12 @@
 		}
 	}
 
-	void AddBitmapCache(CBitmap *bmp, int page){
+	void		AddBitmapCache(PageMemory *bmp, int page){
 		//if exists and is not equal, delete
 		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
 			if(_pageCached[i]==page){
 				if( _bitmapCache[i]!=0 && _bitmapCache[i]!=bmp){
-					_bitmapCache[i]->DeleteObject();
+					_bitmapCache[i]->Dispose();
 					delete _bitmapCache[i];
 					_bitmapCache[i]=bmp;
 					return;
@@ -61,7 +222,7 @@
 
 		//If new bin is busy, delete
 		if(_bitmapCache[_countCached]!=0){
-			_bitmapCache[_countCached]->DeleteObject();
+			_bitmapCache[_countCached]->Dispose();
 			delete _bitmapCache[_countCached];
 			_bitmapCache[_countCached]=0;
 		}
@@ -70,18 +231,9 @@
 		_pageCached[_countCached]=page;
 	}
 
-	CBitmap *GetBitmapCache(int page){
-		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
-			if(_pageCached[i]==page){
-				return _bitmapCache[i];
-			}
-		}
-		return 0;
-	}
-
-
-
-	Unicode *GetUnicodeString(LPCTSTR str, int length)
+	
+	//------DICTIONARY STRING
+	Unicode *		GetUnicodeString(LPCTSTR str, int length)
 	{
 		Unicode * ucstring = new Unicode[length + 1];
 		int j;
@@ -96,8 +248,7 @@
 		ucstring[j] = 0;
 		return ucstring;
 	}
-
-	static char *getDicString(Dict *infoDict,char *key,UnicodeMap *uMap)
+	static char *	getDicString(Dict *infoDict,char *key,UnicodeMap *uMap)
 	{
 		Object obj;
 		GString *s1;
@@ -126,6 +277,25 @@
 		
 	}
 
+
+	static char *	getDocInfo(char *key,PDFDoc *doc){
+		Object info;
+		UnicodeMap *uMap;
+		if (!(uMap = globalParams->getTextEncoding())) {
+			return EmptyChar;			
+		}
+
+		doc->getDocInfo(&info);
+		if (info.isDict()) {
+			Dict *infoDict = info.getDict();
+			return getDicString(infoDict,key,uMap);
+		}
+		return EmptyChar;
+	}
+
+
+
+	//------PDF SEARCH RESULT
 	CPDFSearchResult::CPDFSearchResult() 
 	: PageFound(0)
 	{
@@ -142,8 +312,9 @@
 
 
 
-	//---------------------------------------
-	AFPDFDoc::AFPDFDoc()
+	
+	//------AFPDFDoc
+	AFPDFDoc::AFPDFDoc(char *configFile)
 	: m_PDFDoc(NULL)
 	, m_splashOut(NULL)
 	, m_bitmapBytes(NULL)
@@ -160,10 +331,13 @@
 	, m_PageHeight(0)
 	, m_renderingThread(0)
 	, m_PageToRenderByThread(0)
+	, m_ViewX(0)
+	, m_ViewY(0)
+	, m_ViewWidth(0)
+	, m_ViewHeight(0)
+	, __x0(0)
+	, __y0(0)
 	{
-		// To keep the application running as long as an OLE automation 
-		//	object is active, the constructor calls AfxOleLockApp.
-		
 		TCHAR szExe[MAX_PATH];
 		int size = ::GetModuleFileName(NULL, szExe, MAX_PATH); 
 		TCHAR *pLastSlash = _tcsrchr(szExe, _T('\\'));
@@ -176,25 +350,37 @@
 		char *baseDir = new char[wcslen((const wchar_t *)szExe)+1];
 		sprintf(baseDir,"%S",szExe);
 
-		globalParams = new GlobalParams("auto");
+		globalParams = new GlobalParams(configFile);
+		//Initialize default settings
+		globalParams->setupBaseFonts(baseDir);
+		globalParams->setErrQuiet(gFalse);
 		globalParams->setEnableT1lib("no");
 		globalParams->setEnableFreeType("yes");
-		globalParams->setErrQuiet(gTrue);
+		globalParams->setPSEmbedCIDPostScript(1);
+		globalParams->setPSEmbedCIDTrueType(1);
+		globalParams->setPSEmbedTrueType(1);
+		globalParams->setPSEmbedType1(1);
 		globalParams->setAntialias("yes");
-		
-		globalParams->setupBaseFonts(baseDir);
+		globalParams->setVectorAntialias("no");
+		globalParams->setTextEncoding("UTF-8");
 		delete baseDir;
+
 		m_Bitmap=0;
 		m_PDFDoc=0;
 		m_splashOut=0;
 		m_bitmapBytes=0;
 		m_Outline=0;
+		//Redirect
+#ifdef  _DEBUG
+		freopen( "C:\\stderr.log", "w", stderr );
+#endif
 	}
 
 	AFPDFDoc::~AFPDFDoc()
 	{
 		this->Dispose();
 	}
+	
 	void AFPDFDoc::Dispose(){
 		InvalidateBitmapCache();
 
@@ -231,7 +417,7 @@
 		m_OwnerPassword = owner_password;
 	}
 
-	// AFPDFDoc message handlers
+	
 	long AFPDFDoc::LoadFromFile(char *FileName, char *user_password, char *owner_password)
 	{		
 		if(user_password!=NULL)
@@ -308,35 +494,35 @@
 	}
 
 
-	
 	long AFPDFDoc::RenderPage(long lhWnd)
 	{
 
 		if (m_PDFDoc != NULL) {
 
 			int bmWidth, bmHeight;
-			/*
+			
 			//Heuristically check if we have enough memory ;-)
 			double newbytes = (m_renderDPI/72.0)*(m_renderDPI/72.0) * m_PDFDoc->getPageCropWidth(m_CurrentPage)* m_PDFDoc->getPageCropHeight(m_CurrentPage); //new approx. number of pixels
 			newbytes = newbytes * 3 + newbytes*2; //24-bit splashbitmap, 16-bit gdi-bitmap
 			newbytes=(newbytes*1.2); //Safety area;
 			newbytes -= m_splashOut->getBitmap()->getWidth()*m_splashOut->getBitmap()->getHeight()*3; //substract old 24-bit splash bitmap size
-			void* testAllocation = malloc((int)newbytes);
+			void* testAllocation = malloc((int)2*newbytes);
 			if (testAllocation==0 && newbytes>0){
 				//We better dont zoom this far in!
 				return errOutOfMemory+1;
 			} else {
 				free (testAllocation);
 			}
-			*/
 			try{
 				m_splashOut->clearModRegion();
 				//Wait for previous threads and delete them
 				if (m_renderingThread!=0)
 				{
 					DWORD exitcode=0;
+					//hurry up!
+					m_renderingThread->SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
 					GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
-
+					
 					while (exitcode==STILL_ACTIVE){
 						GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
 						Sleep(50);
@@ -360,7 +546,7 @@
 					if (m_LastPageRenderedByThread != m_CurrentPage)
 					{
 						m_PageToRenderByThread = m_CurrentPage;
-						m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_HIGHEST,0,CREATE_SUSPENDED);
+						m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED);
 						m_renderingThread->m_bAutoDelete=FALSE;
 						m_renderingThread->ResumeThread();
 						
@@ -380,28 +566,13 @@
 					m_PageHeight = bmHeight;
 					m_PageWidth  = bmWidth;
 
-					CDC clientDC;
-					clientDC.Attach(::GetWindowDC((HWND)lhWnd));
 
-					//Bitmap Rebuild
-					if(!m_Bitmap || (m_Bitmap && ( m_Bitmap->GetBitmapDimension().cx != bmWidth || m_Bitmap->GetBitmapDimension().cy != bmHeight)))
-					{
-						//RemoveFromCache(m_CurrentPage);
-						m_Bitmap = new CBitmap();
-						m_Bitmap->CreateCompatibleBitmap(&clientDC,bmWidth,bmHeight);		
-						AddBitmapCache(m_Bitmap,m_CurrentPage);
-					}
-
-					//********START DIB
-					CDC mdc;
-					mdc.CreateCompatibleDC(&clientDC);
-					CBitmap* pOld = mdc.SelectObject(m_Bitmap);
-					
 					BITMAPINFO bmi;
 					ZeroMemory(&bmi,sizeof(bmi));
 					bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
 					bmi.bmiHeader.biWidth=bmWidth;
-					bmi.bmiHeader.biHeight=bmHeight;
+					//By default bitmaps are bottom up images which means 1st scanline is bottom when and last is top one.
+					bmi.bmiHeader.biHeight=-bmHeight;
 					bmi.bmiHeader.biPlanes=1;
 					bmi.bmiHeader.biBitCount=24;
 					bmi.bmiHeader.biCompression=BI_RGB;
@@ -411,20 +582,26 @@
 					bmi.bmiColors[0].rgbRed = 0;
 					bmi.bmiColors[0].rgbReserved = 0;
 
-					::StretchDIBits(mdc.m_hDC,0,0,bmi.bmiHeader.biWidth,bmi.bmiHeader.biHeight,0,bmi.bmiHeader.biHeight,bmi.bmiHeader.biWidth,-bmi.bmiHeader.biHeight,
-						(void *)m_splashOut->getBitmap()->getDataPtr(),&bmi,DIB_RGB_COLORS,SRCCOPY);
-					
-					mdc.SelectObject(pOld);
-					mdc.DeleteDC();
-					//********END DIB
+					CDC clientDC;
+					clientDC.Attach(::GetWindowDC((HWND)lhWnd));
 
-					m_Bitmap->SetBitmapDimension(m_splashOut->getBitmap()->getWidth(),m_splashOut->getBitmap()->getHeight());
+					//Bitmap Rebuild
+					if(!m_Bitmap || (m_Bitmap && ( m_Bitmap->Width != bmWidth || m_Bitmap->Height != bmHeight)))
+					{
+						m_Bitmap = new PageMemory();
+						m_Bitmap->Create(clientDC.m_hDC,bmWidth,bmHeight);		
+						AddBitmapCache(m_Bitmap,m_CurrentPage);
+					}
+					//********START DIB
+					m_Bitmap->SetDIBits(clientDC.m_hDC,(void *)m_splashOut->getBitmap()->getDataPtr());
+					//********END DIB
+					clientDC.Detach();
 
 					int box_left, box_top, box_right, box_bottom;
 					m_splashOut->getModRegion(&box_left, &box_top, &box_right, &box_bottom);
 					m_bbox = CRect(box_left, box_top, box_right, box_bottom);
 
-					clientDC.Detach();
+					
 				} 
 				//prerender next page
 				if (m_CurrentPage+1 <= m_PDFDoc->getNumPages())
@@ -445,7 +622,6 @@
 		return 0;
 	}
 
-	
 	UINT AFPDFDoc::RenderingThread( LPVOID param )
 	{
 		AFPDFDoc *pdfDoc =(AFPDFDoc *)param;
@@ -460,7 +636,6 @@
 		pdfDoc->m_PDFDoc->displayPage(pdfDoc->m_splashOut,page, 
 									renderDPI, renderDPI, pdfDoc->m_Rotation, 
 									gFalse, gTrue, gFalse,0,0);
-		
 		return TRUE;
 	}
 
@@ -501,50 +676,26 @@
 
 
 	
+	//Render from x to x+w, y to y+h
 	long AFPDFDoc::RenderHDC(long lHdc)
 	{
 		CDC dc;
-		CDC mdc;
 		if (m_Bitmap != NULL) 
 		{
-			dc.Attach((HDC)lHdc);
-
 			// Draw the rendered document
-			mdc.CreateCompatibleDC(&dc);
-			CBitmap* pOld = mdc.SelectObject(m_Bitmap);
-
-			long clientWidth = this->m_PageWidth;
-			long clientHeight = this->m_PageHeight;
-
-			RECT clientArea;
-			clientArea.left =0;					clientArea.top=0;
-			clientArea.right=clientWidth;		clientArea.bottom =clientHeight;
-			
-			int bmWidth = m_Bitmap->GetBitmapDimension().cx;
-			int bmHeight = m_Bitmap->GetBitmapDimension().cy;
-			
-			int targetOffsetX=0;			int targetOffsetY=0;
-			int viewOffsetX=m_ViewOffsetX;	int viewOffsetY=m_ViewOffsetY;
-
-			BOOL bRet = dc.BitBlt(targetOffsetX,targetOffsetY,clientWidth,clientHeight,&mdc,viewOffsetX,viewOffsetY,SRCCOPY);
-
-			mdc.SelectObject(pOld);
-			mdc.DeleteDC();
-
-			//Draw background if neccessary
-			CBrush background;
-			background.CreateStockObject(GRAY_BRUSH);
-			if (viewOffsetX<0)
-				dc.FillRect(CRect(clientArea.left,clientArea.top,-viewOffsetX,clientArea.bottom),&background);
-			if (viewOffsetY<0)
-				dc.FillRect(CRect(clientArea.left,clientArea.top,clientArea.right,-viewOffsetY),&background);
-			if (bmWidth-m_ViewOffsetX < clientWidth )
-				dc.FillRect(CRect(bmWidth-m_ViewOffsetX,clientArea.top,clientArea.right,clientArea.bottom),&background);
-			if (bmHeight-m_ViewOffsetY < clientHeight)
-				dc.FillRect(CRect(clientArea.left,bmHeight-m_ViewOffsetY,clientArea.right,clientArea.bottom),&background);
-
+			m_Bitmap->Draw(
+				(HDC)lHdc,
+				m_ViewOffsetX,		//SrcX
+				m_ViewOffsetY,		//SrcY
+				m_ViewWidth,		//Width
+				m_ViewHeight,		//Height
+				m_ViewX,			//DestX
+				m_ViewY);			//DestY
+	
 			// draw selection 
 			if (!m_HideMarks && m_CurrentPage == m_SearchPage) {
+				dc.Attach((HDC)lHdc);
+
 				const double mul = m_renderDPI / FIND_DPI;
 
 				CPen draw_pen, * old_pen;
@@ -604,142 +755,24 @@
 						}
 
 						r.OffsetRect(-m_ViewOffsetX, -m_ViewOffsetY);
-
+						r.OffsetRect(m_ViewX, m_ViewY);
+						r.InflateRect(1,0);
 						dc.Rectangle(r);
 						r.DeflateRect(1,1);
 						dc.InvertRect(r);
 					}
 				}
 
-				
 				dc.SelectObject(old_pen);
 				dc.SelectObject(old_brush);
+				dc.Detach();
 			}	
-
-			dc.Detach();
 		}
 		return 0;
 	}
 
 
-	long AFPDFDoc::RenderBitmap(long lhWnd)
-	{
-		
-		CDC dc;
-		dc.Attach(::GetWindowDC((HWND)lhWnd));
-		
-		if (m_Bitmap != NULL) {
-			
-			// Draw the rendered document
-			CDC mdc;
-			mdc.CreateCompatibleDC(&dc);
-			CBitmap* pOld = mdc.SelectObject(m_Bitmap);
-
-			RECT clientArea;
-			::GetClientRect((HWND)lhWnd,&clientArea);
-			
-			int bmWidth = m_Bitmap->GetBitmapDimension().cx;
-			int bmHeight = m_Bitmap->GetBitmapDimension().cy;
-			int clientWidth = clientArea.right-clientArea.left;
-			int clientHeight = clientArea.bottom-clientArea.top;
-			
-			int targetOffsetX=0;
-			int targetOffsetY=0;
-			
-			int viewOffsetX=m_ViewOffsetX;
-			int viewOffsetY=m_ViewOffsetY;
-
-			BOOL bRet = dc.BitBlt(0,0,clientWidth,clientHeight,&mdc,viewOffsetX,viewOffsetY,SRCCOPY);
-			mdc.SelectObject(pOld);
-
-			//Draw background if neccessary
-			CBrush background;
-			background.CreateStockObject(GRAY_BRUSH);
-			if (viewOffsetX<0)
-				dc.FillRect(CRect(clientArea.left,clientArea.top,-viewOffsetX,clientArea.bottom),&background);
-			if (viewOffsetY<0)
-				dc.FillRect(CRect(clientArea.left,clientArea.top,clientArea.right,-viewOffsetY),&background);
-			if (bmWidth-m_ViewOffsetX < clientWidth )
-				dc.FillRect(CRect(bmWidth-m_ViewOffsetX,clientArea.top,clientArea.right,clientArea.bottom),&background);
-			if (bmHeight-m_ViewOffsetY < clientHeight)
-				dc.FillRect(CRect(clientArea.left,bmHeight-m_ViewOffsetY,clientArea.right,clientArea.bottom),&background);
-
-			/* draw selection */
-
-			if (!m_HideMarks && m_CurrentPage == m_SearchPage) {
-				const double mul = m_renderDPI / FIND_DPI;
-
-				CPen draw_pen, * old_pen;
-				CGdiObject * old_brush;
-
-				draw_pen.CreatePen(PS_SOLID, 0, RGB(127, 127, 255));
-				old_pen = dc.SelectObject(&draw_pen);
-				old_brush = dc.SelectStockObject(NULL_BRUSH);
-
-				for(int j = 0; j < m_Selection.GetCount(); j++) {
-					 // transform selection into current DPI and
-					 // offset it by current upper/left corner.
-					 // Provided m_renderDPI was integer we could
-					 // use CRect::MulDiv.
-					if (((CPDFSearchResult)m_Selection[j]).PageFound == m_CurrentPage){
-						CRect nsel =(CRect)m_Selection[j];
-						CRect r;
-
-						nsel.left   = int(nsel.left   * m_renderDPI / FIND_DPI);
-						nsel.top    = int(nsel.top    * m_renderDPI / FIND_DPI);
-						nsel.right  = int(nsel.right  * m_renderDPI / FIND_DPI);
-						nsel.bottom = int(nsel.bottom * m_renderDPI / FIND_DPI);
-
-						// enlarge right/bottom 
-						nsel.right++;
-						nsel.bottom++;
-
-						// rotate using predefined angles only 
-						switch(m_Rotation) {
-						case 0:
-							r = nsel;
-							break;
-
-						case 90:
-							r = CRect(
-								m_PageWidth - nsel.bottom,
-								nsel.left,
-								m_PageWidth - nsel.top,
-								nsel.right);
-							break;
-
-						case 180:
-							r = CRect(
-								m_PageWidth - nsel.right,
-								m_PageHeight - nsel.bottom,
-								m_PageWidth - nsel.left,
-								m_PageHeight - nsel.top);
-							break;
-
-						case 270:
-							r = CRect(
-								nsel.top,
-								m_PageHeight - nsel.right,
-								nsel.bottom,
-								m_PageHeight - nsel.left);
-							break;
-						}
-
-						r.OffsetRect(-m_ViewOffsetX, -m_ViewOffsetY);
-
-						dc.Rectangle(r);
-						r.DeflateRect(1,1);
-						dc.InvertRect(r);
-					}
-				}
-
-				dc.SelectObject(old_pen);
-				dc.SelectObject(old_brush);
-			}
-		}
-		return -2;
-	}
-
+	
 	long AFPDFDoc::LoadFromFile2(char * FileName)
 	{
 		
@@ -1175,8 +1208,7 @@
 		delete [] ucstring;
 		return m_Selection.GetCount();
 	}
-	double __x0=0;
-	double __y0=0;
+	
 	long AFPDFDoc::FindNext(LPCTSTR sText)
 	{
 		
@@ -1533,14 +1565,31 @@
 		}
 		return EmptyChar;
 	}
-		/*
-	char * getSubject();
-	char * getKeywords();
-	char * getCreator();
-	char * getProducer();
-	char * getCreationDate();
-	char * getLastModifiedDate();
-*/
+		
+	char * AFPDFDoc::getSubject(){
+		return ::getDocInfo("Subject",m_PDFDoc);
+	}
+	char * AFPDFDoc::getKeywords(){
+		return ::getDocInfo("Keywords",m_PDFDoc);
+	}
+	char * AFPDFDoc::getCreator(){
+		return ::getDocInfo("Creator",m_PDFDoc);
+	}
+	char * AFPDFDoc::getProducer(){
+		return ::getDocInfo("Producer",m_PDFDoc);
+	}
+	char * AFPDFDoc::getCreationDate(){
+		char * s = getDocInfo("CreationDate",m_PDFDoc);
+		char *datetime = new char[256];
+		parseDateTime(datetime,s);
+		return datetime;
+	}
+	char * AFPDFDoc::getLastModifiedDate(){
+		char *s = getDocInfo("LastModifiedDate",m_PDFDoc);
+		char *datetime=new char[256];
+		parseDateTime(datetime,s);
+		return datetime;
+	}
 
 	Links *AFPDFDoc::GetLinksPage(long iPage)
 	{
@@ -1554,4 +1603,118 @@
 
 	void AFPDFDoc::cvtDevToUser(double ux, double uy, double *dx, double *dy){
 		m_splashOut->cvtDevToUser(ux,uy,dx,dy);
+	}
+
+	int AFPDFDoc::SaveJpg(char *fileName,int quality)
+	{
+		CString errmsg;
+		SplashColor paperColor;
+		paperColor[0] = 0xff;
+		paperColor[1] = 0xff;
+		paperColor[2] = 0xff;
+
+		BITMAPINFO bmi;
+		ZeroMemory(&bmi,sizeof(bmi));
+		bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
+		bmi.bmiHeader.biWidth = m_splashOut->getBitmap()->getWidth();
+		bmi.bmiHeader.biHeight = m_splashOut->getBitmap()->getHeight();
+		bmi.bmiHeader.biPlanes=1;
+		bmi.bmiHeader.biBitCount=24;
+		bmi.bmiHeader.biCompression=BI_RGB;
+
+		bmi.bmiColors[0].rgbBlue = 0;
+		bmi.bmiColors[0].rgbGreen = 0;
+		bmi.bmiColors[0].rgbRed = 0;
+		bmi.bmiColors[0].rgbReserved = 0;
+		
+		return JpegFromDib((HANDLE)m_splashOut->getBitmap()->getDataPtr(),&bmi,quality,CString(fileName),&errmsg);
+	}
+
+	int AFPDFDoc::SaveTxt(char *fileName,int firstPage, int lastPage, bool htmlMeta, bool physLayout, bool rawOrder){
+		  TextOutputDev *textOut;
+		  FILE *f;
+		  Object info;
+		  GBool ok;
+		  GString *textFileName = new GString(fileName);
+		 // check for copy permission
+		  if (!m_PDFDoc->okToCopy()) {
+//			error(-1, "Copying of text from this document is not allowed.");
+			return 10003;
+		  }
+			UnicodeMap *uMap;
+			if (!(uMap = globalParams->getTextEncoding())) {
+				return 10004;
+			}
+
+		  // write HTML header
+		  if (htmlMeta) {
+			if (!textFileName->cmp("-")) {
+			  f = stdout;
+			} else {
+			  if (!(f = fopen(textFileName->getCString(), "wb"))) {
+//			error(-1, "Couldn't open text file '%s'", textFileName->getCString());
+			return 20002;
+			  }
+			}
+			fputs("<html>\n", f);
+			fputs("<head>\n", f);
+			m_PDFDoc->getDocInfo(&info);
+			if (info.isDict()) {
+			  printInfoString(f, info.getDict(), "Title", "<title>", "</title>\n",
+					  uMap);
+			  printInfoString(f, info.getDict(), "Subject",
+					  "<meta name=\"Subject\" content=\"", "\">\n", uMap);
+			  printInfoString(f, info.getDict(), "Keywords",
+					  "<meta name=\"Keywords\" content=\"", "\">\n", uMap);
+			  printInfoString(f, info.getDict(), "Author",
+					  "<meta name=\"Author\" content=\"", "\">\n", uMap);
+			  printInfoString(f, info.getDict(), "Creator",
+					  "<meta name=\"Creator\" content=\"", "\">\n", uMap);
+			  printInfoString(f, info.getDict(), "Producer",
+					  "<meta name=\"Producer\" content=\"", "\">\n", uMap);
+			  printInfoDate(f, info.getDict(), "CreationDate",
+					"<meta name=\"CreationDate\" content=\"%s\">\n");
+			  printInfoDate(f, info.getDict(), "LastModifiedDate",
+					"<meta name=\"ModDate\" content=\"%s\">\n");
+			}
+			info.free();
+			fputs("</head>\n", f);
+			fputs("<body>\n", f);
+			fputs("<pre>\n", f);
+			if (f != stdout) {
+			  fclose(f);
+			}
+		  }
+
+		  // write text file
+		  textOut = new TextOutputDev(textFileName->getCString(),
+			  physLayout?1:0, rawOrder?1:0, htmlMeta?1:0);
+		  if (textOut->isOk()) {
+			m_PDFDoc->displayPages(textOut, firstPage, lastPage, 72, 72, 0,
+					  gFalse, gTrue, gFalse);
+		  } else {
+			delete textOut;
+			return 2;
+		  }
+		  delete textOut;
+
+		  // write end of HTML file
+		  if (htmlMeta) {
+			if (!textFileName->cmp("-")) {
+			  f = stdout;
+			} else {
+			  if (!(f = fopen(textFileName->getCString(), "ab"))) {
+			//error(-1, "Couldn't open text file '%s'", textFileName->getCString());
+			return 20002;
+			  }
+			}
+			fputs("</pre>\n", f);
+			fputs("</body>\n", f);
+			fputs("</html>\n", f);
+			if (f != stdout) {
+			  fclose(f);
+			}
+		  }
+
+		  return 0;
 	}

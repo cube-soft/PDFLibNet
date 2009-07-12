@@ -2,8 +2,8 @@
 #include "AFPDFDocInterop.h"
 #include "AFPDFDoc.h"
 
-AFPDFDocInterop::AFPDFDocInterop()
-: _ptr(new AFPDFDoc)
+AFPDFDocInterop::AFPDFDocInterop(char *configFile)
+: _ptr(new AFPDFDoc(configFile))
 , _resultsPtr(0)
 , _pageLinks(0,0)
 {
@@ -43,9 +43,7 @@ long AFPDFDocInterop::GetCurrentPage(void){
 void AFPDFDocInterop::SetCurrentPage(long newVal){
 	return ((AFPDFDoc *)_ptr)->SetCurrentPage(newVal);
 }
-long AFPDFDocInterop::RenderBitmap(long lhWnd){
-	return ((AFPDFDoc *)_ptr)->RenderBitmap(lhWnd);
-}
+
 long AFPDFDocInterop::GetPageCount(void){
 	return ((AFPDFDoc *)_ptr)->GetPageCount();
 }
@@ -169,4 +167,52 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 
 	void AFPDFDocInterop::cvtDevToUser(double ux, double uy, double *dx, double *dy){
 		((AFPDFDoc *)_ptr)->cvtDevToUser(ux,uy,dx,dy);
+	}
+
+	long AFPDFDocInterop::SaveJpg(char *fileName,int quality){
+		return ((AFPDFDoc *)_ptr)->SaveJpg(fileName,quality);
+	}
+	
+	long AFPDFDocInterop::SaveTxt(char *fileName,int firstPage, int lastPage,bool physLayout, bool rawOrder,bool htmlMeta){
+		return ((AFPDFDoc *)_ptr)->SaveTxt(fileName,firstPage,lastPage,htmlMeta,physLayout,rawOrder);
+	}
+
+	char *AFPDFDocInterop::GetSubject(){ return ((AFPDFDoc *)_ptr)->getSubject(); }
+	char *AFPDFDocInterop::GetKeywords(){ return ((AFPDFDoc *)_ptr)->getKeywords(); }
+	char *AFPDFDocInterop::GetCreator(){ return ((AFPDFDoc *)_ptr)->getCreator(); }
+	char *AFPDFDocInterop::GetProducer(){ return ((AFPDFDoc *)_ptr)->getProducer(); }
+	char *AFPDFDocInterop::GetCreationDate(){ return ((AFPDFDoc *)_ptr)->getCreationDate(); }
+	char *AFPDFDocInterop::GetLastModifiedDate(){ return ((AFPDFDoc *)_ptr)->getLastModifiedDate(); }
+
+	void AFPDFDocInterop::SetUserPassword(char *pass){
+		((AFPDFDoc *)_ptr)->SetUserPassword(pass);
+	}
+	void AFPDFDocInterop::SetOwnerPassword(char *pass){
+		((AFPDFDoc *)_ptr)->SetOwnerPassword(pass);
+	}
+
+	long AFPDFDocInterop::GetViewWidth(){
+		return ((AFPDFDoc *)_ptr)->GetViewWidth();
+	}
+	long AFPDFDocInterop::GetViewHeight(){
+		return ((AFPDFDoc *)_ptr)->GetViewHeight();
+	}
+	void AFPDFDocInterop::SetViewWidth(long newVal){
+		((AFPDFDoc *)_ptr)->SetViewWidth(newVal);
+	}
+	void AFPDFDocInterop::SetViewHeight(long newVal){
+		((AFPDFDoc *)_ptr)->SetViewHeight(newVal);
+	}
+
+	long AFPDFDocInterop::GetViewX(){
+		return ((AFPDFDoc *)_ptr)->GetViewX();
+	}
+	void AFPDFDocInterop::SetViewX(long newVal){
+		((AFPDFDoc *)_ptr)->SetViewX(newVal);
+	}
+	long AFPDFDocInterop::GetViewY(){
+		return ((AFPDFDoc *)_ptr)->GetViewY();
+	}
+	void AFPDFDocInterop::SetViewY(long newVal){
+		((AFPDFDoc *)_ptr)->SetViewY(newVal);
 	}

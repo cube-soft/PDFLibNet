@@ -8,11 +8,14 @@
 
 using namespace System;
 using namespace System::Drawing;
+using namespace System::Runtime::InteropServices;
 
 namespace PDFLibNet {
 
 	public delegate void PDFLoadCompletedHandler();
 	public delegate void PDFLoadBeginHandler();
+	public delegate void PageChanged(int lastPage, int newPage);
+	public delegate void PageZoomChanged(System::Drawing::Size lastSize, System::Drawing::Size newSize);
 
 	public enum class PDFSearchOrder
 	{
@@ -33,24 +36,45 @@ namespace PDFLibNet {
 		System::Collections::Generic::Dictionary<int,PageLinkCollection<PageLink ^> ^> _linksCache;
 		String ^_title;
 		String ^_author;
+		String ^_subject;
+		String ^_keywords;
+		String ^_creator;
+		String ^_producer;
+		DateTime _creationdate;
+		DateTime _lastmodifieddate;
 		bool _bLoading;
 	public:
-		PDFWrapper()
-			: _pdfDoc(new AFPDFDocInterop)
+		PDFWrapper(System::String ^fileConfig)
+			: _pdfDoc(nullptr)
 			, _childrens(nullptr)
 			, _searchResults(nullptr)
 			, _title(nullptr)
 			, _author(nullptr)
-
+			, _subject(nullptr)
+			, _keywords(nullptr)
+			, _creator(nullptr)
+			, _producer(nullptr)
+			, _creationdate(DateTime::MinValue)
+			, _lastmodifieddate(DateTime::MinValue)
 		{
-
+			IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileConfig);
+			char *singleByte= (char*)ptr.ToPointer();
+			int ret;
+			try{
+				_pdfDoc = new AFPDFDocInterop(singleByte);
+			}finally{
+				Marshal::FreeCoTaskMem(ptr);
+			}
 		}
 
+		long ExportJpg(System::String ^fileName, System::Int32 quality);
+		long ExportText(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder);
+		long ExportHtml(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder);
 		long PerfomLinkAction(System::Int32 linkPtr);
 		bool LoadPDF(System::String ^fileName);
 		
 		bool RenderPage(IntPtr handler);
-		bool DrawPage(IntPtr handle);
+		
 		bool DrawPageHDC(IntPtr hdc);
 
 		void FitToWidth(IntPtr handler);
@@ -71,6 +95,11 @@ namespace PDFLibNet {
 		long FindNext(String ^sText);
 		long FindPrevious(String ^sText);
 		long PrintToFile(String ^fileName, Int32 fromPage, Int32 toPage);
+		System::Collections::Generic::List<PageLink ^> ^GetLinks(int iPage);
+
+		PointF PointUserToDev(PointF point);
+		PointF PointDevToUser(PointF point);
+
 		property bool SearchCaseSensitive;
 		property double RenderDPI {
 			double get(){
@@ -80,6 +109,7 @@ namespace PDFLibNet {
 				_pdfDoc->SetRenderDPI(value);
 			}
 		}
+		
 		property String ^Author{
 			String ^get(){
 				if(_author==nullptr){
@@ -105,6 +135,85 @@ namespace PDFLibNet {
 				return _title;
 			}
 		}
+		property String ^Subject{
+			String ^get(){
+				
+				if(_title==nullptr){
+					char *subject=_pdfDoc->GetSubject();
+					if(subject!=0)
+						_subject = gcnew String(subject);
+					else 
+						return String::Empty;
+				}
+				return _subject;
+			}
+		}
+		property String ^Keywords{
+			String ^get(){
+				
+				if(_keywords==nullptr){
+					char *keywords=_pdfDoc->GetKeywords();
+					if(keywords!=0)
+						_keywords = gcnew String(keywords);
+					else 
+						return String::Empty;
+				}
+				return _keywords;
+			}
+		}
+		property String ^Creator{
+			String ^get(){
+				
+				if(_creator==nullptr){
+					char *creator=_pdfDoc->GetCreator();
+					if(creator!=0)
+						_creator = gcnew String(creator);
+					else 
+						return String::Empty;
+				}
+				return _creator;
+			}
+		}
+		property String ^Producer{
+			String ^get(){
+				
+				if(_producer==nullptr){
+					char *title=_pdfDoc->GetProducer();
+					if(title!=0)
+						_producer = gcnew String(title);
+					else 
+						return String::Empty;
+				}
+				return _producer;
+			}
+		}
+		property DateTime CreationDate{
+			DateTime get(){
+				
+				if(_creationdate.Equals(DateTime::MinValue)){
+					char *title=_pdfDoc->GetCreationDate();
+					if(title!=0 && title[0]!='\0')
+						_creationdate = DateTime::Parse(%String(title), System::Globalization::CultureInfo::GetCultureInfo("en-US"));
+					else 
+						return DateTime::MinValue;
+				}
+				return _creationdate;
+			}
+		}
+		property DateTime LastModifiedDate{
+			DateTime get(){
+				
+				if(_lastmodifieddate.Equals(DateTime::MinValue)){
+					char *title=_pdfDoc->GetLastModifiedDate();
+					if(title!=0 && title[0]!='\0')
+						_lastmodifieddate = DateTime::Parse(%String(title), System::Globalization::CultureInfo::GetCultureInfo("en-US"));
+					else 
+						return DateTime::MinValue;
+				}
+				return _lastmodifieddate;
+			}
+		}
+
 		property double Zoom {
 			double get(){
 				return _pdfDoc->GetZoom();
@@ -162,6 +271,17 @@ namespace PDFLibNet {
 		}
 
 		
+		property System::Drawing::Rectangle ClientBounds{
+			System::Drawing::Rectangle get(){
+				return System::Drawing::Rectangle(_pdfDoc->GetViewX(),_pdfDoc->GetViewY(),_pdfDoc->GetViewWidth(),_pdfDoc->GetViewHeight());
+			}
+			void set(System::Drawing::Rectangle newRect){
+				_pdfDoc->SetViewX(newRect.X);
+				_pdfDoc->SetViewY(newRect.Y);
+				_pdfDoc->SetViewWidth(newRect.Width);
+				_pdfDoc->SetViewHeight(newRect.Height);
+			}
+		}
 		property  System::Collections::Generic::List<OutlineItem^> ^Outline
 		{
 			System::Collections::Generic::List<OutlineItem^> ^get()
@@ -191,10 +311,32 @@ namespace PDFLibNet {
 			}
 
 		}
-		System::Collections::Generic::List<PageLink ^> ^GetLinks(int iPage);
-
-		PointF PointUserToDev(PointF point);
-		PointF PointDevToUser(PointF point);
+		property System::String ^UserPassword{
+			void set(System::String ^value){
+				IntPtr ptr = Marshal::StringToCoTaskMemAnsi(value);
+				char *singleByte= (char*)ptr.ToPointer();
+				int ret;
+				try{
+					_pdfDoc->SetUserPassword(singleByte);
+				}finally{
+					Marshal::FreeCoTaskMem(ptr);
+				}
+					
+			}
+		}
+		property System::String ^OwnerPassword{
+			void set(System::String ^value){
+				IntPtr ptr = Marshal::StringToCoTaskMemAnsi(value);
+				char *singleByte= (char*)ptr.ToPointer();
+				int ret;
+				try{
+					_pdfDoc->SetOwnerPassword(singleByte);
+				}finally{
+					Marshal::FreeCoTaskMem(ptr);
+				}
+					
+			}
+		}
 
 		event PDFLoadCompletedHandler ^PDFLoadCompeted;
 		event PDFLoadBeginHandler ^PDFLoadBegin;

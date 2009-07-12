@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "OutlineItemA.h"
+#include "PageMemory.h";
 
 class CPDFSearchResult 
 	: public CRect
@@ -25,11 +26,22 @@ private:
 	PDFDoc *m_PDFDoc;
 	SplashOutputDev	*m_splashOut;
 	Outline *m_Outline;
-	CBitmap *m_Bitmap;
+	PageMemory *m_Bitmap;
 	CString m_OwnerPassword;
 	CString m_UserPassword;
 	CRect m_bbox;
-	
+	double __x0;
+	double __y0;
+
+	//Client Bounds
+	long m_ViewWidth;
+	long m_ViewHeight;
+	long m_ViewX;
+	long m_ViewY;
+	//Offset view
+	long m_ViewOffsetX;
+	long m_ViewOffsetY;
+
 	long m_CurrentPage;
 	long m_LastPageRendered;
 	long m_SearchPage;
@@ -38,10 +50,6 @@ private:
 	int m_Rotation;
 	double m_LastRenderDPI;
 	double m_renderDPI;
-
-	long m_ViewOffsetX;
-	long m_ViewOffsetY;
-
 	bool m_HideMarks;
 	bool m_bCaseSensitive;
 	bool m_SearchStarted;
@@ -49,13 +57,14 @@ private:
 	void *m_bitmapBytes;
 	
 public:
-	AFPDFDoc();
+	AFPDFDoc(char *configFile);
 	virtual ~AFPDFDoc();
 	long LoadFromFile(char *FileName, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password);
 	long LoadFromFile(char *sFileName);
 	void SetUserPassword(char *user_password);
 	void SetOwnerPassword(char *owner_password);
+	
 	long RenderPage(long lhWnd);
 	long GetCurrentPage(void);
 	void SetCurrentPage(long newVal);
@@ -63,7 +72,24 @@ public:
 	void SetCurrentX(long newVal);
 	long GetCurrentY(void);
 	void SetCurrentY(long newVal);
-	long RenderBitmap(long lhWnd);
+	
+	long GetViewX(){ return m_ViewX; }
+	void SetViewX(long newVal){ m_ViewX =newVal; }
+	long GetViewY(){ return m_ViewY; }
+	void SetViewY(long newVal){ m_ViewY =newVal; }
+
+	long GetViewWidth() { return m_ViewWidth; }
+	void SetViewWidth(long newVal) { m_ViewWidth =newVal; }
+	long GetViewHeight() { return m_ViewHeight; }
+	void SetViewHeight(long newVal) { m_ViewHeight=newVal; }
+
+	int SaveJpg(char *fileName,int quality);
+	int SaveTxt(char *fileName,int firstPage, int lastPage, bool htmlMeta,bool physLayout, bool rawOrder);
+
+	bool IsEncrypted(){
+		return m_PDFDoc->isEncrypted()?true:false;
+	}
+	
 	long LoadFromFile2(char * FileName);
 	long GetPageCount(void);
 	long NextPage(void);
@@ -104,12 +130,50 @@ public:
 
 	char * getTitle();
 	char * getAuthor();
-	/*char * getSubject();
+	char * getSubject();
 	char * getKeywords();
 	char * getCreator();
 	char * getProducer();
 	char * getCreationDate();
-	char * getLastModifiedDate();*/
+	char * getLastModifiedDate();
+
+
+	void static setAntialias(bool antialias){
+		globalParams->setAntialias(antialias?"yes":"no");
+	}
+	void static setVectorAntialias(bool antialias){
+		globalParams->setVectorAntialias(antialias?"yes":"no");
+	}
+	void static setPrintError(bool printError){
+		globalParams->setErrQuiet(printError?0:1);
+	}
+	void static setPrintErrorFile(char *fileName){
+		freopen( fileName, "w", stderr );
+	}
+	void static setEncoding(char *encoding){
+		globalParams->setTextEncoding(encoding);
+	}
+	void static setTextPageBreaks(bool textpagebreak){
+		globalParams->setTextPageBreaks(textpagebreak?1:0);
+	}
+	void static setTextEOL(bool textEol){
+		globalParams->setTextEOL(textEol?"yes":"no");
+	}
+	void static setEnableFreeType(bool enableFreeType){
+		globalParams->setEnableFreeType(enableFreeType?"yes":"no");
+	}
+/*
+	globalParams->setPSPaperHeight(0);
+	globalParams->setPSPaperWidth(0);
+	globalParams->setPSPaperSize("");
+	globalParams->setPSEmbedCIDPostScript(true);
+	globalParams->setPSEmbedCIDTrueType(true);
+	globalParams->setPSEmbedTrueType(true);
+	globalParams->setPSEmbedType1(true);
+	globalParams->setTextPageBreaks(true);
+	globalParams->setTextEOL("yes");
+	globalParams->setEnableFreeType("yes");
+	globalParams->setEnableT1lib("no");*/
 
 };
 

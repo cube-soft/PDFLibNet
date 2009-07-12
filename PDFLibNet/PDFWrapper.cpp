@@ -19,11 +19,7 @@ namespace PDFLibNet
 	{
 		return _pdfDoc->ProcessLinkAction((long)linkPtr);
 	}
-	bool PDFWrapper::DrawPage(IntPtr handle){
-		long hwnd=(long)handle.ToPointer();
-		_pdfDoc->RenderBitmap(hwnd);
-		return true;
-	}
+
 	bool PDFWrapper::DrawPageHDC(IntPtr hdc){
 		long lhdc =(long)hdc.ToPointer();
 		_pdfDoc->RenderHDC(lhdc);
@@ -64,25 +60,24 @@ namespace PDFLibNet
 			if(_searchResults!=nullptr)
 				_searchResults->Clear();
 
-			_pdfDoc->LoadFromFile(singleByte);
+			if(_pdfDoc->LoadFromFile(singleByte)==4) //errorEncrypted
+				throw gcnew System::Security::SecurityException();
 			_pdfDoc->SetCurrentPage(1);	
 			_bLoading=false;
-
 			PDFLoadCompeted();
+		}catch(System::AccessViolationException ^e){
+			throw gcnew System::AccessViolationException("Something is wrong with the file");
 		}finally{
 			Marshal::FreeCoTaskMem(ptr);
 		}
 		return true;
 	} 
 
-/*	bool PDFWrapper::LoadPDF(System::IO::Stream ^fileStream){
-		return true;
-	}*/
 
 	long PDFWrapper::FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc){
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(sText);
 		char *singleByte= (char*)ptr.ToPointer();
-		int ret;
+
 		try{
 			if(_searchResults!=nullptr){
 				_searchResults->Clear();
@@ -100,7 +95,6 @@ namespace PDFLibNet
 	{
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(sText);
 		char *singleByte= (char*)ptr.ToPointer();
-		int ret;
 		try{
 			if(_searchResults!=nullptr){
 				_searchResults->Clear();
@@ -117,7 +111,6 @@ namespace PDFLibNet
 	long PDFWrapper::FindNext(String ^sText){
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(sText);
 		char *singleByte= (char*)ptr.ToPointer();
-		int ret;
 		try{
 			if(_searchResults!=nullptr){
 				_searchResults->Clear();
@@ -133,7 +126,6 @@ namespace PDFLibNet
 	long PDFWrapper::FindPrevious(String ^sText){
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(sText);
 		char *singleByte= (char*)ptr.ToPointer();
-		int ret;
 		try{
 			if(_searchResults!=nullptr){
 				_searchResults->Clear();
@@ -188,7 +180,7 @@ namespace PDFLibNet
 		int x;
 		int y;
 		_pdfDoc->cvtUserToDev(point.X,point.Y,&x,&y);
-		System::Drawing::PointF c(x,y);
+		System::Drawing::PointF c((float)x,(float)y);
 		return c;
 	}
 	System::Drawing::PointF PDFWrapper::PointDevToUser(System::Drawing::PointF point){
@@ -198,4 +190,43 @@ namespace PDFLibNet
 		System::Drawing::PointF c(x,y);
 		return c;
 	}
+
+	long PDFWrapper::ExportJpg(System::String ^fileName, int quality)
+	{
+		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileName);
+		char *singleByte= (char*)ptr.ToPointer();
+		int ret;
+		try{
+			_pdfDoc->SaveJpg(singleByte,quality);
+		}finally{
+			Marshal::FreeCoTaskMem(ptr);
+		}
+		return 0;		
+	}
+
+	long PDFWrapper::ExportText(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder)
+	{
+		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileName);
+		char *singleByte= (char*)ptr.ToPointer();
+		int ret;
+		try{
+			_pdfDoc->SaveTxt(singleByte,firstPage,lastPage,physLayout,rawOrder,false);
+		}finally{
+			Marshal::FreeCoTaskMem(ptr);
+		}
+		return 0;		
+	}
+	long PDFWrapper::ExportHtml(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder)
+	{
+		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileName);
+		char *singleByte= (char*)ptr.ToPointer();
+		int ret;
+		try{
+			_pdfDoc->SaveTxt(singleByte,firstPage,lastPage,physLayout,rawOrder,true);
+		}finally{
+			Marshal::FreeCoTaskMem(ptr);
+		}
+		return 0;		
+	}
+
 }

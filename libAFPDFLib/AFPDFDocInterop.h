@@ -2,6 +2,7 @@
 #include "OutlineItemInterop.h"
 #include "SearchResultInterop.h"
 #include "PageLinksInterop.h"
+
 class AFPDFDocInterop 
 {
 private:
@@ -9,13 +10,19 @@ private:
 	SearchResultInterop *_resultsPtr;
 	PageLinksInterop _pageLinks;
 public:
-	AFPDFDocInterop();
+	AFPDFDocInterop(char *configFile);
 	virtual ~AFPDFDocInterop();
 	long LoadFromFile(char * sFileName);
 	long RenderPage(long lhWnd);
+
+	void SetUserPassword(char *pass);
+	void SetOwnerPassword(char *pass);
+	//long SavePDF(char *fileName);
+	long SaveJpg(char *fileName, int quality);
+	long SaveTxt(char *fileName,int firstPage, int lastPage,bool physLayout, bool rawOrder,bool htmlMeta);
+	
 	long GetCurrentPage(void);
 	void SetCurrentPage(long newVal);
-	
 	void ZoomIN();
 	void ZoomOUT();
 	
@@ -26,8 +33,16 @@ public:
 	void SetCurrentX(long newVal);
 	long GetCurrentY(void);
 	void SetCurrentY(long newVal);
+	long GetViewWidth();
+	long GetViewHeight();
+	void SetViewWidth(long newVal);
+	void SetViewHeight(long newVal);
 
-	long RenderBitmap(long lhWnd);
+	long GetViewX();
+	void SetViewX(long newVal);
+	long GetViewY();
+	void SetViewY(long newVal);
+
 	long GetPageCount(void);
 	
 	long FitScreenWidth(long lhWnd);
@@ -68,5 +83,12 @@ public:
 
 	char *GetTitle();
 	char *GetAuthor();
+	char *GetSubject();
+	char *GetKeywords();
+	char *GetCreator();
+	char *GetProducer();
+	char *GetCreationDate();
+	char *GetLastModifiedDate();
+	
 };
 

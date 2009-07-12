@@ -95,6 +95,13 @@ namespace PDFViewer.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap PrintBrmUi_102_6_16x16x32 {
+            get {
+                object obj = ResourceManager.GetObject("PrintBrmUi_102_6_16x16x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap psr_206_4_16x16x32 {
             get {
                 object obj = ResourceManager.GetObject("psr_206_4_16x16x32", resourceCulture);
@@ -105,6 +112,41 @@ namespace PDFViewer.Properties {
         internal static System.Drawing.Bitmap SearchFolder_323_3_16x16x32 {
             get {
                 object obj = ResourceManager.GetObject("SearchFolder_323_3_16x16x32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap tshadowdown {
+            get {
+                object obj = ResourceManager.GetObject("tshadowdown", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap tshadowdownleft {
+            get {
+                object obj = ResourceManager.GetObject("tshadowdownleft", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap tshadowdownright {
+            get {
+                object obj = ResourceManager.GetObject("tshadowdownright", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap tshadowright {
+            get {
+                object obj = ResourceManager.GetObject("tshadowright", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap tshadowtopright {
+            get {
+                object obj = ResourceManager.GetObject("tshadowtopright", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

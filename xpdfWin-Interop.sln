@@ -14,12 +14,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PDFLibNet", "PDFLibNet\PDFL
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AFPDFLib", "libAFPDFLib\AFPDFLib.vcproj", "{8BDE8E0A-4F7C-4671-AF23-2B077A385AFD}"
-	ProjectSection(ProjectDependencies) = postProject
-		{05E39E0D-7FC0-4B90-A43B-355C6B8BF0E6} = {05E39E0D-7FC0-4B90-A43B-355C6B8BF0E6}
-		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B} = {78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PDFViewer", "PDFViewer\PDFViewer.csproj", "{8A9C383C-C04B-4AA3-84C5-C27E057B5FA2}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pdfutils", "pdfutils\pdfutils\pdfutils.vcproj", "{5E3040DA-5B10-4D4F-AC72-281A4FE33793}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -193,6 +191,36 @@ Global
 		{8A9C383C-C04B-4AA3-84C5-C27E057B5FA2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{8A9C383C-C04B-4AA3-84C5-C27E057B5FA2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{8A9C383C-C04B-4AA3-84C5-C27E057B5FA2}.Release|Win32.ActiveCfg = Release|Any CPU
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Multithreaded|Any CPU.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Multithreaded|Mixed Platforms.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Multithreaded|Mixed Platforms.Build.0 = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Multithreaded|Win32.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Multithreaded|Win32.Build.0 = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Singlethreaded|Any CPU.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Singlethreaded|Mixed Platforms.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Singlethreaded|Mixed Platforms.Build.0 = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Singlethreaded|Win32.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug Singlethreaded|Win32.Build.0 = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Debug|Win32.Build.0 = Debug|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Multithreaded|Any CPU.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Multithreaded|Mixed Platforms.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Multithreaded|Mixed Platforms.Build.0 = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Multithreaded|Win32.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Multithreaded|Win32.Build.0 = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Singlethreaded|Any CPU.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Singlethreaded|Mixed Platforms.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Singlethreaded|Mixed Platforms.Build.0 = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Singlethreaded|Win32.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release Singlethreaded|Win32.Build.0 = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release|Any CPU.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release|Win32.ActiveCfg = Release|Win32
+		{5E3040DA-5B10-4D4F-AC72-281A4FE33793}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

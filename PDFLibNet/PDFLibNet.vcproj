@@ -126,8 +126,10 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="false"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="..\libAFPDFLib"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
@@ -230,6 +232,20 @@
 			<File
 				RelativePath=".\PageLinkCollection.cpp"
 				>
+			</File>
+			<File
+				RelativePath=".\PDFPage.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\PDFPage.h"
+				FileType="4"
+				>
+				<File
+					RelativePath=".\PDFPage.resx"
+					SubType="Designer"
+					>
+				</File>
 			</File>
 			<File
 				RelativePath=".\PDFSearchResult.cpp"

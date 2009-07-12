@@ -106,8 +106,9 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="false"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="&quot;xpdf&quot;;&quot;splash&quot;;&quot;goo&quot;;&quot;fofi&quot;;&quot;..\freetype-2.3.1\include&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32"
 				RuntimeLibrary="0"
@@ -715,6 +716,10 @@
 			</File>
 			<File
 				RelativePath=".\xpdf\JBIG2Stream.h"
+				>
+			</File>
+			<File
+				RelativePath="..\libAFPDFLib\jpeg.h"
 				>
 			</File>
 			<File

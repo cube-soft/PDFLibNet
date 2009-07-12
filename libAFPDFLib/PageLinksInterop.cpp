@@ -28,7 +28,8 @@ int PageLinksInterop::getLinkCount(){
 	return ((Links *)_links)->getNumLinks();
 }
 bool PageLinksInterop::onLink(double x, double y){
-	return ((Links *)_links)->onLink(x,y);
+	
+	return ((Links *)_links)->onLink(x,y)?true:false;
 }
 
 void PageLinksInterop::setPointers(int lptr,int pdfdoc){

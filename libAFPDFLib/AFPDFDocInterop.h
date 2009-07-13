@@ -14,13 +14,14 @@ public:
 	virtual ~AFPDFDocInterop();
 	long LoadFromFile(char * sFileName);
 	long RenderPage(long lhWnd);
+	long RenderPage(long lhWnd, bool bForce);
 
 	void SetUserPassword(char *pass);
 	void SetOwnerPassword(char *pass);
 	//long SavePDF(char *fileName);
 	long SaveJpg(char *fileName, int quality);
 	long SaveTxt(char *fileName,int firstPage, int lastPage,bool physLayout, bool rawOrder,bool htmlMeta);
-	
+	//long SaveHtml(char *fileName, int firstPage, int lastPage, bool noFrames, bool nomerge, bool complexmode);
 	long GetCurrentPage(void);
 	void SetCurrentPage(long newVal);
 	void ZoomIN();
@@ -60,10 +61,10 @@ public:
 	void SetRenderDPI(float newVal);
 	wchar_t *GetPDFVersion(void);
 	
-	long FindString(const char *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc);
-	long FindNext(const char *sText);
-	long FindPrior(const char *sText);
-	long FindFirst(const char *sText, long SearchOrder, bool Backward);
+	long FindString(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc);
+	long FindNext(const wchar_t *sText);
+	long FindPrior(const wchar_t *sText);
+	long FindFirst(const wchar_t *sText, long SearchOrder, bool Backward);
 	long RenderHDC(long lHdc);
 
 

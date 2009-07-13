@@ -191,7 +191,7 @@ int _tmain(int argc, char *argv[])
     exitCode = 1;
     goto err2;
   }
-
+	GString *meta = doc->readMetadata();
   // get page range
   if (firstPage < 1) {
     firstPage = 1;

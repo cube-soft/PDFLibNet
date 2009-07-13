@@ -44,14 +44,19 @@ namespace PDFViewer
             this.tsbPrint = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
+            this.tsbAntialias = new System.Windows.Forms.ToolStripButton();
+            this.tsbVectorAntialias = new System.Windows.Forms.ToolStripButton();
             this.printDialog1 = new System.Windows.Forms.PrintDialog();
             this.printDocument1 = new System.Drawing.Printing.PrintDocument();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.ttpLink = new System.Windows.Forms.ToolTip(this.components);
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -102,7 +107,9 @@ namespace PDFViewer
             this.tsbAbout,
             this.tsbPrint,
             this.toolStripButton1,
-            this.toolStripButton2});
+            this.toolStripButton2,
+            this.tsbAntialias,
+            this.tsbVectorAntialias});
             resources.ApplyResources(this.toolStrip1, "toolStrip1");
             this.toolStrip1.Name = "toolStrip1";
             // 
@@ -174,7 +181,7 @@ namespace PDFViewer
             this.toolStripButton1.Image = global::PDFViewer.Properties.Resources.ZoomIn;
             resources.ApplyResources(this.toolStripButton1, "toolStripButton1");
             this.toolStripButton1.Name = "toolStripButton1";
-            this.toolStripButton1.Click += new System.EventHandler(this.toolStripButton1_Click_1);
+            this.toolStripButton1.Click += new System.EventHandler(this.tsbZoomIn_Click);
             // 
             // toolStripButton2
             // 
@@ -182,16 +189,47 @@ namespace PDFViewer
             this.toolStripButton2.Image = global::PDFViewer.Properties.Resources.ZoomOut;
             resources.ApplyResources(this.toolStripButton2, "toolStripButton2");
             this.toolStripButton2.Name = "toolStripButton2";
-            this.toolStripButton2.Click += new System.EventHandler(this.toolStripButton2_Click);
+            this.toolStripButton2.Click += new System.EventHandler(this.tsbZoomOut_Click);
+            // 
+            // tsbAntialias
+            // 
+            this.tsbAntialias.Checked = true;
+            this.tsbAntialias.CheckOnClick = true;
+            this.tsbAntialias.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.tsbAntialias.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            resources.ApplyResources(this.tsbAntialias, "tsbAntialias");
+            this.tsbAntialias.Name = "tsbAntialias";
+            this.tsbAntialias.Click += new System.EventHandler(this.tsbAntialias_Click);
+            // 
+            // tsbVectorAntialias
+            // 
+            this.tsbVectorAntialias.CheckOnClick = true;
+            this.tsbVectorAntialias.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            resources.ApplyResources(this.tsbVectorAntialias, "tsbVectorAntialias");
+            this.tsbVectorAntialias.Name = "tsbVectorAntialias";
+            this.tsbVectorAntialias.Click += new System.EventHandler(this.tsbVectorAntialias_Click);
             // 
             // printDialog1
             // 
             this.printDialog1.UseEXDialog = true;
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusLabel});
+            resources.ApplyResources(this.statusStrip1, "statusStrip1");
+            this.statusStrip1.Name = "statusStrip1";
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.Name = "StatusLabel";
+            resources.ApplyResources(this.StatusLabel, "StatusLabel");
+            // 
             // frmPDFViewer
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.toolStrip1);
             this.DoubleBuffered = true;
@@ -201,6 +239,8 @@ namespace PDFViewer
             this.splitContainer1.ResumeLayout(false);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -226,6 +266,10 @@ namespace PDFViewer
         private System.Windows.Forms.ToolStripButton tsbPrintAs;
         private PageViewer pageViewControl1;
         private System.Windows.Forms.SplitContainer splitContainer1;
+        private System.Windows.Forms.ToolStripButton tsbAntialias;
+        private System.Windows.Forms.ToolStripButton tsbVectorAntialias;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        public System.Windows.Forms.ToolStripStatusLabel StatusLabel;
     }
 }
 

@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "OutlineItemA.h"
 #include "PageMemory.h";
+void InitGlobalParams(char *configFile);
 
 class CPDFSearchResult 
 	: public CRect
@@ -66,6 +67,7 @@ public:
 	void SetOwnerPassword(char *owner_password);
 	
 	long RenderPage(long lhWnd);
+	long RenderPage(long lhWnd, bool bForce);
 	long GetCurrentPage(void);
 	void SetCurrentPage(long newVal);
 	long GetCurrentX(void);
@@ -85,6 +87,7 @@ public:
 
 	int SaveJpg(char *fileName,int quality);
 	int SaveTxt(char *fileName,int firstPage, int lastPage, bool htmlMeta,bool physLayout, bool rawOrder);
+	//int SaveHtml(char *outFileName, int firstPage, int lastPage, bool noFrames, bool nomerge, bool complexmode);
 
 	bool IsEncrypted(){
 		return m_PDFDoc->isEncrypted()?true:false;
@@ -108,10 +111,10 @@ public:
 	float GetRenderDPI(void);
 	void SetRenderDPI(FLOAT newVal);
 	wchar_t *GetPDFVersion(void);
-	long FindText(LPCTSTR sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc);
-	long FindNext(LPCTSTR sText);
-	long FindPrior(LPCTSTR sText);
-	long FindFirst(LPCTSTR sText, long SearchOrder, bool Backward);
+	long FindText(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc);
+	long FindNext(const wchar_t *sText);
+	long FindPrior(const wchar_t *sText);
+	long FindFirst(const wchar_t *sText, long SearchOrder, bool Backward);
 	long RenderHDC(long lHdc);
 	Links *GetLinksPage(long iPage);
 	LinkDest *findDest(char *destName);
@@ -138,43 +141,6 @@ public:
 	char * getCreationDate();
 	char * getLastModifiedDate();
 
-
-	void static setAntialias(bool antialias){
-		globalParams->setAntialias(antialias?"yes":"no");
-	}
-	void static setVectorAntialias(bool antialias){
-		globalParams->setVectorAntialias(antialias?"yes":"no");
-	}
-	void static setPrintError(bool printError){
-		globalParams->setErrQuiet(printError?0:1);
-	}
-	void static setPrintErrorFile(char *fileName){
-		freopen( fileName, "w", stderr );
-	}
-	void static setEncoding(char *encoding){
-		globalParams->setTextEncoding(encoding);
-	}
-	void static setTextPageBreaks(bool textpagebreak){
-		globalParams->setTextPageBreaks(textpagebreak?1:0);
-	}
-	void static setTextEOL(bool textEol){
-		globalParams->setTextEOL(textEol?"yes":"no");
-	}
-	void static setEnableFreeType(bool enableFreeType){
-		globalParams->setEnableFreeType(enableFreeType?"yes":"no");
-	}
-/*
-	globalParams->setPSPaperHeight(0);
-	globalParams->setPSPaperWidth(0);
-	globalParams->setPSPaperSize("");
-	globalParams->setPSEmbedCIDPostScript(true);
-	globalParams->setPSEmbedCIDTrueType(true);
-	globalParams->setPSEmbedTrueType(true);
-	globalParams->setPSEmbedType1(true);
-	globalParams->setTextPageBreaks(true);
-	globalParams->setTextEOL("yes");
-	globalParams->setEnableFreeType("yes");
-	globalParams->setEnableT1lib("no");*/
 
 };
 

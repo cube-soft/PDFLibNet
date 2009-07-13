@@ -1,6 +1,7 @@
 // AFPDFDoc.cpp : implementation file
 #include "AFPDFDoc.h"
 #include "jpeg.h"
+#include "error.h"
 	//------DECLARATIONS	
 	
 	#define			CACHE_BITMAPS
@@ -17,6 +18,89 @@
 	static int		_countCached						=-1;
 
 	//------PRINT INFORMATION
+
+	void InitGlobalParams(char *configFile){
+		if(globalParams==0){
+			TCHAR szExe[MAX_PATH];
+			int size = ::GetModuleFileName(NULL, szExe, MAX_PATH); 
+			TCHAR *pLastSlash = _tcsrchr(szExe, _T('\\'));
+			
+			if (pLastSlash){
+				// Truncate at slash to get app dir
+				*pLastSlash=L'\0';
+			}
+
+			char *baseDir = new char[wcslen((const wchar_t *)szExe)+1];
+			sprintf(baseDir,"%S",szExe);
+
+			globalParams = new GlobalParams(configFile);
+			//Initialize default settings
+			globalParams->setupBaseFonts(baseDir);
+			globalParams->setErrQuiet(gFalse);
+			globalParams->setEnableT1lib("no");
+			globalParams->setEnableFreeType("yes");
+			globalParams->setPSEmbedCIDPostScript(1);
+			globalParams->setPSEmbedCIDTrueType(1);
+			globalParams->setPSEmbedTrueType(1);
+			globalParams->setPSEmbedType1(1);
+			globalParams->setAntialias("yes");
+			globalParams->setVectorAntialias("yes");
+			globalParams->setTextEncoding("UTF-8");
+			delete baseDir;
+		}
+	}
+
+	static GString* getInfoString(Dict *infoDict, char *key) {
+	  Object obj;
+	  GString *s1 = NULL;
+
+	  if (infoDict->lookup(key, &obj)->isString()) {
+		s1 = new GString(obj.getString());
+	  }
+	  obj.free();
+	  return s1;
+	}
+
+	static GString* getInfoDate(Dict *infoDict, char *key) {
+	  Object obj;
+	  char *s;
+	  int year, mon, day, hour, min, sec;
+	  struct tm tmStruct;
+	  GString *result = NULL;
+	  char buf[256];
+
+	  if (infoDict->lookup(key, &obj)->isString()) {
+		s = obj.getString()->getCString();
+		if (s[0] == 'D' && s[1] == ':') {
+		  s += 2;
+		}
+		if (sscanf(s, "%4d%2d%2d%2d%2d%2d",
+				   &year, &mon, &day, &hour, &min, &sec) == 6) {
+		  tmStruct.tm_year = year - 1900;
+		  tmStruct.tm_mon = mon - 1;
+		  tmStruct.tm_mday = day;
+		  tmStruct.tm_hour = hour;
+		  tmStruct.tm_min = min;
+		  tmStruct.tm_sec = sec;
+		  tmStruct.tm_wday = -1;
+		  tmStruct.tm_yday = -1;
+		  tmStruct.tm_isdst = -1;
+		  mktime(&tmStruct); // compute the tm_wday and tm_yday fields
+		  if (strftime(buf, sizeof(buf), "%Y-%m-%dT%H:%M:%S+00:00", &tmStruct)) {
+		result = new GString(buf);
+		  } else {
+			result = new GString(s);
+		  }
+		} else {
+		  result = new GString(s);
+		}
+	  }
+	  obj.free();
+	  return result;
+	}
+
+
+
 	static void printInfoString		(FILE *f,Dict *infoDict, char *key, char *text,  UnicodeMap *uMap)
 	{
 	  Object obj;
@@ -171,7 +255,7 @@
 		//GString *title=new GString();
 		char *s;
 		if(item /*&& uMap!=NULL*/){
-			ret =new wchar_t[item->getTitleLength()];
+			ret =new wchar_t[item->getTitleLength()+1];
 
 			//12/July/2009 - Allow windows to map unicode characters, 
 			for (j = 0; j < item->getTitleLength(); ++j) {
@@ -179,6 +263,7 @@
 			  //title->append(buf, n);
 			  ret[j]=(wchar_t)item->getTitle()[j];
 			}
+			ret[j]='\0';
 			//s = title->getCString();
 			
 		}else{
@@ -259,7 +344,7 @@
 
 	
 	//------DICTIONARY STRING
-	Unicode *		GetUnicodeString(LPCTSTR str, int length)
+	Unicode *		GetUnicodeString(const wchar_t*str, int length)
 	{
 		Unicode * ucstring = new Unicode[length + 1];
 		int j;
@@ -381,33 +466,8 @@
 	, __x0(0)
 	, __y0(0)
 	{
-		TCHAR szExe[MAX_PATH];
-		int size = ::GetModuleFileName(NULL, szExe, MAX_PATH); 
-		TCHAR *pLastSlash = _tcsrchr(szExe, _T('\\'));
+		InitGlobalParams(configFile);
 		
-		if (pLastSlash){
-			// Truncate at slash to get app dir
-			*pLastSlash=L'\0';
-		}
-
-		char *baseDir = new char[wcslen((const wchar_t *)szExe)+1];
-		sprintf(baseDir,"%S",szExe);
-
-		globalParams = new GlobalParams(configFile);
-		//Initialize default settings
-		globalParams->setupBaseFonts(baseDir);
-		globalParams->setErrQuiet(gFalse);
-		globalParams->setEnableT1lib("no");
-		globalParams->setEnableFreeType("yes");
-		globalParams->setPSEmbedCIDPostScript(1);
-		globalParams->setPSEmbedCIDTrueType(1);
-		globalParams->setPSEmbedTrueType(1);
-		globalParams->setPSEmbedType1(1);
-		globalParams->setAntialias("yes");
-		globalParams->setVectorAntialias("no");
-		globalParams->setTextEncoding("UTF-8");
-		delete baseDir;
-
 		m_Bitmap=0;
 		m_PDFDoc=0;
 		m_splashOut=0;
@@ -486,7 +546,8 @@
 		paperColor[2] = 0xff;
 		
 		//Note: the alignment is given by GDI requirements: bitmaps have to be 16-bit aligned.
-		m_splashOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor);
+		m_splashOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+		m_splashOut->setVectorAntialias(globalParams->getVectorAntialias());
 		
 		//Intentamos abrir el documento sin clave
 		m_PDFDoc = new PDFDoc(new GString(FileName), NULL,NULL);
@@ -537,7 +598,13 @@
 	}
 
 
+
 	long AFPDFDoc::RenderPage(long lhWnd)
+	{
+		return RenderPage(lhWnd,false);
+	}
+
+	long AFPDFDoc::RenderPage(long lhWnd, bool bForce)
 	{
 
 		if (m_PDFDoc != NULL) {
@@ -574,7 +641,7 @@
 					m_renderingThread=NULL;
 				}
 
-				if (m_renderDPI!=m_LastRenderDPI){
+				if (m_renderDPI!=m_LastRenderDPI || bForce){
 					//Invalidate prerendered page
 					m_LastPageRenderedByThread=-1;
 					//Invalidate cache
@@ -584,7 +651,25 @@
 					//Read from cache
 					m_Bitmap = ::GetBitmapCache(m_CurrentPage);
 
+				
 				if(m_Bitmap==0){
+					if(bForce){
+						//Reload the splash out
+						if (m_splashOut!=NULL){
+							delete m_splashOut;
+							m_splashOut=NULL;
+						}
+
+						//Establecemos el color del papel
+						SplashColor paperColor;
+						paperColor[0] = 0xff;
+						paperColor[1] = 0xff;
+						paperColor[2] = 0xff;
+						
+						//Note: the alignment is given by GDI requirements: bitmaps have to be 16-bit aligned.
+						m_splashOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+						m_splashOut->startDoc(m_PDFDoc->getXRef());
+					}
 					//Run thread, wait and delete
 					if (m_LastPageRenderedByThread != m_CurrentPage)
 					{
@@ -1150,7 +1235,7 @@
 		return strResult.AllocSysString();
 	}
 
-	long AFPDFDoc::FindText(LPCTSTR sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc)
+	long AFPDFDoc::FindText(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc)
 	{
 		
 
@@ -1165,7 +1250,7 @@
 		int length = theString.GetLength();
 		
 		//Tratar de reservar la cadena
-		ucstring = GetUnicodeString(theString, length);
+		ucstring = GetUnicodeString(sText, length);
 		if (ucstring == NULL) {
 			AfxMessageBox("Out of memory");
 			return FALSE;
@@ -1253,7 +1338,7 @@
 		return m_Selection.GetCount();
 	}
 	
-	long AFPDFDoc::FindNext(LPCTSTR sText)
+	long AFPDFDoc::FindNext(const wchar_t *sText)
 	{
 		
 
@@ -1272,7 +1357,7 @@
 		int length = theString.GetLength();
 		
 		//Tratar de reservar la cadena
-		ucstring = GetUnicodeString(theString, length);
+		ucstring = GetUnicodeString(sText, length);
 		if (ucstring == NULL) {
 			AfxMessageBox("Out of memory");
 			return FALSE;
@@ -1343,7 +1428,7 @@
 		return m_Selection.GetCount();
 	}
 
-	long AFPDFDoc::FindPrior(LPCTSTR sText)
+	long AFPDFDoc::FindPrior(const  wchar_t *sText)
 	{
 		
 
@@ -1362,7 +1447,7 @@
 		int length = theString.GetLength();
 		
 		//Tratar de reservar la cadena
-		ucstring = GetUnicodeString(theString, length);
+		ucstring = GetUnicodeString(sText, length);
 		if (ucstring == NULL) {
 			AfxMessageBox("Out of memory");
 			return FALSE;
@@ -1456,7 +1541,7 @@
 		return 0;
 	}
 
-	long AFPDFDoc::FindFirst(LPCTSTR sText, long SearchOrder, bool Backward)
+	long AFPDFDoc::FindFirst(const wchar_t *sText, long SearchOrder, bool Backward)
 	{
 		
 
@@ -1471,7 +1556,7 @@
 		int length = theString.GetLength();
 		
 		//Tratar de reservar la cadena
-		ucstring = GetUnicodeString(theString, length);
+		ucstring = GetUnicodeString(sText, length);
 		if (ucstring == NULL) {
 			AfxMessageBox("Out of memory");
 			return FALSE;
@@ -1652,6 +1737,162 @@
 		return JpegFromDib((HANDLE)m_splashOut->getBitmap()->getDataPtr(),&bmi,quality,CString(fileName),&errmsg);
 	}
 
+	/*int AFPDFDoc::SaveHtml(char *outFileName, int firstPage, int lastPage, bool noFrames, bool nomerge, bool complexmode)
+	{
+		GString *docTitle = NULL;
+		GString *author = NULL, *keywords = NULL, *subject = NULL, *date = NULL;
+		GString *htmlFileName = NULL;
+		GString *psFileName = NULL;
+		HtmlOutputDev *htmlOut = NULL;
+		PSOutputDev *psOut = NULL;
+		GBool ok;
+		char *p;
+		char extension[16] = "png";
+		Object info;
+		char * extsList[] = {"png", "jpeg", "bmp", "pcx", "tiff", "pbm", NULL};
+		char gsDevice[33] = "png16m";
+
+		GBool stout;
+		GBool xml=gFalse;
+		GBool noframes = noFrames?gTrue:gFalse;
+		GBool complexMode = complexmode?gTrue:gFalse;
+		GBool noMerge=nomerge?gTrue:gFalse;
+		GBool rawOrder;
+		int scale=this->m_renderDPI/72;
+		scale=1.5;
+		
+		// check for copy permission
+		if (!m_PDFDoc->okToCopy()) {
+			error(-1, "Copying of text from this document is not allowed.");
+			goto error;
+		}
+
+		// construct text file name
+		
+		GString* tmp = new GString(outFileName);
+		p=tmp->getCString()+tmp->getLength()-5;
+		if (!xml)
+			if (!strcmp(p, ".html") || !strcmp(p, ".HTML"))
+				htmlFileName = new GString(tmp->getCString(),tmp->getLength() - 5);
+			else 
+				htmlFileName =new GString(tmp);
+		else   
+			if (!strcmp(p, ".xml") || !strcmp(p, ".XML"))
+				htmlFileName = new GString(tmp->getCString(), tmp->getLength() - 5);
+			else 
+				htmlFileName =new GString(tmp);
+
+		delete tmp;
+
+		if (scale>3.0) scale=3.0;
+		if (scale<0.5) scale=0.5;
+
+
+		if (complexMode) {
+			//noframes=gFalse;
+			stout=gFalse;
+		} 
+
+		if (stout) {
+			noframes=gTrue;
+			complexMode=gFalse;
+		}
+
+		if (xml)
+		{ 
+			complexMode = gTrue;
+			noframes = gTrue;
+			noMerge = gTrue;
+		}
+
+		// get page range
+		if (firstPage < 1)
+			firstPage = 1;
+		if (lastPage < 1 || lastPage > m_PDFDoc->getNumPages())
+			lastPage = m_PDFDoc->getNumPages();
+
+		m_PDFDoc->getDocInfo(&info);
+		if (info.isDict()) {
+			docTitle = getInfoString(info.getDict(), "Title");
+			author = getInfoString(info.getDict(), "Author");
+			keywords = getInfoString(info.getDict(), "Keywords");
+			subject = getInfoString(info.getDict(), "Subject");
+			date = getInfoDate(info.getDict(), "ModDate");
+			if( !date )
+				date = getInfoDate(info.getDict(), "CreationDate");
+		}
+		info.free();
+		if( !docTitle || docTitle->getLength()==0 ) 
+			docTitle = new GString(htmlFileName);
+		
+		// determine extensions of output background images 
+		{int i;
+		for(i = 0; extsList[i]; i++)
+		{
+			if( strstr(gsDevice, extsList[i]) != (char *) NULL )
+			{
+				strncpy(extension, extsList[i], sizeof(extension));
+				break;
+			}
+		}}
+
+		rawOrder = complexMode; // todo: figure out what exactly rawOrder do :)
+		
+		// write text file
+		htmlOut = new HtmlOutputDev(htmlFileName->getCString(), 
+			docTitle->getCString(), 
+			author ? author->getCString() : NULL,
+			keywords ? keywords->getCString() : NULL, 
+			subject ? subject->getCString() : NULL, 
+			date ? date->getCString() : NULL,
+			extension,
+			rawOrder, 
+			firstPage,
+			m_PDFDoc->getCatalog()->getOutline()->isDict());
+		
+		
+		if( author )
+		{   
+			delete author;
+		}
+		if( keywords )
+		{
+			delete keywords;
+		}
+		if( subject )
+		{
+			delete subject;
+		}
+		if( date )
+		{
+			delete date;
+		}
+		if (htmlOut->isOk())
+		{
+			m_PDFDoc->displayPages(htmlOut, firstPage, lastPage, static_cast<int>(72*scale), static_cast<int>(72*scale), 0, gFalse, gTrue,gFalse);
+			return 0;
+			if (!xml)
+			{
+				htmlOut->dumpDocOutline(m_PDFDoc->getCatalog());
+			}
+		}
+
+	  
+		delete htmlOut;
+
+		// clean up
+		error:
+		
+		if(htmlFileName) 
+			delete htmlFileName;
+		HtmlFont::clear();
+
+		// check for memory leaks
+		Object::memCheck(stderr);
+		gMemReport(stderr);
+
+		return 0;
+	}*/
 	int AFPDFDoc::SaveTxt(char *fileName,int firstPage, int lastPage, bool htmlMeta, bool physLayout, bool rawOrder){
 		  TextOutputDev *textOut;
 		  FILE *f;
@@ -1700,16 +1941,17 @@
 					"<meta name=\"ModDate\" content=\"%s\">\n");
 			}
 			info.free();
-
+/*
 			fputs("<ul>\n",f);
-			fwide(f, 1);
+
+			USES_CONVERSION;
 			for(int itOutline=0;itOutline <  m_PDFDoc->getOutline()->getItems()->getLength();itOutline++){
 				OutlineItem *ol = (OutlineItem *) m_PDFDoc->getOutline()->getItems()->get(itOutline);
 				wchar_t *title =GetTitle(uMap,ol);
-				fprintf(f,"<li>%lsn</li>\n",title);
+				fprintf(f,"<li>%s</li>\n",W2A(title));
 			}
 			fputs("<\ul>\n",f);
-
+*/
 			fputs("</head>\n", f);
 			fputs("<body>\n", f);
 			fputs("<pre>\n", f);
@@ -1717,7 +1959,7 @@
 			  fclose(f);
 			}
 		  }else{
-				if (!(f = fopen(textFileName->getCString(), "wb"))) {
+				/*if (!(f = fopen(textFileName->getCString(), "wb"))) {
 					return 20002;
 				}
 				
@@ -1729,9 +1971,8 @@
 					fprintf(f,"%s\n",W2A(title));					
 				}
 				
-
 				fclose(f);
-				return 0;
+*/
 		  }
 
 		  // write text file

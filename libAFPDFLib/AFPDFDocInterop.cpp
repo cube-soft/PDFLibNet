@@ -18,6 +18,10 @@ AFPDFDocInterop::~AFPDFDocInterop(){
 long AFPDFDocInterop::LoadFromFile(char * sFileName){
 	return ((AFPDFDoc *)_ptr)->LoadFromFile(sFileName);
 }
+
+long AFPDFDocInterop::RenderPage(long lhWnd, bool bForce){
+	return ((AFPDFDoc *)_ptr)->RenderPage(lhWnd,bForce);
+}
 long AFPDFDocInterop::RenderPage(long lhWnd){
 	return ((AFPDFDoc *)_ptr)->RenderPage(lhWnd);
 }
@@ -85,16 +89,16 @@ void AFPDFDocInterop::SetRenderDPI(float newVal){
 wchar_t *AFPDFDocInterop::GetPDFVersion(void){
 	return ((AFPDFDoc *)_ptr)->GetPDFVersion();
 }
-long AFPDFDocInterop::FindString(const char *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc){
+long AFPDFDocInterop::FindString(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc){
 	return ((AFPDFDoc *)_ptr)->FindText(sText,iPage,SearchOrder,bCaseSensitive,bBackward,bMarkAll,bWholeDoc);
 }
-long AFPDFDocInterop::FindNext(const char *sText){
+long AFPDFDocInterop::FindNext(const wchar_t *sText){
 	return ((AFPDFDoc *)_ptr)->FindNext(sText);
 }
-long AFPDFDocInterop::FindPrior(const char *sText){
+long AFPDFDocInterop::FindPrior(const wchar_t *sText){
 	return ((AFPDFDoc *)_ptr)->FindPrior(sText);
 }
-long AFPDFDocInterop::FindFirst(const char *sText, long SearchOrder, bool Backward){
+long AFPDFDocInterop::FindFirst(const wchar_t *sText, long SearchOrder, bool Backward){
 	return ((AFPDFDoc *)_ptr)->FindFirst(sText,SearchOrder,Backward);
 }
 long AFPDFDocInterop::RenderHDC(long lHdc){
@@ -179,6 +183,10 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	long AFPDFDocInterop::SaveTxt(char *fileName,int firstPage, int lastPage,bool physLayout, bool rawOrder,bool htmlMeta){
 		return ((AFPDFDoc *)_ptr)->SaveTxt(fileName,firstPage,lastPage,htmlMeta,physLayout,rawOrder);
 	}
+
+	/*long AFPDFDocInterop::SaveHtml(char *fileName, int firstPage, int lastPage, bool noFrames, bool nomerge, bool complexmode){
+		return ((AFPDFDoc *)_ptr)->SaveHtml(fileName,firstPage,lastPage,noFrames,nomerge,complexmode);
+	}*/
 
 	wchar_t *AFPDFDocInterop::GetSubject(){ return ((AFPDFDoc *)_ptr)->getSubject(); }
 	wchar_t *AFPDFDocInterop::GetKeywords(){ return ((AFPDFDoc *)_ptr)->getKeywords(); }

@@ -177,7 +177,7 @@ BOOL DibToSamps(HANDLE                      hDib,
    LPBYTE   lpPixels = (LPBYTE)  lpBits;
    RGBQUAD* pRgbQs   = (RGBQUAD*)lpBits;
    WORD*    wPixels  = (WORD*)   lpBits;
-
+int d=0;
    //Set up the jsamps according to the bitmap's format.
    //Note that rows are processed bottom to top, because
    //that's how bitmaps are created.
@@ -281,7 +281,7 @@ BOOL DibToSamps(HANDLE                      hDib,
          nUnused    =  (((nBytesWide + 3) / 4) * 4) -
                        nBytesWide;
          nBytesWide += nUnused;
-
+/*
          for (r=0;r < pbBmHdr->biHeight;r++)
          {
             for (p=0,q=0;p < (nBytesWide-nUnused); p+=3,q+=3)
@@ -293,6 +293,21 @@ BOOL DibToSamps(HANDLE                      hDib,
                jsmpPixels[r][q+1] = lpPixels[nPixel+1]; //Green
                jsmpPixels[r][q+2] = lpPixels[nPixel+0]; //Blue
             }
+         }
+*/
+		 
+		 for (r=pbBmHdr->biHeight-1;r >=0 ;r--)
+         {
+            for (p=0,q=0;p < (nBytesWide-nUnused); p+=3,q+=3)
+            {
+               nRow = (pbBmHdr->biHeight-r-1) * nBytesWide;
+               nPixel  = nRow + p;
+
+               jsmpPixels[d][q+0] = lpPixels[nPixel+2]; //Red
+               jsmpPixels[d][q+1] = lpPixels[nPixel+1]; //Green
+               jsmpPixels[d][q+2] = lpPixels[nPixel+0]; //Blue
+            }
+			d++;
          }
          break;
 

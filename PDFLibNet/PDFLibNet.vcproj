@@ -206,6 +206,10 @@
 			RelativePath="System.XML.dll"
 			AssemblyName="System.Xml, Version=2.0.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
 		/>
+		<AssemblyReference
+			RelativePath="System.configuration.dll"
+			AssemblyName="System.Configuration, Version=2.0.0.0, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -255,6 +259,10 @@
 				RelativePath=".\PDFWrapper.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\xPDFParams.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -293,7 +301,15 @@
 				RelativePath=".\PDFWrapper.h"
 				>
 			</File>
+			<File
+				RelativePath=".\xPDFParams.h"
+				>
+			</File>
 		</Filter>
+		<File
+			RelativePath=".\app.config"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

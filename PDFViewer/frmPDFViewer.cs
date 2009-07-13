@@ -5,7 +5,8 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using System.Runtime.InteropServices; 
+using System.Runtime.InteropServices;
+using System.Configuration;
 using PDFLibNet;
 namespace PDFViewer
 {
@@ -13,7 +14,9 @@ namespace PDFViewer
     public partial class frmPDFViewer : Form
     {
         [DllImport("user32.dll")]
-        static extern int GetForegroundWindow(); 
+        static extern int GetForegroundWindow();
+
+        public static frmPDFViewer Instance;
         
         #region Mouse Scrolling/Navigation Private Fields
         public enum CursorStatus
@@ -36,12 +39,23 @@ namespace PDFViewer
         #endregion
 
         PDFWrapper _pdfDoc = null;
-        private Bitmap _backbuffer = null;
-
         public frmPDFViewer()
         {
             InitializeComponent();
-            System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("zh-Hant");
+            //Update path to xpdfrc
+            if (ConfigurationManager.AppSettings.Get("xpdfrc") == "xpdfrc")
+            {
+                // Open App.Config of executable
+                Configuration config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+                // Add an Application Setting.
+                config.AppSettings.Settings.Remove("xpdfrc");
+                config.AppSettings.Settings.Add("xpdfrc", AppDomain.CurrentDomain.BaseDirectory + "xpdfrc");
+                // Save the configuration file.
+                config.Save(ConfigurationSaveMode.Modified);
+                // Force a reload of a changed section.
+                ConfigurationManager.RefreshSection("appSettings");
+            }
+            Instance = this;
         }
 
         void frmPDFViewer_FormClosing(object sender, FormClosingEventArgs e)
@@ -217,8 +231,11 @@ namespace PDFViewer
         {
             if (_pdfDoc != null)
             {
-                FitWidth();
-                Render();
+                using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusResizing))
+                {
+                    FitWidth();
+                    Render();
+                }
             }
         }
         
@@ -267,52 +284,58 @@ namespace PDFViewer
 
         void tvwOutline_NodeMouseClick(object sender, TreeNodeMouseClickEventArgs e)
         {
-            OutlineItem ol = (OutlineItem)e.Node.Tag;
-            if (ol != null)
+            using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusSearchingBookmark))
             {
-                ol.DoAction();
-                switch (ol.GetKind())
+                OutlineItem ol = (OutlineItem)e.Node.Tag;
+                if (ol != null)
                 {
-                    case LinkActionKind.actionGoTo:
-                    case LinkActionKind.actionGoToR:
-                        //Transform the coordinates
-                        PointF loc = _pdfDoc.PointUserToDev(new PointF( (float)ol.Destination.Left,(float) ol.Destination.Top));
-                        if(ol.Destination.ChangeTop)
-                            ScrolltoTop((int)loc.Y);
-                        else
-                            ScrolltoTop(0);
-                        break;
-                    case LinkActionKind.actionLaunch:
-                        break;
-                    case LinkActionKind.actionMovie:
-                        break;
-                    case LinkActionKind.actionURI:
-                        break;
+                    ol.DoAction();
+                    switch (ol.GetKind())
+                    {
+                        case LinkActionKind.actionGoTo:
+                        case LinkActionKind.actionGoToR:
+                            //Transform the coordinates
+                            PointF loc = _pdfDoc.PointUserToDev(new PointF((float)ol.Destination.Left, (float)ol.Destination.Top));
+                            if (ol.Destination.ChangeTop)
+                                ScrolltoTop((int)loc.Y);
+                            else
+                                ScrolltoTop(0);
+                            break;
+                        case LinkActionKind.actionLaunch:
+                            break;
+                        case LinkActionKind.actionMovie:
+                            break;
+                        case LinkActionKind.actionURI:
+                            break;
+                    }
+                    FitWidth();
+                    Render();
                 }
-                FitWidth();
-                Render();
             }
         }
 
         void tvwOutline_BeforeExpand(object sender, TreeViewCancelEventArgs e)
         {
+            using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusSearchingBookmark))
+            {
 
-             OutlineItem ol = (OutlineItem)e.Node.Tag;
-             if (ol != null)
-             {   
-                 if (e.Node.Nodes.Count > 0 && e.Node.Nodes[0].Text == "dummy")
-                 {
-                     e.Node.Nodes.Clear();
-                     foreach (OutlineItem col in ol.Childrens)
-                     {
-                         TreeNode tn = new TreeNode(col.Title);
-                         tn.Tag = col;
-                         if (col.KidsCount > 0)
-                             tn.Nodes.Add(new TreeNode("dummy"));
-                         e.Node.Nodes.Add(tn);
-                     }
-                 }
-             }
+                OutlineItem ol = (OutlineItem)e.Node.Tag;
+                if (ol != null)
+                {
+                    if (e.Node.Nodes.Count > 0 && e.Node.Nodes[0].Text == "dummy")
+                    {
+                        e.Node.Nodes.Clear();
+                        foreach (OutlineItem col in ol.Childrens)
+                        {
+                            TreeNode tn = new TreeNode(col.Title);
+                            tn.Tag = col;
+                            if (col.KidsCount > 0)
+                                tn.Nodes.Add(new TreeNode("dummy"));
+                            e.Node.Nodes.Add(tn);
+                        }
+                    }
+                }
+            }
          }
         #endregion
 
@@ -320,19 +343,22 @@ namespace PDFViewer
         {
             try
             {
-                if (_pdfDoc != null && e.KeyCode == Keys.Return)
+                using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
                 {
-                    int page=-1;
-                    if (int.TryParse(txtPage.Text, out page))
+                    if (_pdfDoc != null && e.KeyCode == Keys.Return)
                     {
-                        if (page > 0 && page <= _pdfDoc.PageCount)
+                        int page = -1;
+                        if (int.TryParse(txtPage.Text, out page))
                         {
-                            _pdfDoc.CurrentPage = page;
-                            _pdfDoc.RenderPage(pageViewControl1.Handle);
-                            Render();
+                            if (page > 0 && page <= _pdfDoc.PageCount)
+                            {
+                                _pdfDoc.CurrentPage = page;
+                                _pdfDoc.RenderPage(pageViewControl1.Handle);
+                                Render();
+                            }
+                            else
+                                page = -1;
                         }
-                        else
-                            page = -1;
                     }
                 }
             }
@@ -344,21 +370,27 @@ namespace PDFViewer
 
         private void tsbNext_Click(object sender, EventArgs e)
         {
-            if (_pdfDoc != null)
+            using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
             {
-                _pdfDoc.NextPage();
-                _pdfDoc.RenderPage(pageViewControl1.Handle);
-                Render();
+                if (_pdfDoc != null)
+                {
+                    _pdfDoc.NextPage();
+                    _pdfDoc.RenderPage(pageViewControl1.Handle);
+                    Render();
+                }
             }
         }
 
         private void tsbPrev_Click(object sender, EventArgs e)
         {
-            if (_pdfDoc != null)
+            using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
             {
-               _pdfDoc.PreviousPage();
-               _pdfDoc.RenderPage(pageViewControl1.Handle);
-               Render();
+                if (_pdfDoc != null)
+                {
+                    _pdfDoc.PreviousPage();
+                    _pdfDoc.RenderPage(pageViewControl1.Handle);
+                    Render();
+                }
             }
         }
 
@@ -372,26 +404,26 @@ namespace PDFViewer
                 {
                     if (_pdfDoc == null)
                     {
-                        if (Properties.Settings.Default.ConfigFilePath == "xpdfrc")
-                            Properties.Settings.Default.ConfigFilePath = AppDomain.CurrentDomain.BaseDirectory + "xpdfrc";
-
-                        _pdfDoc = new PDFWrapper(Properties.Settings.Default.ConfigFilePath);
+                        _pdfDoc = new PDFWrapper();
                         _pdfDoc.PDFLoadCompeted += new PDFLoadCompletedHandler(_pdfDoc_PDFLoadCompeted);
                         _pdfDoc.PDFLoadBegin += new PDFLoadBeginHandler(_pdfDoc_PDFLoadBegin);
                     }
                     pageViewControl1.Visible = false;
-                    if (LoadFile(dlg.FileName))
+                    using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingFile))
                     {
-                        _pdfDoc.CurrentPage = 1;
+                        if (LoadFile(dlg.FileName))
+                        {
+                            _pdfDoc.CurrentPage = 1;
 
-                        Text ="Powered by xPDF: "+ _pdfDoc.Author + " - " + _pdfDoc.Title;
-                        FillTree();
-                        FitWidth();
-                        Render();
+                            Text = "Powered by xPDF: " + _pdfDoc.Author + " - " + _pdfDoc.Title;
+                            FillTree();
+                            FitWidth();
+                            Render();
 
-                        pageViewControl1.PageSize = new Size(_pdfDoc.PageWidth, _pdfDoc.PageHeight);
-                        pageViewControl1.Visible = true;
-                    }   
+                            pageViewControl1.PageSize = new Size(_pdfDoc.PageWidth, _pdfDoc.PageHeight);
+                            pageViewControl1.Visible = true;
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -427,6 +459,8 @@ namespace PDFViewer
 
         void _pdfDoc_PDFLoadBegin()
         {
+            UpdateParamsUI(false);
+
             tvwOutline.BeforeExpand -= new TreeViewCancelEventHandler(tvwOutline_BeforeExpand);
             tvwOutline.NodeMouseClick -= new TreeNodeMouseClickEventHandler(tvwOutline_NodeMouseClick);
             Resize -= new EventHandler(frmPDFViewer_Resize);
@@ -435,10 +469,7 @@ namespace PDFViewer
             Gma.UserActivityMonitor.HookManager.MouseDown -= new MouseEventHandler(HookManager_MouseDown);
             Gma.UserActivityMonitor.HookManager.MouseUp -= new MouseEventHandler(HookManager_MouseUp);
             Gma.UserActivityMonitor.HookManager.MouseMove -= new MouseEventHandler(HookManager_MouseMove);
-            /*picPage.MouseWheel -= new MouseEventHandler(HookManager_MouseWheel);
-            picPage.MouseDown -= new MouseEventHandler(HookManager_MouseDown);
-            picPage.MouseUp -= new MouseEventHandler(HookManager_MouseUp);
-            picPage.MouseMove -= new MouseEventHandler(HookManager_MouseMove);*/
+           
         }
 
         void _pdfDoc_PDFLoadCompeted()
@@ -451,10 +482,8 @@ namespace PDFViewer
             Gma.UserActivityMonitor.HookManager.MouseDown += new MouseEventHandler(HookManager_MouseDown);
             Gma.UserActivityMonitor.HookManager.MouseUp += new MouseEventHandler(HookManager_MouseUp);
             Gma.UserActivityMonitor.HookManager.MouseMove += new MouseEventHandler(HookManager_MouseMove);
-            /*picPage.MouseWheel += new MouseEventHandler(HookManager_MouseWheel);
-            picPage.MouseDown += new MouseEventHandler(HookManager_MouseDown);
-            picPage.MouseUp += new MouseEventHandler(HookManager_MouseUp);
-            picPage.MouseMove += new MouseEventHandler(HookManager_MouseMove);*/
+
+            UpdateParamsUI();
         }
 
         private void tsbAbout_Click(object sender, EventArgs e)
@@ -536,10 +565,10 @@ namespace PDFViewer
 
         private void ScrolltoTop(int y)
         {
-            Point dr = this.pageViewControl1.AutoScrollPosition;
+            Point dr = this.pageViewControl1.ScrollPosition;
             if (_pdfDoc.PageHeight > pageViewControl1.Height)
                 dr.Y = y;
-            pageViewControl1.AutoScrollPosition = dr;
+            pageViewControl1.ScrollPosition = dr;
         }
 
         private void toolStripButton1_Click(object sender, EventArgs e)
@@ -550,17 +579,20 @@ namespace PDFViewer
 
                 if (printDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    if (printDialog1.PrinterSettings.PrintToFile)
+                    using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusPrinting))
                     {
-                        saveFileDialog1.Filter = "PostScript File (*.ps)|*.ps";
-                        if (this.saveFileDialog1.ShowDialog() == DialogResult.OK)
-                            _pdfDoc.PrintToFile(saveFileDialog1.FileName, 1, _pdfDoc.PageCount);
-                    }
-                    else
-                    {
-                        _pdfDoc.PrintToFile(fileName, 1, _pdfDoc.PageCount);
+                        if (printDialog1.PrinterSettings.PrintToFile)
+                        {
+                            saveFileDialog1.Filter = "PostScript File (*.ps)|*.ps";
+                            if (this.saveFileDialog1.ShowDialog() == DialogResult.OK)
+                                _pdfDoc.PrintToFile(saveFileDialog1.FileName, 1, _pdfDoc.PageCount);
 
-                        RawPrinterHelper.SendFileToPrinter(printDialog1.PrinterSettings.PrinterName, fileName);
+                        }
+                        else
+                        {
+                            _pdfDoc.PrintToFile(fileName, 1, _pdfDoc.PageCount);
+                            RawPrinterHelper.SendFileToPrinter(printDialog1.PrinterSettings.PrinterName, fileName);
+                        }
                     }
                 }
                 
@@ -572,15 +604,18 @@ namespace PDFViewer
             }
         }
 
-        private void toolStripButton1_Click_1(object sender, EventArgs e)
+        private void tsbZoomIn_Click(object sender, EventArgs e)
         {
             try
             {
-                if (_pdfDoc != null)
+                using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
                 {
-                    _pdfDoc.ZoomIN();
-                    _pdfDoc.RenderPage(pageViewControl1.Handle);
-                    Render();
+                    if (_pdfDoc != null)
+                    {
+                        _pdfDoc.ZoomIN();
+                        _pdfDoc.RenderPage(pageViewControl1.Handle);
+                        Render();
+                    }
                 }
             }
             catch (Exception ex)
@@ -590,13 +625,16 @@ namespace PDFViewer
             
         }
 
-        private void toolStripButton2_Click(object sender, EventArgs e)
+        private void tsbZoomOut_Click(object sender, EventArgs e)
         {
-            if (_pdfDoc != null)
+            using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
             {
-                _pdfDoc.ZoomOut();
-                _pdfDoc.RenderPage(pageViewControl1.Handle);
-                Render();
+                if (_pdfDoc != null)
+                {
+                    _pdfDoc.ZoomOut();
+                    _pdfDoc.RenderPage(pageViewControl1.Handle);
+                    Render();
+                }
             }
         }
 
@@ -677,21 +715,24 @@ namespace PDFViewer
                 saveFileDialog1.Filter = "PostScript file (*.ps)|*.ps|Plain text (*.txt)|*.txt|HTML Markup(*.html)|*.html|Jpg Image (*.jpg)|*.jpg";
                 if (saveFileDialog1.ShowDialog() == DialogResult.OK)
                 {
-                    if (saveFileDialog1.FileName.EndsWith(".ps"))
+                    using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusExporting))
                     {
-                        _pdfDoc.PrintToFile(saveFileDialog1.FileName, 1, _pdfDoc.PageCount);
-                    }
-                    else if (saveFileDialog1.FileName.EndsWith(".jpg"))
-                    {
-                        _pdfDoc.ExportJpg(saveFileDialog1.FileName, 70);
-                    }
-                    else if (saveFileDialog1.FileName.EndsWith(".txt"))
-                    {
-                        _pdfDoc.ExportText(saveFileDialog1.FileName, 1, _pdfDoc.PageCount, true, true);
-                    }
-                    else if (saveFileDialog1.FileName.EndsWith(".html"))
-                    {
-                        _pdfDoc.ExportHtml(saveFileDialog1.FileName, 1, _pdfDoc.PageCount, true, true);
+                        if (saveFileDialog1.FileName.EndsWith(".ps"))
+                        {
+                            _pdfDoc.PrintToFile(saveFileDialog1.FileName, 1, _pdfDoc.PageCount);
+                        }
+                        else if (saveFileDialog1.FileName.EndsWith(".jpg"))
+                        {
+                            _pdfDoc.ExportJpg(saveFileDialog1.FileName, 70);
+                        }
+                        else if (saveFileDialog1.FileName.EndsWith(".txt"))
+                        {
+                            _pdfDoc.ExportText(saveFileDialog1.FileName, 1, _pdfDoc.PageCount, true, true);
+                        }
+                        else if (saveFileDialog1.FileName.EndsWith(".html"))
+                        {
+                            //_pdfDoc.ExportHtml(saveFileDialog1.FileName, 1, _pdfDoc.PageCount,false,false,true);
+                        }
                     }
                 }
             }
@@ -735,12 +776,15 @@ namespace PDFViewer
         {
             try
             {
-                if (_pdfDoc.CurrentPage < _pdfDoc.PageCount)
+                using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
                 {
-                    _pdfDoc.NextPage();
-                    Render();
-                    _pdfDoc.RenderPage(pageViewControl1.Handle);
-                    return true;
+                    if (_pdfDoc.CurrentPage < _pdfDoc.PageCount)
+                    {
+                        _pdfDoc.NextPage();
+                        Render();
+                        _pdfDoc.RenderPage(pageViewControl1.Handle);
+                        return true;
+                    }
                 }
             }
             catch (Exception ex)
@@ -754,12 +798,15 @@ namespace PDFViewer
         {
             try
             {
-                if (_pdfDoc.CurrentPage > 1)
+                using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
                 {
-                    _pdfDoc.PreviousPage();
-                    Render();
-                    _pdfDoc.RenderPage(pageViewControl1.Handle);
-                    return true;
+                    if (_pdfDoc.CurrentPage > 1)
+                    {
+                        _pdfDoc.PreviousPage();
+                        Render();
+                        _pdfDoc.RenderPage(pageViewControl1.Handle);
+                        return true;
+                    }
                 }
             }
             catch (Exception ex)
@@ -769,7 +816,50 @@ namespace PDFViewer
             return false;
         }
 
+        private void tsbAntialias_Click(object sender, EventArgs e)
+        {
+            using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
+            {
+                if (_pdfDoc != null)
+                {
+                    PDFLibNet.xPDFParams.Antialias = !PDFLibNet.xPDFParams.Antialias;
+                    tsbAntialias.Checked = PDFLibNet.xPDFParams.Antialias;
+                    _pdfDoc.RenderPage(pageViewControl1.Handle, true);
+                    Render();
+                    pageViewControl1.Invalidate();
+                }
+            }
+        }
 
+        private void tsbVectorAntialias_Click(object sender, EventArgs e)
+        {
+            using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
+            {
+                if (_pdfDoc != null)
+                {
+                    PDFLibNet.xPDFParams.VectorAntialias = !PDFLibNet.xPDFParams.VectorAntialias;
+                    tsbVectorAntialias.Checked = PDFLibNet.xPDFParams.VectorAntialias;
+                    _pdfDoc.RenderPage(pageViewControl1.Handle, true);
+                    Render();
+                    pageViewControl1.Invalidate();
+                }
+            }
+        }
+
+        private void UpdateParamsUI()
+        {
+            UpdateParamsUI(true);
+        }
+        private void UpdateParamsUI(bool enabled)
+        {
+            PDFLibNet.xPDFParams.Antialias = false;
+            PDFLibNet.xPDFParams.VectorAntialias = false;
+            tsbAntialias.Enabled = _pdfDoc != null && enabled; 
+            tsbVectorAntialias.Enabled = _pdfDoc != null && enabled;
+
+            tsbAntialias.Checked = PDFLibNet.xPDFParams.Antialias;
+            tsbVectorAntialias.Checked = PDFLibNet.xPDFParams.VectorAntialias;
+        }
 
     }
 

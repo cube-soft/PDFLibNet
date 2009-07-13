@@ -45,6 +45,29 @@ namespace PDFLibNet {
 		DateTime _lastmodifieddate;
 		bool _bLoading;
 	public:
+		PDFWrapper()
+			: _pdfDoc(nullptr)
+			, _childrens(nullptr)
+			, _searchResults(nullptr)
+			, _title(nullptr)
+			, _author(nullptr)
+			, _subject(nullptr)
+			, _keywords(nullptr)
+			, _creator(nullptr)
+			, _producer(nullptr)
+			, _creationdate(DateTime::MinValue)
+			, _lastmodifieddate(DateTime::MinValue)
+		{
+			IntPtr ptr = Marshal::StringToCoTaskMemAnsi(System::Convert::ToString(System::Configuration::ConfigurationSettings::GetConfig("xpdfrc")));
+			char *singleByte= (char*)ptr.ToPointer();
+			int ret;
+			try{
+				_pdfDoc = new AFPDFDocInterop(singleByte);
+			}finally{
+				Marshal::FreeCoTaskMem(ptr);
+			}
+		}
+
 		PDFWrapper(System::String ^fileConfig)
 			: _pdfDoc(nullptr)
 			, _childrens(nullptr)
@@ -70,11 +93,12 @@ namespace PDFLibNet {
 
 		long ExportJpg(System::String ^fileName, System::Int32 quality);
 		long ExportText(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder);
-		long ExportHtml(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder);
+		long ExportHtml(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean noFrames,System::Boolean noMerge, System::Boolean complexMode);
 		long PerfomLinkAction(System::Int32 linkPtr);
 		bool LoadPDF(System::String ^fileName);
 		
 		bool RenderPage(IntPtr handler);
+		bool RenderPage(IntPtr handler, System::Boolean bForce);
 		
 		bool DrawPageHDC(IntPtr hdc);
 

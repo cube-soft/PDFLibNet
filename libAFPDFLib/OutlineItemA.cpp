@@ -18,14 +18,15 @@ OutlineItemA::~OutlineItemA()
 // OutlineItemA message handlers
 wchar_t * OutlineItemA::GetTitle(void)
 {
+	
 	//UnicodeMap *uMap = globalParams->getTextEncoding(); //getUnicodeMap(&GString("GBK"));
-	wchar_t *ret;
+	wchar_t *ret=0;
 	int j,n;
 	//char buf[8];
 	//GString *title=new GString();
 	char *s;
 	if(m_Item /*&& uMap!=NULL*/){
-		ret =new wchar_t[m_Item->getTitleLength()];
+		ret =new wchar_t[m_Item->getTitleLength()+1];
 		//12/July/2009 - Allow windows to map unicode characters, 
 		for (j = 0; j < m_Item->getTitleLength(); j++) {
 		  //n = uMap->mapUnicode(m_Item->getTitle()[j], buf, sizeof(buf));
@@ -45,7 +46,7 @@ wchar_t * OutlineItemA::GetTitle(void)
 long OutlineItemA::GetKind(void)
 {
 	
-	if (m_Item){
+	if (m_Item && m_Item->getAction()){
 		return m_Item->getAction()->getKind();
 	}
 	return -1;
@@ -53,14 +54,12 @@ long OutlineItemA::GetKind(void)
 
 long OutlineItemA::GetKidsCount(void)
 {
-	
-	if(m_Item){
+	if(m_Item!=0 ){
+		m_Item->open();
 		if(m_Item->hasKids()){
-			m_Item->open();
 			return m_Item->getKids()->getLength();
 		}
 	}
-
 	return 0;
 }
 

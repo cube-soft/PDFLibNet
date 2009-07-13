@@ -43,8 +43,11 @@ namespace PDFLibNet
 		property System::Int32 KidsCount
 		{
 			System::Int32 get(){
-				return _outline->GetKidsCount();
+				if(_outline!=0)
+					return _outline->GetKidsCount();
+				return 0;
 			}
+			
 		}
 		property  System::Collections::Generic::IList<OutlineItem^> ^Childrens{
 			System::Collections::Generic::IList<OutlineItem^> ^get(){
@@ -56,8 +59,11 @@ namespace PDFLibNet
 		property System::String ^Title{
 			System::String ^get()
 			{
-				if(_title==nullptr)
-					_title= gcnew String(_outline->GetTitle());
+				if(_title==nullptr){
+					wchar_t *title=_outline->GetTitle();
+					_title= gcnew String(title);
+					delete title;
+				}
 				return _title;
 			}
 		}

@@ -347,15 +347,19 @@ namespace PDFLibNet {
 
 		!PDFWrapper()
 		{
-			//if(!_pdfDoc.IsNull())
-			_pdfDoc->Dispose();
+			if(_pdfDoc!=0)
+				_pdfDoc->Dispose();
+			delete _pdfDoc;
+			_pdfDoc=0;
 			//_pdfDoc.Reset();
 		}
 
 		~PDFWrapper()
 		{
-			//if(!_pdfDoc.IsNull())
-			_pdfDoc->Dispose();
+			if(_pdfDoc!=0)
+				_pdfDoc->Dispose();
+			delete _pdfDoc;
+			_pdfDoc=0;
 			//_pdfDoc.Reset();
 		}
 

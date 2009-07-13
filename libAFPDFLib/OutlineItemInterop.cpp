@@ -18,7 +18,9 @@ long OutlineItemInterop::GetKind(void){
 	return ((OutlineItemA *)m_Item)->GetKind();
 }
 long OutlineItemInterop::GetKidsCount(void){
-	return ((OutlineItemA *)m_Item)->GetKidsCount();
+	if(m_Item!=0)
+		return ((OutlineItemA *)m_Item)->GetKidsCount();
+	return 0;
 }
 long OutlineItemInterop::SetOutlineItemXPDF(long lPtr){
 	return ((OutlineItemA *)m_Item)->SetOutlineItemXPDF(lPtr);

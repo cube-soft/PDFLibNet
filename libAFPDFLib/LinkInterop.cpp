@@ -58,12 +58,16 @@ LinkActionInterop *LinkInterop::getAction(){
 }
 
 char *LinkActionInterop::getDestName(){
-	if(this->getKind()==LinkActionKind::actionGoTo){
-		if(((Link *)_link)->isOk() 
-			&& ((LinkGoTo *)_action)->isOk()){
+	if(_link!=0){
+		if(this->getKind()==LinkActionKind::actionGoTo){
+			if(((Link *)_link)->isOk() 
+				&& ((LinkGoTo *)_action)->isOk()){
 
-			GString *g=((LinkGoTo *)_action)->getNamedDest();
-			return g->getCString();
+				GString *g=((LinkGoTo *)_action)->getNamedDest();
+				if(g!=0)
+					return g->getCString();
+
+			}
 		}
 	}
 	return '\0';

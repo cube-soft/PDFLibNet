@@ -30,7 +30,9 @@ namespace PDFViewer
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmPDFViewer));
+            this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tvwOutline = new System.Windows.Forms.TreeView();
+            this.pageViewControl1 = new PDFViewer.PageViewer();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.tsbOpen = new System.Windows.Forms.ToolStripButton();
             this.tsbPrintAs = new System.Windows.Forms.ToolStripButton();
@@ -46,14 +48,47 @@ namespace PDFViewer
             this.printDocument1 = new System.Drawing.Printing.PrintDocument();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.ttpLink = new System.Windows.Forms.ToolTip(this.components);
-            this.pageViewControl1 = new PDFViewer.PageViewer();
+            this.splitContainer1.Panel1.SuspendLayout();
+            this.splitContainer1.Panel2.SuspendLayout();
+            this.splitContainer1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // splitContainer1
+            // 
+            resources.ApplyResources(this.splitContainer1, "splitContainer1");
+            this.splitContainer1.Name = "splitContainer1";
+            // 
+            // splitContainer1.Panel1
+            // 
+            this.splitContainer1.Panel1.Controls.Add(this.tvwOutline);
+            resources.ApplyResources(this.splitContainer1.Panel1, "splitContainer1.Panel1");
+            // 
+            // splitContainer1.Panel2
+            // 
+            this.splitContainer1.Panel2.Controls.Add(this.pageViewControl1);
+            resources.ApplyResources(this.splitContainer1.Panel2, "splitContainer1.Panel2");
             // 
             // tvwOutline
             // 
             resources.ApplyResources(this.tvwOutline, "tvwOutline");
             this.tvwOutline.Name = "tvwOutline";
+            // 
+            // pageViewControl1
+            // 
+            this.pageViewControl1.BackColor = System.Drawing.SystemColors.AppWorkspace;
+            this.pageViewControl1.BorderColor = System.Drawing.Color.Black;
+            resources.ApplyResources(this.pageViewControl1, "pageViewControl1");
+            this.pageViewControl1.DrawBorder = false;
+            this.pageViewControl1.DrawShadow = true;
+            this.pageViewControl1.Name = "pageViewControl1";
+            this.pageViewControl1.PageColor = System.Drawing.SystemColors.AppWorkspace;
+            this.pageViewControl1.PageSize = new System.Drawing.Size(0, 0);
+            this.pageViewControl1.PaintMethod = PDFViewer.PageViewer.DoubleBufferMethod.BuiltInOptimizedDoubleBuffer;
+            this.pageViewControl1.ScrollPosition = new System.Drawing.Point(-10, -10);
+            this.pageViewControl1.PreviousPage += new PDFViewer.PageViewer.MovePageHandler(this.doubleBufferControl1_PreviousPage);
+            this.pageViewControl1.NextPage += new PDFViewer.PageViewer.MovePageHandler(this.doubleBufferControl1_NextPage);
+            this.pageViewControl1.PaintControl += new PDFViewer.PageViewer.PaintControlHandler(this.doubleBufferControl1_PaintControl);
             // 
             // toolStrip1
             // 
@@ -153,31 +188,17 @@ namespace PDFViewer
             // 
             this.printDialog1.UseEXDialog = true;
             // 
-            // pageViewControl1
-            // 
-            resources.ApplyResources(this.pageViewControl1, "pageViewControl1");
-            this.pageViewControl1.BackColor = System.Drawing.SystemColors.AppWorkspace;
-            this.pageViewControl1.BorderColor = System.Drawing.Color.Black;
-            this.pageViewControl1.DrawBorder = false;
-            this.pageViewControl1.DrawShadow = true;
-            this.pageViewControl1.Name = "pageViewControl1";
-            this.pageViewControl1.PageColor = System.Drawing.SystemColors.AppWorkspace;
-            this.pageViewControl1.PageSize = new System.Drawing.Size(0, 0);
-            this.pageViewControl1.PaintMethod = PDFViewer.PageViewer.DoubleBufferMethod.BuiltInOptimizedDoubleBuffer;
-            this.pageViewControl1.ScrollPosition = new System.Drawing.Point(-10, -10);
-            this.pageViewControl1.PreviousPage += new PDFViewer.PageViewer.MovePageHandler(this.doubleBufferControl1_PreviousPage);
-            this.pageViewControl1.NextPage += new PDFViewer.PageViewer.MovePageHandler(this.doubleBufferControl1_NextPage);
-            this.pageViewControl1.PaintControl += new PDFViewer.PageViewer.PaintControlHandler(this.doubleBufferControl1_PaintControl);
-            // 
             // frmPDFViewer
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.pageViewControl1);
-            this.Controls.Add(this.tvwOutline);
+            this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.toolStrip1);
             this.DoubleBuffered = true;
             this.Name = "frmPDFViewer";
+            this.splitContainer1.Panel1.ResumeLayout(false);
+            this.splitContainer1.Panel2.ResumeLayout(false);
+            this.splitContainer1.ResumeLayout(false);
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -204,6 +225,7 @@ namespace PDFViewer
         private System.Windows.Forms.ToolTip ttpLink;
         private System.Windows.Forms.ToolStripButton tsbPrintAs;
         private PageViewer pageViewControl1;
+        private System.Windows.Forms.SplitContainer splitContainer1;
     }
 }
 

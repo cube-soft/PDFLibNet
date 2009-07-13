@@ -9,8 +9,11 @@ AFPDFDocInterop::AFPDFDocInterop(char *configFile)
 {
 }
 AFPDFDocInterop::~AFPDFDocInterop(){
-	delete _ptr;
-	free(_resultsPtr);
+	if(_ptr>0)
+		delete _ptr;
+	_ptr=0;
+	if(_resultsPtr!=0)
+		free(_resultsPtr);
 }
 long AFPDFDocInterop::LoadFromFile(char * sFileName){
 	return ((AFPDFDoc *)_ptr)->LoadFromFile(sFileName);

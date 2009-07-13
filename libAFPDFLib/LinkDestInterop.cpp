@@ -16,12 +16,13 @@ bool LinkDestInterop::isPageRef(){
 }
 int LinkDestInterop::getPageNum(){
 	int page=0;
-	if( ((LinkDest *)_ptr)->isPageRef() ){
-		Ref r= ((LinkDest *)_ptr)->getPageRef();
-		page=((AFPDFDoc*)_pdfDoc)->findpage(r.num,r.gen);
-	}else
-		page=((LinkDest *)_ptr)->getPageNum();
-
+	if(_ptr!=0){
+		if(((LinkDest *)_ptr)->isPageRef() ){
+			Ref r= ((LinkDest *)_ptr)->getPageRef();
+			page=((AFPDFDoc*)_pdfDoc)->findpage(r.num,r.gen);
+		}else
+			page=((LinkDest *)_ptr)->getPageNum();
+	}
 	return page;
 }
 double LinkDestInterop::getLeft(){

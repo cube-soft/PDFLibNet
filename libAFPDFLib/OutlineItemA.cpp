@@ -18,27 +18,28 @@ OutlineItemA::~OutlineItemA()
 // OutlineItemA message handlers
 wchar_t * OutlineItemA::GetTitle(void)
 {
-	
-
-	CString strResult;
-	char * sztitle=NULL;
-	if(m_Item){
-		Unicode *title=m_Item->getTitle();
-		char * sztitle;
-		int len = m_Item->getTitleLength();
-
-		/* FIXME: should we procedd UCS4 better than just stripping? */
-		sztitle = new char[len + 1];
-		int k = 0;
-		for(k = 0; k < len; k++)
-			sztitle[k] = title[k];
-
-		sztitle[k] = 0;
-
-		strResult = sztitle;
+	//UnicodeMap *uMap = globalParams->getTextEncoding(); //getUnicodeMap(&GString("GBK"));
+	wchar_t *ret;
+	int j,n;
+	//char buf[8];
+	//GString *title=new GString();
+	char *s;
+	if(m_Item /*&& uMap!=NULL*/){
+		ret =new wchar_t[m_Item->getTitleLength()];
+		//12/July/2009 - Allow windows to map unicode characters, 
+		for (j = 0; j < m_Item->getTitleLength(); j++) {
+		  //n = uMap->mapUnicode(m_Item->getTitle()[j], buf, sizeof(buf));
+		  //title->append(buf, n);
+		  ret[j]=(wchar_t)m_Item->getTitle()[j];
+		}
+		ret[j]='\0';
+		//s = title->getCString();		
+	}else{
+		return L"\0";
 	}
-	//return sztitle;	
-	return strResult.AllocSysString();
+	//USES_CONVERSION;
+	//ret =A2W(s);
+	return ret;
 }
 
 long OutlineItemA::GetKind(void)

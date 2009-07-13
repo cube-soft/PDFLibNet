@@ -71,10 +71,12 @@ char *LinkActionInterop::getDestName(){
 
 LinkDestInterop *LinkActionInterop::getDest(){
 	if(this->getKind() == LinkActionKind::actionGoTo){
-		if(((Link *)_link)->isOk() && 
-			((LinkGoTo *)_action)->isOk()){
-			if(_dest==0)
-				_dest=new LinkDestInterop(((LinkGoTo *)_action)->getDest(),_pdfDoc);
+		if(((LinkGoTo *)_action)->isOk()){
+			if(_dest==0){
+				LinkDest *dest =((LinkGoTo *)_action)->getDest();
+				if(dest!=0)
+					_dest=new LinkDestInterop(dest,_pdfDoc);
+			}
 			return  _dest;
 		}
 	}

@@ -66,12 +66,6 @@
     <Compile Include="frmPDFViewer.Designer.cs">
       <DependentUpon>frmPDFViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="frmPDFViewerCtrl.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="frmPDFViewerCtrl.Designer.cs">
-      <DependentUpon>frmPDFViewerCtrl.cs</DependentUpon>
-    </Compile>
     <Compile Include="frmSearch.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -101,10 +95,6 @@
     <EmbeddedResource Include="frmPDFViewer.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmPDFViewer.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="frmPDFViewerCtrl.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>frmPDFViewerCtrl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frmSearch.resx">
       <SubType>Designer</SubType>

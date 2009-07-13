@@ -41,6 +41,7 @@ namespace PDFViewer
         public frmPDFViewer()
         {
             InitializeComponent();
+            System.Threading.Thread.CurrentThread.CurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("zh-Hant");
         }
 
         void frmPDFViewer_FormClosing(object sender, FormClosingEventArgs e)
@@ -183,6 +184,10 @@ namespace PDFViewer
                                 _pdfDoc.RenderPage(pageViewControl1.Handle);
                                 Render();
                             }
+                            else if (plgo.DestinationName != null)
+                            {
+                                
+                            }
                             break;
                         case LinkActionKind.actionURI:
                             PDFLibNet.PageLinkURI uri = (link.Action as PDFLibNet.PageLinkURI);
@@ -249,6 +254,7 @@ namespace PDFViewer
         private void FillTree()
         {
             tvwOutline.Nodes.Clear();
+            
 		    foreach (PDFLibNet.OutlineItem ol in _pdfDoc.Outline)
             {
                 TreeNode tn = new TreeNode(ol.Title);
@@ -366,6 +372,9 @@ namespace PDFViewer
                 {
                     if (_pdfDoc == null)
                     {
+                        if (Properties.Settings.Default.ConfigFilePath == "xpdfrc")
+                            Properties.Settings.Default.ConfigFilePath = AppDomain.CurrentDomain.BaseDirectory + "xpdfrc";
+
                         _pdfDoc = new PDFWrapper(Properties.Settings.Default.ConfigFilePath);
                         _pdfDoc.PDFLoadCompeted += new PDFLoadCompletedHandler(_pdfDoc_PDFLoadCompeted);
                         _pdfDoc.PDFLoadBegin += new PDFLoadBeginHandler(_pdfDoc_PDFLoadBegin);

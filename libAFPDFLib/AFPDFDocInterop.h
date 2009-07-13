@@ -53,7 +53,7 @@ public:
 	long GetOutlinePtr(long iOutline);
 	long ProcessLinkAction(long lPtrLinkAction);
 	PageLinksInterop *getPageLinksInterop(long iPage);
-
+	LinkDestInterop *findDest(char *destName);
 	void Dispose();
 
 	float GetRenderDPI(void);
@@ -81,12 +81,12 @@ public:
 	void cvtUserToDev(double ux, double uy, int *dx, int *dy);
 	void cvtDevToUser(double ux, double uy, double *dx, double *dy);
 
-	char *GetTitle();
-	char *GetAuthor();
-	char *GetSubject();
-	char *GetKeywords();
-	char *GetCreator();
-	char *GetProducer();
+	wchar_t *GetTitle();
+	wchar_t *GetAuthor();
+	wchar_t *GetSubject();
+	wchar_t *GetKeywords();
+	wchar_t *GetCreator();
+	wchar_t *GetProducer();
 	char *GetCreationDate();
 	char *GetLastModifiedDate();
 	

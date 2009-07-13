@@ -35,7 +35,7 @@ namespace PDFLibNet
 		property LinkDest ^Destination{
 			LinkDest ^get(){
 				if(_dest==nullptr)
-					_dest =gcnew LinkDest((int)_outline->getDest());
+					_dest =gcnew LinkDest(_outline->getDest());
 				
 				return _dest;
 			}

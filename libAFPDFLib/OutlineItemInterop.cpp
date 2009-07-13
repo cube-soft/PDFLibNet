@@ -32,8 +32,10 @@ long OutlineItemInterop::GetLinkAction(void){
 
 LinkDestInterop *OutlineItemInterop::getDest(){
 	if(((OutlineItemA *)m_Item)->GetKind()==LinkActionKind::actionGoTo){
-		LinkDestInterop *l=new LinkDestInterop(((LinkGoTo *)((OutlineItemA *)m_Item)->GetLinkAction())->getDest(),_pdfDoc);
-		return l;
+		if(((LinkGoTo *)((OutlineItemA *)m_Item)->GetLinkAction())->getDest()!=0){
+			LinkDestInterop *l=new LinkDestInterop(((LinkGoTo *)((OutlineItemA *)m_Item)->GetLinkAction())->getDest(),_pdfDoc);
+			return l;
+		}
 	}
 	return 0;
 }

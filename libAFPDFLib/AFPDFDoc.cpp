@@ -11,7 +11,7 @@
 	#define			SPACE_Y				16
 
 	
-	static char		EmptyChar[1]						={'\0'};
+	static wchar_t		EmptyChar[1]						={'\0'};
 	static PageMemory	*_bitmapCache[MAX_BITMAP_CACHE+1]	={0};
 	static int		_pageCached[MAX_BITMAP_CACHE+1]		={0};
 	static int		_countCached						=-1;
@@ -162,7 +162,33 @@
 	  obj.free();
 	}
 
-	
+	wchar_t * GetTitle(UnicodeMap *uMap, OutlineItem *item)
+	{
+		
+		wchar_t *ret;
+		int j,n;
+		//char buf[8];
+		//GString *title=new GString();
+		char *s;
+		if(item /*&& uMap!=NULL*/){
+			ret =new wchar_t[item->getTitleLength()];
+
+			//12/July/2009 - Allow windows to map unicode characters, 
+			for (j = 0; j < item->getTitleLength(); ++j) {
+			  //n = uMap->mapUnicode(m_Item->getTitle()[j], buf, sizeof(buf));
+			  //title->append(buf, n);
+			  ret[j]=(wchar_t)item->getTitle()[j];
+			}
+			//s = title->getCString();
+			
+		}else{
+			return L"\0";
+		}
+		//USES_CONVERSION;
+		//ret =A2W(s);
+		return ret;
+	}
+
 	
 	//------BITMAP CACHE
 	PageMemory *GetBitmapCache(int page){
@@ -248,7 +274,7 @@
 		ucstring[j] = 0;
 		return ucstring;
 	}
-	static char *	getDicString(Dict *infoDict,char *key,UnicodeMap *uMap)
+	static wchar_t *getDicString(Dict *infoDict,char *key,UnicodeMap *uMap)
 	{
 		Object obj;
 		GString *s1;
@@ -269,8 +295,25 @@
 				isUnicode = gFalse;
 				i = 0;
 			}
+			
+			wchar_t *ret =new wchar_t[s1->getLength()];
+			int j=0;
+			i=0;
+			while (i < s1->getLength()) {
+				  if (isUnicode) {
+						u = ((s1->getChar(i) & 0xff) << 8) |  (s1->getChar(i+1) & 0xff);
+						i += 2;
+				  } else {
+						u = s1->getChar(i) & 0xff;
+						++i;
+				  }
+				  ret[j] = u;
+				  j++;
+			}
+			ret[j]='\0';
+			
 			if(s1->getLength()>0)
-				return s1->getCString();
+				return ret;
 
 		}
 		return EmptyChar;
@@ -278,11 +321,11 @@
 	}
 
 
-	static char *	getDocInfo(char *key,PDFDoc *doc){
+	static wchar_t *	getDocInfo(char *key,PDFDoc *doc){
 		Object info;
 		UnicodeMap *uMap;
 		if (!(uMap = globalParams->getTextEncoding())) {
-			return EmptyChar;			
+			return (EmptyChar);			
 		}
 
 		doc->getDocInfo(&info);
@@ -290,7 +333,7 @@
 			Dict *infoDict = info.getDict();
 			return getDicString(infoDict,key,uMap);
 		}
-		return EmptyChar;
+		return (EmptyChar);
 	}
 
 
@@ -1534,60 +1577,38 @@
 		m_bCaseSensitive=newVal;
 	}
 	
-	char * AFPDFDoc::getTitle(){
-		Object info;
-		UnicodeMap *uMap;
-		if (!(uMap = globalParams->getTextEncoding())) {
-//			error(-1, "Couldn't get text encoding");
-			return EmptyChar;			
-		}
-
-		m_PDFDoc->getDocInfo(&info);
-		if (info.isDict()) {
-			Dict *infoDict = info.getDict();
-			return getDicString(infoDict,"Title",uMap);
-		}
-		return EmptyChar;
+	wchar_t * AFPDFDoc::getTitle(){
+		return ::getDocInfo("Title",m_PDFDoc);
 	}
 
-	char * AFPDFDoc::getAuthor(){
-		Object info;
-		UnicodeMap *uMap;
-		if (!(uMap = globalParams->getTextEncoding())) {
-//			error(-1, "Couldn't get text encoding");
-			return EmptyChar;			
-		}
-
-		m_PDFDoc->getDocInfo(&info);
-		if (info.isDict()) {
-			Dict *infoDict = info.getDict();
-			return getDicString(infoDict,"Author",uMap);
-		}
-		return EmptyChar;
+	wchar_t * AFPDFDoc::getAuthor(){
+		return ::getDocInfo("Author",m_PDFDoc);
 	}
 		
-	char * AFPDFDoc::getSubject(){
+	wchar_t * AFPDFDoc::getSubject(){
 		return ::getDocInfo("Subject",m_PDFDoc);
 	}
-	char * AFPDFDoc::getKeywords(){
+	wchar_t * AFPDFDoc::getKeywords(){
 		return ::getDocInfo("Keywords",m_PDFDoc);
 	}
-	char * AFPDFDoc::getCreator(){
+	wchar_t * AFPDFDoc::getCreator(){
 		return ::getDocInfo("Creator",m_PDFDoc);
 	}
-	char * AFPDFDoc::getProducer(){
+	wchar_t * AFPDFDoc::getProducer(){
 		return ::getDocInfo("Producer",m_PDFDoc);
 	}
 	char * AFPDFDoc::getCreationDate(){
-		char * s = getDocInfo("CreationDate",m_PDFDoc);
+		wchar_t * s = getDocInfo("CreationDate",m_PDFDoc);
 		char *datetime = new char[256];
-		parseDateTime(datetime,s);
+		USES_CONVERSION;
+		parseDateTime(datetime,W2A(s));
 		return datetime;
 	}
 	char * AFPDFDoc::getLastModifiedDate(){
-		char *s = getDocInfo("LastModifiedDate",m_PDFDoc);
+		wchar_t *s = getDocInfo("LastModifiedDate",m_PDFDoc);
 		char *datetime=new char[256];
-		parseDateTime(datetime,s);
+		USES_CONVERSION;
+		parseDateTime(datetime,W2A(s));
 		return datetime;
 	}
 
@@ -1678,12 +1699,38 @@
 					"<meta name=\"ModDate\" content=\"%s\">\n");
 			}
 			info.free();
+
+			fputs("<ul>\n",f);
+			fwide(f, 1);
+			for(int itOutline=0;itOutline <  m_PDFDoc->getOutline()->getItems()->getLength();itOutline++){
+				OutlineItem *ol = (OutlineItem *) m_PDFDoc->getOutline()->getItems()->get(itOutline);
+				wchar_t *title =GetTitle(uMap,ol);
+				fprintf(f,"<li>%lsn</li>\n",title);
+			}
+			fputs("<\ul>\n",f);
+
 			fputs("</head>\n", f);
 			fputs("<body>\n", f);
 			fputs("<pre>\n", f);
 			if (f != stdout) {
 			  fclose(f);
 			}
+		  }else{
+				if (!(f = fopen(textFileName->getCString(), "wb"))) {
+					return 20002;
+				}
+				
+				USES_CONVERSION;
+				for(int itOutline=0;itOutline <  m_PDFDoc->getOutline()->getItems()->getLength();itOutline++)
+				{
+					OutlineItem *ol = (OutlineItem *) m_PDFDoc->getOutline()->getItems()->get(itOutline);
+					wchar_t *title =GetTitle(uMap,ol);
+					fprintf(f,"%s\n",W2A(title));					
+				}
+				
+
+				fclose(f);
+				return 0;
 		  }
 
 		  // write text file
@@ -1717,4 +1764,9 @@
 		  }
 
 		  return 0;
+	}
+
+	LinkDest *AFPDFDoc::findDest(char *destName){
+		GString s(destName);
+		return this->m_PDFDoc->getCatalog()->findDest(&s);
 	}

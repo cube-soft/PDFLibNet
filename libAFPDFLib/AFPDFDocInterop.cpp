@@ -145,11 +145,11 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	((AFPDFDoc *)_ptr)->SetRenderDPI((FLOAT)newValue);
  }
 
- char * AFPDFDocInterop::GetTitle(){
+ wchar_t * AFPDFDocInterop::GetTitle(){
 	return ((AFPDFDoc *)_ptr)->getTitle();
  }
 
- char * AFPDFDocInterop::GetAuthor(){
+ wchar_t * AFPDFDocInterop::GetAuthor(){
 	return ((AFPDFDoc *)_ptr)->getAuthor();
  }
 
@@ -177,10 +177,10 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 		return ((AFPDFDoc *)_ptr)->SaveTxt(fileName,firstPage,lastPage,htmlMeta,physLayout,rawOrder);
 	}
 
-	char *AFPDFDocInterop::GetSubject(){ return ((AFPDFDoc *)_ptr)->getSubject(); }
-	char *AFPDFDocInterop::GetKeywords(){ return ((AFPDFDoc *)_ptr)->getKeywords(); }
-	char *AFPDFDocInterop::GetCreator(){ return ((AFPDFDoc *)_ptr)->getCreator(); }
-	char *AFPDFDocInterop::GetProducer(){ return ((AFPDFDoc *)_ptr)->getProducer(); }
+	wchar_t *AFPDFDocInterop::GetSubject(){ return ((AFPDFDoc *)_ptr)->getSubject(); }
+	wchar_t *AFPDFDocInterop::GetKeywords(){ return ((AFPDFDoc *)_ptr)->getKeywords(); }
+	wchar_t *AFPDFDocInterop::GetCreator(){ return ((AFPDFDoc *)_ptr)->getCreator(); }
+	wchar_t *AFPDFDocInterop::GetProducer(){ return ((AFPDFDoc *)_ptr)->getProducer(); }
 	char *AFPDFDocInterop::GetCreationDate(){ return ((AFPDFDoc *)_ptr)->getCreationDate(); }
 	char *AFPDFDocInterop::GetLastModifiedDate(){ return ((AFPDFDoc *)_ptr)->getLastModifiedDate(); }
 
@@ -215,4 +215,8 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	}
 	void AFPDFDocInterop::SetViewY(long newVal){
 		((AFPDFDoc *)_ptr)->SetViewY(newVal);
+	}
+	LinkDestInterop *AFPDFDocInterop::findDest(char *destName)
+	{
+		return new LinkDestInterop( ((AFPDFDoc *)_ptr)->findDest(destName),_ptr);
 	}

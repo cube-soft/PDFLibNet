@@ -1,8 +1,8 @@
 #include "LinkDest.h"
 namespace PDFLibNet
 {
-	LinkDest::LinkDest(int ptr)
-	: _ptr((LinkDestInterop *)ptr)
+	LinkDest::LinkDest(LinkDestInterop * ptr)
+	: _ptr(ptr)
 	{
 	}
 

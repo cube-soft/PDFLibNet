@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "..\..\libAFPDFLib\jpeg.h"
-
+#include "outline.h"
 int pdfinfo(PDFDoc *doc, UnicodeMap *uMap);
 int pdftotext(PDFDoc *doc, UnicodeMap *uMap);
 int pdftojpg(PDFDoc *doc,UnicodeMap *uMap);
@@ -229,6 +229,7 @@ int _tmain(int argc, char *argv[])
   return exitCode;
 }
 
+#include "GList.h"
 int pdftojpg(PDFDoc *doc,UnicodeMap *uMap)
 {
 	SplashOutputDev *splashOut;
@@ -298,7 +299,7 @@ Page *page;
     printInfoDate(info.getDict(),   "ModDate",      "ModDate:        ");
   }
   info.free();
-
+  
   // print tagging info
   printf("Tagged:         %s\n",
 	 doc->getStructTreeRoot()->isDict() ? "yes" : "no");
@@ -409,6 +410,33 @@ Page *page;
   return 0;
 }
 
+wchar_t * GetTitle(UnicodeMap *uMap, OutlineItem *item)
+{
+	wchar_t *ret;
+	int j,n;
+	char buf[8];
+	GString *title=new GString();
+	char *s;
+	if(item /*&& uMap!=NULL*/){
+		ret =new wchar_t[item->getTitleLength()];
+		
+		//12/July/2009 - Map unicode characters, using n bytes per character
+		for (j = 0; j < item->getTitleLength(); ++j) {
+		  n = uMap->mapUnicode(item->getTitle()[j], buf, sizeof(buf));
+		  title->append(buf, n);
+		  ret[j]=(wchar_t)item->getTitle()[j];
+		}
+		ret[j]='\0';
+		s = title->getCString();
+		
+	}else{
+		return L"\0";
+	}
+	USES_CONVERSION;
+	//ret =A2W(s);
+	return A2W(s);
+}
+
 int pdftotext(PDFDoc *doc, UnicodeMap *uMap)
 {
   TextOutputDev *textOut;
@@ -456,6 +484,14 @@ int pdftotext(PDFDoc *doc, UnicodeMap *uMap)
     info.free();
     fputs("</head>\n", f);
     fputs("<body>\n", f);
+	fputs("<ul>\n",f);
+	for(int itOutline=0;itOutline <  doc->getOutline()->getItems()->getLength();itOutline++){
+		OutlineItem *ol = (OutlineItem *) doc->getOutline()->getItems()->get(itOutline);
+		wchar_t *title =GetTitle(uMap,ol);
+		fprintf(f,"<li>%s</li>\n",title);
+	}
+	fputs("<\ul>\n",f);
+
     fputs("<pre>\n", f);
     if (f != stdout) {
       fclose(f);

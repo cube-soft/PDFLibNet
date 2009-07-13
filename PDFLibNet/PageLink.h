@@ -5,6 +5,7 @@
 namespace PDFLibNet
 {
 	ref class PageLinkGoTo;
+	ref class PDFWrapper;
 	public enum class LinkActionKind {
 	  actionGoTo,			// go to destination
 	  actionGoToR,			// go to destination in new file
@@ -20,8 +21,9 @@ namespace PDFLibNet
 	{
 	protected:
 		LinkActionInterop *_action;
+		PDFWrapper ^_pdfDoc;
 	internal:
-		PageLinkAction(LinkInterop *linkInterop);
+		PageLinkAction(LinkInterop *linkInterop,PDFWrapper ^pdfDoc);
 	public:
 		property LinkActionKind Kind {
 			LinkActionKind get(){
@@ -38,7 +40,7 @@ namespace PDFLibNet
 		LinkInterop *_ptr;
 		System::String ^_uri;
 	internal:
-		PageLinkURI(LinkInterop *ptr): PageLinkAction(ptr)
+		PageLinkURI(LinkInterop *ptr,PDFWrapper ^pdfDoc): PageLinkAction(ptr,pdfDoc)
 			, _ptr(ptr)
 			, _uri(nullptr)
 		{
@@ -59,10 +61,14 @@ namespace PDFLibNet
 	private:
 		LinkInterop *_ptr;
 		LinkDest ^_destination;
+		System::String ^_destName;
+
+		LinkDest ^FindDest(System::String ^destName);
 	internal:
-		PageLinkGoTo(LinkInterop *ptr): PageLinkAction(ptr)
+		PageLinkGoTo(LinkInterop *ptr,PDFWrapper ^pdfDoc): PageLinkAction(ptr,pdfDoc)
 			, _ptr(ptr)
 			, _destination(nullptr)
+			, _destName(nullptr)
 		{
 		}
 	public:
@@ -70,12 +76,25 @@ namespace PDFLibNet
 		{
 			LinkDest ^get(){
 				if(_destination==nullptr){
-					if((int)this->_action->getDest()!=0)
-						_destination = gcnew LinkDest((int)this->_action->getDest());
-					else return nullptr;
+					char *destName =_action->getDestName();
+					LinkDestInterop *dest=this->_action->getDest();
+					if((int)dest!=0)
+						_destination = gcnew LinkDest(this->_action->getDest());
+					else if((int)destName!=0)
+						_destination = this->FindDest(%System::String(destName));
 				}
-				
 				return _destination;
+			}
+		}
+		property System::String ^DestinationName
+		{
+			System::String ^get(){
+				if(_destName==nullptr){
+					char *destName =_action->getDestName();
+					if(destName!=0 && destName!="\0")
+						_destName =gcnew System::String(destName);
+				}
+				return _destName;
 			}
 		}
 	};
@@ -86,9 +105,10 @@ namespace PDFLibNet
 		LinkInterop *_ptr;
 		System::String ^_name;
 		PageLinkAction ^_action;
+		PDFWrapper ^_pdfDoc;
 		System::Drawing::Rectangle _bounds;
 	internal:
-		PageLink(LinkInterop *linkInterop);
+		PageLink(LinkInterop *linkInterop,PDFWrapper ^pdfDoc);
 	protected:
 		!PageLink(void){
 			
@@ -102,13 +122,13 @@ namespace PDFLibNet
 					switch(_ptr->getAction()->getKind()){
 						case LinkActionKind::actionGoTo:
 						case LinkActionKind::actionGoToR:
-							_action =gcnew PageLinkGoTo(_ptr);
+							_action =gcnew PageLinkGoTo(_ptr,_pdfDoc);
 							break;
 						case LinkActionKind::actionURI:
-							_action =gcnew PageLinkURI(_ptr);
+							_action =gcnew PageLinkURI(_ptr,_pdfDoc);
 							break;
 						default:
-							_action =gcnew PageLinkAction(_ptr);
+							_action =gcnew PageLinkAction(_ptr,_pdfDoc);
 							break;
 					}
 					

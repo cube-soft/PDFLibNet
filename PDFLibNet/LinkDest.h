@@ -8,7 +8,7 @@ namespace PDFLibNet
 	private:
 		LinkDestInterop *_ptr;
 	internal:
-		LinkDest(int ptr);
+		LinkDest(LinkDestInterop * ptr);
 	protected:
 		!LinkDest(void){
 			delete _ptr;
@@ -56,8 +56,11 @@ namespace PDFLibNet
 		}
 		property System::Int32 Page{
 			System::Int32 get(){
-				int p=_ptr->getPageNum();
-				return p;
+				if(_ptr!=0){
+					int p=_ptr->getPageNum();
+					return p;
+				}
+				return 1;
 			}
 		}
 	};

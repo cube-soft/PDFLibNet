@@ -5,6 +5,7 @@
 #include "OutlineItemCollection.h"
 #include "PageLink.h"
 #include "PageLinkCollection.h"
+#include "LinkDest.h"
 
 using namespace System;
 using namespace System::Drawing;
@@ -90,6 +91,8 @@ namespace PDFLibNet {
 			_pdfDoc->PreviousPage();
 		}
 
+		LinkDest ^FindDestination(String ^destName);
+
 		long FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc);
 		long FindFirst(String ^sText,PDFSearchOrder SearchOrder, Boolean Backward);
 		long FindNext(String ^sText);
@@ -113,7 +116,7 @@ namespace PDFLibNet {
 		property String ^Author{
 			String ^get(){
 				if(_author==nullptr){
-					char *title=_pdfDoc->GetAuthor();
+					wchar_t *title=_pdfDoc->GetAuthor();
 					if(title!=0)
 						_author = gcnew String(title);
 					else 
@@ -126,7 +129,7 @@ namespace PDFLibNet {
 			String ^get(){
 				
 				if(_title==nullptr){
-					char *title=_pdfDoc->GetTitle();
+					wchar_t *title=_pdfDoc->GetTitle();
 					if(title!=0)
 						_title = gcnew String(title);
 					else 
@@ -139,7 +142,7 @@ namespace PDFLibNet {
 			String ^get(){
 				
 				if(_title==nullptr){
-					char *subject=_pdfDoc->GetSubject();
+					wchar_t *subject=_pdfDoc->GetSubject();
 					if(subject!=0)
 						_subject = gcnew String(subject);
 					else 
@@ -152,7 +155,7 @@ namespace PDFLibNet {
 			String ^get(){
 				
 				if(_keywords==nullptr){
-					char *keywords=_pdfDoc->GetKeywords();
+					wchar_t *keywords=_pdfDoc->GetKeywords();
 					if(keywords!=0)
 						_keywords = gcnew String(keywords);
 					else 
@@ -165,7 +168,7 @@ namespace PDFLibNet {
 			String ^get(){
 				
 				if(_creator==nullptr){
-					char *creator=_pdfDoc->GetCreator();
+					wchar_t *creator=_pdfDoc->GetCreator();
 					if(creator!=0)
 						_creator = gcnew String(creator);
 					else 
@@ -178,7 +181,7 @@ namespace PDFLibNet {
 			String ^get(){
 				
 				if(_producer==nullptr){
-					char *title=_pdfDoc->GetProducer();
+					wchar_t *title=_pdfDoc->GetProducer();
 					if(title!=0)
 						_producer = gcnew String(title);
 					else 

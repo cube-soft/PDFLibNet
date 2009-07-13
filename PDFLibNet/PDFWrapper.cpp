@@ -169,7 +169,7 @@ namespace PDFLibNet
 			PageLinksInterop *pl = _pdfDoc->getPageLinksInterop(iPage);
 			if(pl!=0){
 				for(int i=0;i<pl->getLinkCount();i++){
-					col->Add(gcnew PageLink(pl->getLink(i)));
+					col->Add(gcnew PageLink(pl->getLink(i),this));
 				}
 				_linksCache.Add(iPage,col);
 			}
@@ -227,6 +227,19 @@ namespace PDFLibNet
 			Marshal::FreeCoTaskMem(ptr);
 		}
 		return 0;		
+	}
+
+	LinkDest ^PDFWrapper::FindDestination(String ^destName){
+		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(destName);
+		char *singleByte= (char*)ptr.ToPointer();
+		int ret;
+		try{
+			return gcnew LinkDest(_pdfDoc->findDest(singleByte));
+		}finally{
+			Marshal::FreeCoTaskMem(ptr);
+		}
+		
+		return nullptr;
 	}
 
 }

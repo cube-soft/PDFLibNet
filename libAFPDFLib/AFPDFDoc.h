@@ -114,6 +114,7 @@ public:
 	long FindFirst(LPCTSTR sText, long SearchOrder, bool Backward);
 	long RenderHDC(long lHdc);
 	Links *GetLinksPage(long iPage);
+	LinkDest *findDest(char *destName);
 	void cvtUserToDev(double ux, double uy, int *dx, int *dy);
 	void cvtDevToUser(double ux, double uy, double *dx, double *dy);
 	long GetSearchPage(void);
@@ -128,12 +129,12 @@ public:
 	}
 	void Dispose();
 
-	char * getTitle();
-	char * getAuthor();
-	char * getSubject();
-	char * getKeywords();
-	char * getCreator();
-	char * getProducer();
+	wchar_t * getTitle();
+	wchar_t * getAuthor();
+	wchar_t * getSubject();
+	wchar_t * getKeywords();
+	wchar_t * getCreator();
+	wchar_t * getProducer();
 	char * getCreationDate();
 	char * getLastModifiedDate();
 

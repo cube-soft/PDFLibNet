@@ -852,8 +852,6 @@ namespace PDFViewer
         }
         private void UpdateParamsUI(bool enabled)
         {
-            PDFLibNet.xPDFParams.Antialias = false;
-            PDFLibNet.xPDFParams.VectorAntialias = false;
             tsbAntialias.Enabled = _pdfDoc != null && enabled; 
             tsbVectorAntialias.Enabled = _pdfDoc != null && enabled;
 

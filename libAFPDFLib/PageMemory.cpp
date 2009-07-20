@@ -2,6 +2,8 @@
 #include "PageMemory.h"
 
 PageMemory::PageMemory(void)
+: _bitmap(0)
+, _bits(0)
 {
 	Width=0;
 	Height=0;

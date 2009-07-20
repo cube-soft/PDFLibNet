@@ -3,6 +3,9 @@
 #include "SearchResultInterop.h"
 #include "PageLinksInterop.h"
 
+typedef int (__stdcall *NOTIFYHANDLE)();
+typedef int (__stdcall *PROGRESSHANDLE)(int, int);
+
 class AFPDFDocInterop 
 {
 private:
@@ -19,9 +22,18 @@ public:
 	void SetUserPassword(char *pass);
 	void SetOwnerPassword(char *pass);
 	//long SavePDF(char *fileName);
-	long SaveJpg(char *fileName, int quality);
+	long SaveJpg(char *fileName,int firstPage, int lastPage,float renderDPI, int quality, int waitProc);
 	long SaveTxt(char *fileName,int firstPage, int lastPage,bool physLayout, bool rawOrder,bool htmlMeta);
 	//long SaveHtml(char *fileName, int firstPage, int lastPage, bool noFrames, bool nomerge, bool complexmode);
+
+	void CancelJpgExport();
+	void SetExportProgressHandler(void *);
+	void SetExportFinishedHandler(void *);
+
+	//Returns true if there is a process running
+	bool IsJpgBusy();
+	//Returns true if there is a background thread rendering next page
+	bool IsBusy();
 	long GetCurrentPage(void);
 	void SetCurrentPage(long newVal);
 	void ZoomIN();

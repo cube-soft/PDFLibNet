@@ -83,6 +83,14 @@
     <Compile Include="HexEncoding.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="frmExportJpg.es.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmExportJpg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frmExportJpg.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>frmExportJpg.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="PageViewer.resx">
       <SubType>Designer</SubType>
       <DependentUpon>PageViewer.cs</DependentUpon>

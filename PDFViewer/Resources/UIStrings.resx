@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="MsgExportFinished" xml:space="preserve">
+    <value>Export finished</value>
+  </data>
   <data name="StatusExporting" xml:space="preserve">
     <value>Exporting...</value>
   </data>

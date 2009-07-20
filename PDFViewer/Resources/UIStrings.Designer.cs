@@ -61,6 +61,15 @@ namespace PDFViewer.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Export finished.
+        /// </summary>
+        internal static string MsgExportFinished {
+            get {
+                return ResourceManager.GetString("MsgExportFinished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exporting....
         /// </summary>
         internal static string StatusExporting {

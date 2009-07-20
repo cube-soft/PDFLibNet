@@ -3,9 +3,6 @@
 #include "jpeg.h"
 #include "error.h"
 	//------DECLARATIONS	
-	
-	#define			CACHE_BITMAPS
-	#define			MAX_BITMAP_CACHE	8
 	#define			FIND_DPI			150
 	#define			PRINT_DPI			72
 	#define			SPACE_X				16
@@ -13,12 +10,9 @@
 
 	
 	static wchar_t		EmptyChar[1]						={'\0'};
-	static PageMemory	*_bitmapCache[MAX_BITMAP_CACHE+1]	={0};
-	static int		_pageCached[MAX_BITMAP_CACHE+1]		={0};
-	static int		_countCached						=-1;
+	
 
 	//------PRINT INFORMATION
-
 	void InitGlobalParams(char *configFile){
 		if(globalParams==0){
 			TCHAR szExe[MAX_PATH];
@@ -275,76 +269,9 @@
 	}
 
 	
-	//------BITMAP CACHE
-	PageMemory *GetBitmapCache(int page){
-		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
-			if(_pageCached[i]==page){
-				return _bitmapCache[i];
-			}
-		}
-		return 0;
-	}
-
-	void		InvalidateBitmapCache(){
-			for(int i=0;i<=MAX_BITMAP_CACHE;i++){
-				if(_bitmapCache[i]!=0){
-					_bitmapCache[i]->Dispose();
-					delete _bitmapCache[i];
-				}
-				_pageCached[i]=0;
-				_bitmapCache[i]=0;
-			}
-		}
-
-	void		RemoveFromCache(int page){
-		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
-			if(_pageCached[i]==page){
-				_bitmapCache[i]->Dispose();
-				delete _bitmapCache[i];
-				_bitmapCache[i]=0;
-				return;
-			}
-		}
-	}
-
-	void		AddBitmapCache(PageMemory *bmp, int page){
-		//if exists and is not equal, delete
-		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
-			if(_pageCached[i]==page){
-				if( _bitmapCache[i]!=0 && _bitmapCache[i]!=bmp){
-					_bitmapCache[i]->Dispose();
-					delete _bitmapCache[i];
-					_bitmapCache[i]=bmp;
-					return;
-				}
-			}
-		}
-		//Add in an empty bin
-		for(int i=0;i<=MAX_BITMAP_CACHE;i++){
-			if(_pageCached[i]==0){
-				_bitmapCache[i]=bmp;
-				_pageCached[i]=page;
-				return;
-			}
-		}
-		//Begin to replace old cache
-		if((++_countCached)>=MAX_BITMAP_CACHE)
-			_countCached=0;
-
-		//If new bin is busy, delete
-		if(_bitmapCache[_countCached]!=0){
-			_bitmapCache[_countCached]->Dispose();
-			delete _bitmapCache[_countCached];
-			_bitmapCache[_countCached]=0;
-		}
-		//Save in cache
-		_bitmapCache[_countCached]=bmp;
-		_pageCached[_countCached]=page;
-	}
-
 	
 	//------DICTIONARY STRING
-	Unicode *		GetUnicodeString(const wchar_t*str, int length)
+	Unicode			*	GetUnicodeString(const wchar_t*str, int length)
 	{
 		Unicode * ucstring = new Unicode[length + 1];
 		int j;
@@ -359,7 +286,7 @@
 		ucstring[j] = 0;
 		return ucstring;
 	}
-	static wchar_t *getDicString(Dict *infoDict,char *key,UnicodeMap *uMap)
+	static wchar_t	*	getDicString(Dict *infoDict,char *key,UnicodeMap *uMap)
 	{
 		Object obj;
 		GString *s1;
@@ -406,7 +333,7 @@
 	}
 
 
-	static wchar_t *	getDocInfo(char *key,PDFDoc *doc){
+	static wchar_t	*	getDocInfo(char *key,PDFDoc *doc){
 		Object info;
 		UnicodeMap *uMap;
 		if (!(uMap = globalParams->getTextEncoding())) {
@@ -441,6 +368,77 @@
 
 
 	
+	//------BITMAP CACHE
+	PageMemory *AFPDFDoc::GetBitmapCache(int page){
+		for(int i=0;i<MAX_BITMAP_CACHE;i++){
+			if(_pageCached[i]==page){
+				return _bitmapCache[i];
+			}
+		}
+		return 0;
+	}
+
+	void		AFPDFDoc::InvalidateBitmapCache(){
+		
+			for(int i=0;i<MAX_BITMAP_CACHE;i++){
+				if(_bitmapCache[i]!=0){
+					_bitmapCache[i]->Dispose();
+					delete _bitmapCache[i];
+				}
+				_bitmapCache[i]=0;
+				_pageCached[i]=0;
+			}
+		}
+
+	void		AFPDFDoc::RemoveFromCache(int page){
+		for(int i=0;i<MAX_BITMAP_CACHE;i++){
+			if(_pageCached[i]==page){
+				_bitmapCache[i]->Dispose();
+				delete _bitmapCache[i];
+				_bitmapCache[i]=0;
+				return;
+			}
+		}
+	}
+
+	void		AFPDFDoc::AddBitmapCache(PageMemory *bmp, int page){
+		//if exists and is not equal, delete
+		for(int i=0;i<MAX_BITMAP_CACHE;i++){
+			if(_pageCached[i]==page){
+				if( _bitmapCache[i]!=0 && _bitmapCache[i]!=bmp){
+					_bitmapCache[i]->Dispose();
+					delete _bitmapCache[i];
+					_bitmapCache[i]=bmp;
+					return;
+				}
+			}
+		}
+		//Add in an empty bin
+		for(int i=0;i<MAX_BITMAP_CACHE;i++){
+			if(_pageCached[i]==0){
+				_bitmapCache[i]=bmp;
+				_pageCached[i]=page;
+				return;
+			}
+		}
+		//Begin to replace old cache
+		if((++_countCached)>=MAX_BITMAP_CACHE)
+			_countCached=0;
+
+		//If new bin is busy, delete
+		if(_bitmapCache[_countCached]!=0){
+			_bitmapCache[_countCached]->Dispose();
+			delete _bitmapCache[_countCached];
+			_bitmapCache[_countCached]=0;
+			_pageCached[_countCached]=0;
+		}
+		//Save in cache
+		_bitmapCache[_countCached]=bmp;
+		_pageCached[_countCached]=page;
+	}
+
+
+	
 	//------AFPDFDoc
 	AFPDFDoc::AFPDFDoc(char *configFile)
 	: m_PDFDoc(NULL)
@@ -465,7 +463,16 @@
 	, m_ViewHeight(0)
 	, __x0(0)
 	, __y0(0)
+	, m_ExportProgressHandle(0)
+	, m_exportJpgThread(0)
+	, hExportJpgCancel(0)
+	, _countCached(-1)
 	{
+		for(int i=0;i<MAX_BITMAP_CACHE;i++){
+			_bitmapCache[i]=0;
+			_pageCached[i]=0;
+		}
+
 		InitGlobalParams(configFile);
 		
 		m_Bitmap=0;
@@ -521,8 +528,55 @@
 	}
 
 	
+	PDFDoc *AFPDFDoc::createDoc(char *FileName){
+		if(FileName==NULL){
+			FileName=m_LastOpenedFile.getCString();
+		}
+		error(-1,"File to Open:");
+		error(-1,FileName);
+		error(-1,m_LastOpenedFile.getCString());
+		//Intentamos abrir el documento sin clave
+		PDFDoc *pdfDoc = new PDFDoc(new GString(FileName), NULL,NULL);
+		
+		//Esperamos a que se carge correctamente, o que ocurra un error
+		while (!pdfDoc->isOk()) 
+		{
+			//En caso de que este encriptado con clave
+			if (pdfDoc->getErrorCode() == errEncrypted)
+			{
+				//Si no se especifico clave salimos
+				if(m_OwnerPassword.GetLength()<=0 && m_UserPassword.GetLength()<=0) {
+					delete pdfDoc;
+					pdfDoc=NULL;
+				}else{
+					//Si no se especifico una de las claves, usamos la misma para ambos
+					if(m_UserPassword.GetLength()<=0){
+						m_UserPassword=m_OwnerPassword;
+					}else if(m_OwnerPassword.GetLength()<=0){
+						m_OwnerPassword = m_UserPassword;
+					}				
+					//Intentamos abrir con clave
+					pdfDoc = new PDFDoc(new GString(FileName), 
+							new GString(m_OwnerPassword.GetBuffer()), 
+							new GString(m_UserPassword.GetBuffer()));
+				}
+			} 
+			if (!pdfDoc->isOk())
+			{
+				//En caso de error, regresamos el codigo de error
+				delete pdfDoc;
+				pdfDoc=NULL;
+				//return PDFDoc->getErrorCode();
+			}
+			
+		}
+
+		return pdfDoc;
+	}
+
 	long AFPDFDoc::LoadFromFile(char *FileName, char *user_password, char *owner_password)
 	{		
+		
 		if(user_password!=NULL)
 			m_UserPassword = user_password;
 		if(owner_password!=NULL)
@@ -585,7 +639,8 @@
 			}
 			
 		}
-
+		m_LastOpenedFile.clear();
+		m_LastOpenedFile.insert(0,FileName,strlen(FileName));
 		//El archivo de cargo correctamente
 		m_splashOut->startDoc(m_PDFDoc->getXRef());
 		m_Outline = m_PDFDoc->getOutline();
@@ -599,12 +654,18 @@
 
 
 
+	
 	long AFPDFDoc::RenderPage(long lhWnd)
 	{
 		return RenderPage(lhWnd,false);
 	}
 
 	long AFPDFDoc::RenderPage(long lhWnd, bool bForce)
+	{
+		return RenderPage(lhWnd,bForce,true);
+	}
+
+	long AFPDFDoc::RenderPage(long lhWnd, bool bForce, bool enableThread)
 	{
 
 		if (m_PDFDoc != NULL) {
@@ -624,15 +685,14 @@
 				free (testAllocation);
 			}
 			try{
-				m_splashOut->clearModRegion();
 				//Wait for previous threads and delete them
 				if (m_renderingThread!=0)
-				{
+				{					
 					DWORD exitcode=0;
 					//hurry up!
 					m_renderingThread->SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
 					GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
-					
+
 					while (exitcode==STILL_ACTIVE){
 						GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
 						Sleep(50);
@@ -641,6 +701,7 @@
 					m_renderingThread=NULL;
 				}
 
+				m_splashOut->clearModRegion();
 				if (m_renderDPI!=m_LastRenderDPI || bForce){
 					//Invalidate prerendered page
 					m_LastPageRenderedByThread=-1;
@@ -649,9 +710,8 @@
 					m_Bitmap=0;
 				}else
 					//Read from cache
-					m_Bitmap = ::GetBitmapCache(m_CurrentPage);
+					m_Bitmap = GetBitmapCache(m_CurrentPage);
 
-				
 				if(m_Bitmap==0){
 					if(bForce){
 						//Reload the splash out
@@ -716,9 +776,11 @@
 					//Bitmap Rebuild
 					if(!m_Bitmap || (m_Bitmap && ( m_Bitmap->Width != bmWidth || m_Bitmap->Height != bmHeight)))
 					{
-						m_Bitmap = new PageMemory();
+						if(m_Bitmap==0){
+							m_Bitmap = new PageMemory();
+							AddBitmapCache(m_Bitmap,m_CurrentPage);
+						}
 						m_Bitmap->Create(clientDC.m_hDC,bmWidth,bmHeight);		
-						AddBitmapCache(m_Bitmap,m_CurrentPage);
 					}
 					//********START DIB
 					m_Bitmap->SetDIBits(clientDC.m_hDC,(void *)m_splashOut->getBitmap()->getDataPtr());
@@ -732,13 +794,14 @@
 					
 				} 
 				//prerender next page
-				if (m_CurrentPage+1 <= m_PDFDoc->getNumPages())
+				if (enableThread && m_CurrentPage+1 <= m_PDFDoc->getNumPages())
 				{   
 						m_PageToRenderByThread = m_CurrentPage+1;
 						m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_BELOW_NORMAL,0,CREATE_SUSPENDED);
 						m_renderingThread->m_bAutoDelete=FALSE;
 						m_renderingThread->ResumeThread();
-				}
+				}else
+					m_renderingThread=0;
 
 				m_LastRenderDPI = m_renderDPI;
 				m_LastPageRendered=m_CurrentPage;
@@ -749,6 +812,10 @@
 		}
 		return 0;
 	}
+
+
+
+
 
 	UINT AFPDFDoc::RenderingThread( LPVOID param )
 	{
@@ -1712,29 +1779,183 @@
 		m_splashOut->cvtDevToUser(ux,uy,dx,dy);
 	}
 
-	int AFPDFDoc::SaveJpg(char *fileName,int quality)
+	int AFPDFDoc::SaveJpg(char *fileName,float renderDPI,int fromPage, int toPage, int quality, int waitProc)
 	{
 		CString errmsg;
-		SplashColor paperColor;
-		paperColor[0] = 0xff;
-		paperColor[1] = 0xff;
-		paperColor[2] = 0xff;
+		char filenameBuff[1024];
+		DWORD waitRes=0;
+		//If the current rendered page is the same requested
+		if(renderDPI ==  this->m_renderDPI
+			&& fromPage == this->m_LastPageRenderedByThread
+			&& toPage == fromPage){
 
-		BITMAPINFO bmi;
-		ZeroMemory(&bmi,sizeof(bmi));
-		bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-		bmi.bmiHeader.biWidth = m_splashOut->getBitmap()->getWidth();
-		bmi.bmiHeader.biHeight = m_splashOut->getBitmap()->getHeight();
-		bmi.bmiHeader.biPlanes=1;
-		bmi.bmiHeader.biBitCount=24;
-		bmi.bmiHeader.biCompression=BI_RGB;
+			if (m_renderingThread!=0)
+			{
+				DWORD exitcode=0;
+				//hurry up!
+				m_renderingThread->SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
+				GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+				
+				while (exitcode==STILL_ACTIVE){
+					GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+					Sleep(50);
+				}
+				delete m_renderingThread;
+				m_renderingThread=NULL;
+			}
+			SplashColor paperColor;
+			paperColor[0] = 0xff;
+			paperColor[1] = 0xff;
+			paperColor[2] = 0xff;
 
-		bmi.bmiColors[0].rgbBlue = 0;
-		bmi.bmiColors[0].rgbGreen = 0;
-		bmi.bmiColors[0].rgbRed = 0;
-		bmi.bmiColors[0].rgbReserved = 0;
+			BITMAPINFO bmi;
+			ZeroMemory(&bmi,sizeof(bmi));
+			bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
+			bmi.bmiHeader.biWidth = m_splashOut->getBitmap()->getWidth();
+			bmi.bmiHeader.biHeight = m_splashOut->getBitmap()->getHeight();
+			bmi.bmiHeader.biPlanes=1;
+			bmi.bmiHeader.biBitCount=24;
+			bmi.bmiHeader.biCompression=BI_RGB;
+
+			bmi.bmiColors[0].rgbBlue = 0;
+			bmi.bmiColors[0].rgbGreen = 0;
+			bmi.bmiColors[0].rgbRed = 0;
+			bmi.bmiColors[0].rgbReserved = 0;
+			
+			int ret = JpegFromDib((HANDLE)m_splashOut->getBitmap()->getDataPtr(),&bmi,quality,CString(fileName),&errmsg);
+			if(this->m_ExportProgressHandle != 0){
+				if(this->m_ExportProgressHandle(1,1) !=0){
+				}
+			}
+
+			return ret;
+			
+		}else{
+			if(m_exportJpgThread!=0){
+				DWORD exitcode=0;
+				GetExitCodeThread(m_exportJpgThread->m_hThread,&exitcode);
+				if (exitcode==STILL_ACTIVE){	
+					//Cancel event
+					SetEvent(this->hExportJpgCancel);
+					//Wait for finished
+					WaitForSingleObject(this->hExportJpgFinished,INFINITE);
+				}
+				delete m_exportJpgThread;
+				m_exportJpgThread=0;
+
+			}
+			
+			if(this->hExportJpgCancel ==0){
+				this->hExportJpgCancel = CreateEvent(NULL,TRUE,FALSE,TEXT("CancellEvent"));
+				this->hExportJpgCancelled = CreateEvent(NULL,TRUE,FALSE,TEXT("CancelledEvent"));
+				this->hExportJpgFinished = CreateEvent(NULL,TRUE,FALSE,TEXT("FinishedEvent"));
+			}
+			ResetEvent(this->hExportJpgCancel);
+			ResetEvent(this->hExportJpgCancelled);
+			ResetEvent(this->hExportJpgFinished);
+			ExportParams *p=new ExportParams;
+			p->_this = this;
+			p->fileName =new char[strlen(fileName)+1];
+			strcpy(p->fileName,fileName);
+			p->rotation=m_Rotation;
+			p->renderDPI = renderDPI;
+			p->fromPage = fromPage;
+			p->toPage = toPage;
+			p->quality =quality;
+			p->WaitTime = waitProc;
+			
+			m_exportJpgThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::ExportingJpgThread,(LPVOID)p,THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED);
+			m_exportJpgThread->m_bAutoDelete=false;
+			m_exportJpgThread->ResumeThread();
+			if(waitProc==-1){
+				waitRes =::WaitForSingleObject(this->hExportJpgFinished,INFINITE);
+			}else if(waitProc>0){
+				waitRes =::WaitForSingleObject(this->hExportJpgFinished,waitProc);
+			}
+
+			return waitRes;
+		}
+	}
+
+	void AFPDFDoc::CancelJpgSave(){
+		SetEvent(this->hExportJpgCancel);
+	}
+	UINT AFPDFDoc::ExportingJpgThread( LPVOID param )
+	{
+		ExportParams *exp = (ExportParams *)param;
+		PDFDoc *doc = exp->_this->createDoc(NULL);
 		
-		return JpegFromDib((HANDLE)m_splashOut->getBitmap()->getDataPtr(),&bmi,quality,CString(fileName),&errmsg);
+		SplashOutputDev	*splashOut=NULL;
+		int eError=0;
+		CString errMessage;
+		CString fileName(exp->fileName);
+		char *filenameBuffer[1024];
+
+		if(doc!=NULL){
+			SplashColor paperColor;
+			paperColor[0] = 0xff;
+			paperColor[1] = 0xff;
+			paperColor[2] = 0xff;
+
+			BITMAPINFO bmi;
+			ZeroMemory(&bmi,sizeof(bmi));
+			bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
+			
+			bmi.bmiHeader.biPlanes=1;
+			bmi.bmiHeader.biBitCount=24;
+			bmi.bmiHeader.biCompression=BI_RGB;
+
+			bmi.bmiColors[0].rgbBlue = 0;
+			bmi.bmiColors[0].rgbGreen = 0;
+			bmi.bmiColors[0].rgbRed = 0;
+			bmi.bmiColors[0].rgbReserved = 0;
+			
+
+			splashOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+			splashOut->setVectorAntialias(globalParams->getVectorAntialias());
+			splashOut->startDoc(doc->getXRef());
+		
+			for(int page=exp->fromPage;page<=exp->toPage;page++){
+				DWORD waitRes = WaitForSingleObject(exp->_this->hExportJpgCancel,0);
+				if(waitRes ==  WAIT_OBJECT_0){
+					SetEvent(exp->_this->hExportJpgCancelled);
+					eError=1;
+					break;//Process canceled
+				}else{
+					if(exp->_this->m_ExportProgressHandle != 0){
+						if(!exp->_this->m_ExportProgressHandle(exp->toPage-exp->fromPage+1,page-exp->fromPage+1) !=0){
+							SetEvent(exp->_this->hExportJpgCancelled);
+							eError=4;
+							break;
+						}
+					}
+
+					doc->displayPage(splashOut,page, 
+							exp->renderDPI, exp->renderDPI, exp->rotation, 
+							gFalse, gTrue, gFalse,0,0);
+			
+					bmi.bmiHeader.biWidth = splashOut->getBitmap()->getWidth();
+					bmi.bmiHeader.biHeight = splashOut->getBitmap()->getHeight();
+
+					sprintf((char *)filenameBuffer,exp->fileName,page);
+					if(JpegFromDib((HANDLE)splashOut->getBitmap()->getDataPtr(),&bmi,exp->quality,CString((char *)filenameBuffer),&errMessage)!=0){
+						eError=3;
+						break;
+					}
+					
+				}
+			}
+		}else{
+			eError=2;
+		}
+		if(doc!=NULL)
+			delete doc;
+		if(splashOut!=NULL)
+			delete splashOut;
+		SetEvent(exp->_this->hExportJpgFinished); 
+		if(exp->_this->m_ExportFinishHandle !=0)
+			exp->_this->m_ExportFinishHandle();
+		return eError;
 	}
 
 	/*int AFPDFDoc::SaveHtml(char *outFileName, int firstPage, int lastPage, bool noFrames, bool nomerge, bool complexmode)
@@ -2011,4 +2232,29 @@
 	LinkDest *AFPDFDoc::findDest(char *destName){
 		GString s(destName);
 		return this->m_PDFDoc->getCatalog()->findDest(&s);
+	}
+
+
+	//Returns true if exists a background thread of jpg export is running
+	bool AFPDFDoc::JpgIsBusy(){
+		if(m_exportJpgThread!=0){
+			DWORD exitcode=0;
+			GetExitCodeThread(m_exportJpgThread->m_hThread,&exitcode);
+			if (exitcode==STILL_ACTIVE){	
+				return true;
+			}
+		}
+		return false;
+	}
+
+	//Returns true if a background thread is rendering next page
+	bool AFPDFDoc::IsBusy(){
+		if(this->m_renderingThread!=0){
+			DWORD exitcode=0;
+			GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+			if (exitcode==STILL_ACTIVE){	
+				return true;
+			}
+		}
+		return false;
 	}

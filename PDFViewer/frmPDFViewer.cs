@@ -385,7 +385,7 @@ namespace PDFViewer
         {
             using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
             {
-                if (_pdfDoc != null)
+                if (_pdfDoc != null && !IsDisposed)
                 {
                     _pdfDoc.PreviousPage();
                     _pdfDoc.RenderPage(pageViewControl1.Handle);
@@ -723,7 +723,10 @@ namespace PDFViewer
                         }
                         else if (saveFileDialog1.FileName.EndsWith(".jpg"))
                         {
-                            _pdfDoc.ExportJpg(saveFileDialog1.FileName, 70);
+                            _pdfDoc.ExportJpgProgress += new ExportJpgProgressHandler(_pdfDoc_ExportJpgProgress);
+                            _pdfDoc.ExportJpgFinished += new ExportJpgFinishedHandler(_pdfDoc_ExportJpgFinished);
+                            frmExportJpg frm = new frmExportJpg(_pdfDoc, saveFileDialog1.FileName);
+                            frm.Show();
                         }
                         else if (saveFileDialog1.FileName.EndsWith(".txt"))
                         {
@@ -738,9 +741,23 @@ namespace PDFViewer
             }
             catch (Exception ex)
             {
-
+                _pdfDoc.ExportJpgProgress -= new ExportJpgProgressHandler(_pdfDoc_ExportJpgProgress);
+                _pdfDoc.ExportJpgFinished -= new ExportJpgFinishedHandler(_pdfDoc_ExportJpgFinished);
                 MessageBox.Show(ex.ToString());
             }
+        }
+
+        void _pdfDoc_ExportJpgFinished()
+        {
+            _pdfDoc.ExportJpgProgress -= new ExportJpgProgressHandler(_pdfDoc_ExportJpgProgress);
+            _pdfDoc.ExportJpgFinished -= new ExportJpgFinishedHandler(_pdfDoc_ExportJpgFinished);
+            StatusLabel.Text ="Ready";
+        }
+
+        bool _pdfDoc_ExportJpgProgress(int pageCount, int currentPage)
+        {
+            StatusLabel.Text = "Exportando pagina " + currentPage.ToString() + " de " + pageCount.ToString()  + "...";
+            return true;
         }
 
         private void doubleBufferControl1_PaintControl(object sender, Graphics g)
@@ -781,8 +798,8 @@ namespace PDFViewer
                     if (_pdfDoc.CurrentPage < _pdfDoc.PageCount)
                     {
                         _pdfDoc.NextPage();
-                        Render();
                         _pdfDoc.RenderPage(pageViewControl1.Handle);
+                        Render();
                         return true;
                     }
                 }
@@ -803,8 +820,8 @@ namespace PDFViewer
                     if (_pdfDoc.CurrentPage > 1)
                     {
                         _pdfDoc.PreviousPage();
-                        Render();
                         _pdfDoc.RenderPage(pageViewControl1.Handle);
+                        Render();
                         return true;
                     }
                 }

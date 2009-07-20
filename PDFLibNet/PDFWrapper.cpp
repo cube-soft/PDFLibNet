@@ -205,28 +205,62 @@ namespace PDFLibNet
 
 	long PDFWrapper::ExportJpg(System::String ^fileName, int quality)
 	{
+		return ExportJpg(fileName,1,this->PageCount,this->RenderDPI,quality);		
+	}
+	long PDFWrapper::ExportJpg(System::String ^fileName,System::Int32 fromPage, System::Int32 toPage, System::Double renderDPI, System::Int32 quality)
+	{
+		return ExportJpg(fileName,fromPage,toPage,renderDPI,quality,0);
+	}
+	///<sumary>
+	///Export current document executing an aparted thread.
+	///</sumary>
+	///<param name="waitProc">
+	///Time to wait while the export process is finished
+	///-1 to wait indefinitely
+	///0 to excute background thread, catch progress in ExportJpgProgress, finished in ExportJpgFinish
+	//x>0 wait x misileconds
+	///</param>
+	///<remarks>
+	///When an event is catched, I recomended to use invoke to call a local procedure:
+	///Invoke(new NamedDelate(nameLocalProcedure));
+	///This is the safest way.
+	///</remarks>
+	long PDFWrapper::ExportJpg(System::String ^fileName,System::Int32 fromPage, System::Int32 toPage, System::Double renderDPI, System::Int32 quality, System::Int32 waitProc){
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileName);
 		char *singleByte= (char*)ptr.ToPointer();
-		int ret;
+		long ret=0;
+		GCHandle gch;
 		try{
-			_pdfDoc->SaveJpg(singleByte,quality);
+			if(this->_internalExportJpgProgress==nullptr){		
+				_internalExportJpgProgress=gcnew ExportJpgProgressHandler(this,&PDFWrapper::_ExportJpgProgress);
+				_gchProgress = GCHandle::Alloc(_internalExportJpgProgress);
+			}
+			if(this->_internalExportJpgFinished==nullptr){
+				_internalExportJpgFinished=gcnew ExportJpgFinishedHandler(this,&PDFWrapper::_ExportJpgFinished);
+				_gchFinished = GCHandle::Alloc(_internalExportJpgFinished);
+			}
+			
+			_pdfDoc->SetExportFinishedHandler(Marshal::GetFunctionPointerForDelegate(_internalExportJpgFinished).ToPointer());
+			_pdfDoc->SetExportProgressHandler(Marshal::GetFunctionPointerForDelegate(_internalExportJpgProgress).ToPointer());
+
+			ret = _pdfDoc->SaveJpg(singleByte,fromPage,toPage,renderDPI, quality,waitProc);
 		}finally{
 			Marshal::FreeCoTaskMem(ptr);
 		}
-		return 0;		
+		return ret;
 	}
 
 	long PDFWrapper::ExportText(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder)
 	{
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileName);
 		char *singleByte= (char*)ptr.ToPointer();
-		int ret;
+		long ret=0;
 		try{
-			_pdfDoc->SaveTxt(singleByte,firstPage,lastPage,physLayout,rawOrder,false);
+			ret = _pdfDoc->SaveTxt(singleByte,firstPage,lastPage,physLayout,rawOrder,false);
 		}finally{
 			Marshal::FreeCoTaskMem(ptr);
 		}
-		return 0;		
+		return ret;		
 	}
 	long PDFWrapper::ExportHtml(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean noFrames,System::Boolean noMerge, System::Boolean complexMode)
 	{
@@ -244,7 +278,6 @@ namespace PDFLibNet
 	LinkDest ^PDFWrapper::FindDestination(String ^destName){
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(destName);
 		char *singleByte= (char*)ptr.ToPointer();
-		int ret;
 		try{
 			return gcnew LinkDest(_pdfDoc->findDest(singleByte));
 		}finally{
@@ -254,4 +287,20 @@ namespace PDFLibNet
 		return nullptr;
 	}
 
+	bool PDFWrapper::_ExportJpgProgress(int pageCount, int currentPage)
+	{
+		unsigned int i=0;
+		for each(ExportJpgProgressHandler^ dd in _evExportJpgProgress->GetInvocationList()){
+			dd->Invoke(pageCount,currentPage);
+		}
+		return true;
+	}
+	void PDFWrapper::_ExportJpgFinished()
+	{
+		unsigned int i=0;
+		for each(ExportJpgFinishedHandler^ dd in _evExportJpgFinished->GetInvocationList()){
+			dd->Invoke();
+		}
+	}
 }
+

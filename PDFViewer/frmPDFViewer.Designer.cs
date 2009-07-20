@@ -229,9 +229,9 @@ namespace PDFViewer
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.splitContainer1);
             this.Controls.Add(this.toolStrip1);
+            this.Controls.Add(this.statusStrip1);
             this.DoubleBuffered = true;
             this.Name = "frmPDFViewer";
             this.splitContainer1.Panel1.ResumeLayout(false);

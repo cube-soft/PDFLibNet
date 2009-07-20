@@ -176,8 +176,8 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 		((AFPDFDoc *)_ptr)->cvtDevToUser(ux,uy,dx,dy);
 	}
 
-	long AFPDFDocInterop::SaveJpg(char *fileName,int quality){
-		return ((AFPDFDoc *)_ptr)->SaveJpg(fileName,quality);
+	long AFPDFDocInterop::SaveJpg(char *fileName,int firstPage, int lastPage,float renderDPI, int quality, int waitProc){
+			return ((AFPDFDoc *)_ptr)->SaveJpg(fileName,renderDPI,firstPage,lastPage,quality,waitProc);
 	}
 	
 	long AFPDFDocInterop::SaveTxt(char *fileName,int firstPage, int lastPage,bool physLayout, bool rawOrder,bool htmlMeta){
@@ -230,4 +230,24 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	LinkDestInterop *AFPDFDocInterop::findDest(char *destName)
 	{
 		return new LinkDestInterop( ((AFPDFDoc *)_ptr)->findDest(destName),_ptr);
+	}
+
+	void AFPDFDocInterop::SetExportProgressHandler(void *handler){
+		((AFPDFDoc *)_ptr)->m_ExportProgressHandle = static_cast<PROGRESSHANDLE>(handler);
+	}
+	void AFPDFDocInterop::SetExportFinishedHandler(void *handler){
+		((AFPDFDoc *)_ptr)->m_ExportFinishHandle = static_cast<NOTIFYHANDLE>(handler);
+	}
+
+	void AFPDFDocInterop::CancelJpgExport(){
+		((AFPDFDoc *)_ptr)->CancelJpgSave();
+	}
+
+		//Returns true if there is a process running
+	bool AFPDFDocInterop::IsJpgBusy(){
+		return ((AFPDFDoc *)_ptr)->JpgIsBusy();
+	}
+	//Returns true if there is a background thread rendering next page
+	bool AFPDFDocInterop::IsBusy(){
+		return ((AFPDFDoc *)_ptr)->IsBusy();
 	}

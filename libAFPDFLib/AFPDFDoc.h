@@ -1,8 +1,16 @@
 #pragma once
+#define			MAX_BITMAP_CACHE	16
+
 #include "stdafx.h"
 #include "OutlineItemA.h"
 #include "PageMemory.h";
+
 void InitGlobalParams(char *configFile);
+
+
+
+typedef int (__stdcall *NOTIFYHANDLE)();
+typedef int (__stdcall *PROGRESSHANDLE)(int, int);
 
 class CPDFSearchResult 
 	: public CRect
@@ -13,16 +21,37 @@ public:
 	long PageFound;
 };
 
-
 // AFPDFDoc command target
  class AFPDFDoc 
 {
+private:
+	PageMemory	*_bitmapCache[MAX_BITMAP_CACHE+1];
+	int			 _pageCached[MAX_BITMAP_CACHE+1];
+	int			 _countCached;
+
+	PageMemory *GetBitmapCache(int page);
+	void InvalidateBitmapCache();
+	void RemoveFromCache(int page);
+	void AddBitmapCache(PageMemory *bmp, int page);
 protected:
 	long m_PageToRenderByThread;
 	long m_LastPageRenderedByThread;
 	static UINT RenderingThread( LPVOID param );
+	static UINT ExportingJpgThread( LPVOID param );
+	 HANDLE hExportJpgCancel;
+	 HANDLE hExportJpgCancelled;
+	 HANDLE hExportJpgFinished;
+	
+
+
+	PDFDoc *createDoc(char *FileName);
+public:
+	PROGRESSHANDLE m_ExportProgressHandle;
+	NOTIFYHANDLE m_ExportFinishHandle;
 private:
+	GString m_LastOpenedFile;
 	CWinThread *m_renderingThread;
+	CWinThread *m_exportJpgThread;
 	DynArray<CPDFSearchResult> m_Selection;
 	PDFDoc *m_PDFDoc;
 	SplashOutputDev	*m_splashOut;
@@ -68,6 +97,7 @@ public:
 	
 	long RenderPage(long lhWnd);
 	long RenderPage(long lhWnd, bool bForce);
+	long RenderPage(long lhWnd, bool bForce, bool enableThread);
 	long GetCurrentPage(void);
 	void SetCurrentPage(long newVal);
 	long GetCurrentX(void);
@@ -85,9 +115,16 @@ public:
 	long GetViewHeight() { return m_ViewHeight; }
 	void SetViewHeight(long newVal) { m_ViewHeight=newVal; }
 
-	int SaveJpg(char *fileName,int quality);
+	int SaveJpg(char *fileName,float renderDPI,int fromPage, int toPage, int quality, int waitProc);
 	int SaveTxt(char *fileName,int firstPage, int lastPage, bool htmlMeta,bool physLayout, bool rawOrder);
 	//int SaveHtml(char *outFileName, int firstPage, int lastPage, bool noFrames, bool nomerge, bool complexmode);
+
+	void CancelJpgSave();
+	//Returns true if exists a background thread of jpg export is running
+	bool JpgIsBusy();
+
+	//Returns true if a background thread is rendering next page
+	bool IsBusy();
 
 	bool IsEncrypted(){
 		return m_PDFDoc->isEncrypted()?true:false;
@@ -144,4 +181,13 @@ public:
 
 };
 
-
+struct ExportParams{
+	AFPDFDoc * _this;
+	char *fileName;
+	int fromPage;
+	int toPage;
+	int quality;
+	float renderDPI;
+	int rotation;
+	int WaitTime;
+};

@@ -1,4 +1,5 @@
 #pragma once
+#include <vcclr.h>
 #include "AFPDFDocInterop.h"
 #include "PDFSearchResult.h"
 #include "OutlineItem.h"
@@ -17,6 +18,9 @@ namespace PDFLibNet {
 	public delegate void PDFLoadBeginHandler();
 	public delegate void PageChanged(int lastPage, int newPage);
 	public delegate void PageZoomChanged(System::Drawing::Size lastSize, System::Drawing::Size newSize);
+	public delegate bool ExportJpgProgressHandler(int pageCount, int currentPage);
+	public delegate void ExportJpgFinishedHandler();
+
 
 	public enum class PDFSearchOrder
 	{
@@ -44,9 +48,19 @@ namespace PDFLibNet {
 		DateTime _creationdate;
 		DateTime _lastmodifieddate;
 		bool _bLoading;
+		bool _ExportJpgProgress(int pageCount, int currentPage);
+		void _ExportJpgFinished();
+
+		ExportJpgProgressHandler ^_internalExportJpgProgress;
+		ExportJpgProgressHandler ^_evExportJpgProgress;
+		ExportJpgFinishedHandler ^_internalExportJpgFinished;
+		ExportJpgFinishedHandler ^_evExportJpgFinished;
+
+		GCHandle _gchProgress;
+		GCHandle _gchFinished;
 	public:
 		PDFWrapper()
-			: _pdfDoc(nullptr)
+			: _pdfDoc(0)
 			, _childrens(nullptr)
 			, _searchResults(nullptr)
 			, _title(nullptr)
@@ -92,6 +106,26 @@ namespace PDFLibNet {
 		}
 
 		long ExportJpg(System::String ^fileName, System::Int32 quality);
+		long ExportJpg(System::String ^fileName,System::Int32 fromPage, System::Int32 toPage, System::Double renderDPI, System::Int32 quality);
+		long ExportJpg(System::String ^fileName,System::Int32 fromPage, System::Int32 toPage, System::Double renderDPI, System::Int32 quality, System::Int32 waitProc);
+
+		void CancelJpgExport(){
+			_pdfDoc->CancelJpgExport();
+		}
+		///<sumary>
+		/// Returns true if exist a background process exporting to jpeg
+		///</sumary>
+		property bool IsJpgBusy{
+			bool get(){
+				return _pdfDoc->IsJpgBusy();
+			}
+		}
+		property bool IsBusy{
+			bool get(){
+				return _pdfDoc->IsBusy();
+			}
+		}
+
 		long ExportText(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder);
 		long ExportHtml(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean noFrames,System::Boolean noMerge, System::Boolean complexMode);
 		long PerfomLinkAction(System::Int32 linkPtr);
@@ -365,16 +399,56 @@ namespace PDFLibNet {
 			}
 		}
 
+
 		event PDFLoadCompletedHandler ^PDFLoadCompeted;
 		event PDFLoadBeginHandler ^PDFLoadBegin;
+
+		event ExportJpgProgressHandler ^ExportJpgProgress{
+			void add(ExportJpgProgressHandler ^ ev){
+				this->_evExportJpgProgress += ev;
+			}
+			void remove(ExportJpgProgressHandler ^ev){
+				this->_evExportJpgProgress -= ev;
+			}
+			 bool raise(int a,int b) {
+				 ExportJpgProgressHandler^ tmp = _evExportJpgProgress;
+				 if (tmp) {
+					return tmp->Invoke(a,b);
+				 }
+				 return false;
+			  }
+
+		}
+
+		event ExportJpgFinishedHandler ^ExportJpgFinished{
+			void add(ExportJpgFinishedHandler ^ev){
+				_evExportJpgFinished+=ev;
+			}
+			void remove(ExportJpgFinishedHandler ^ev){
+				_evExportJpgFinished-=ev;
+			}
+			void raise()
+			{
+				ExportJpgFinishedHandler ^tmp =_evExportJpgFinished;
+				if(tmp)
+					_evExportJpgFinished->Invoke();
+			}
+
+		}
 	protected:	
 
 		!PDFWrapper()
 		{
-			if(_pdfDoc!=0)
+			if(_gchProgress.IsAllocated)
+				_gchProgress.Free();
+			if(_gchFinished.IsAllocated)
+				_gchFinished.Free();
+			if(_pdfDoc!=0){
 				_pdfDoc->Dispose();
-			delete _pdfDoc;
+				delete _pdfDoc;
+			}
 			_pdfDoc=0;
+			
 			//_pdfDoc.Reset();
 		}
 

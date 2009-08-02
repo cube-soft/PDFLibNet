@@ -36,6 +36,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -81,6 +82,12 @@
     </Compile>
     <Compile Include="GDI.cs" />
     <Compile Include="HexEncoding.cs" />
+    <Compile Include="PDFViewerCtrl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PDFViewerCtrl.Designer.cs">
+      <DependentUpon>PDFViewerCtrl.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="frmExportJpg.es.resx">
@@ -114,6 +121,10 @@
     <EmbeddedResource Include="frmSearch.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmSearch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PDFViewerCtrl.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PDFViewerCtrl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -250,6 +250,17 @@ namespace PDFLibNet
 		return ret;
 	}
 
+	bool PDFWrapper::RenderPageThread(IntPtr hwndHandle, bool bForce)
+	{
+		if(this->_internalRenderFinished==nullptr){		
+				_internalRenderFinished=gcnew RenderFinishedHandler(this,&PDFWrapper::_RenderFinished);
+				_gchRenderFinished = GCHandle::Alloc(_internalRenderFinished);
+			}
+		_pdfDoc->SetRenderFinishedHandler(Marshal::GetFunctionPointerForDelegate(_internalRenderFinished).ToPointer());
+		_pdfDoc->RenderPageThread((long)hwndHandle.ToInt32(),bForce);
+		return true;
+	}
+
 	long PDFWrapper::ExportText(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean physLayout,System::Boolean rawOrder)
 	{
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileName);
@@ -290,17 +301,32 @@ namespace PDFLibNet
 	bool PDFWrapper::_ExportJpgProgress(int pageCount, int currentPage)
 	{
 		unsigned int i=0;
-		for each(ExportJpgProgressHandler^ dd in _evExportJpgProgress->GetInvocationList()){
-			dd->Invoke(pageCount,currentPage);
+		if(_evExportJpgProgress!=nullptr){
+			for each(ExportJpgProgressHandler^ dd in _evExportJpgProgress->GetInvocationList()){
+				dd->Invoke(pageCount,currentPage);
+			}
 		}
 		return true;
 	}
 	void PDFWrapper::_ExportJpgFinished()
 	{
 		unsigned int i=0;
-		for each(ExportJpgFinishedHandler^ dd in _evExportJpgFinished->GetInvocationList()){
-			dd->Invoke();
+		if(_evExportJpgFinished!=nullptr){
+			for each(ExportJpgFinishedHandler^ dd in _evExportJpgFinished->GetInvocationList()){
+				dd->Invoke();
+			}
 		}
 	}
+	void PDFWrapper::_RenderFinished()
+	{
+		unsigned int i=0;
+		if(_evRenderFinished!=nullptr){
+			for each(RenderFinishedHandler^ dd in _evRenderFinished->GetInvocationList()){
+				dd->Invoke();
+			}
+		}
+	}
+
+	
 }
 

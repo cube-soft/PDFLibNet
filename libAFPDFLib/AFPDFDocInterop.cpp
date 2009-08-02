@@ -22,6 +22,10 @@ long AFPDFDocInterop::LoadFromFile(char * sFileName){
 long AFPDFDocInterop::RenderPage(long lhWnd, bool bForce){
 	return ((AFPDFDoc *)_ptr)->RenderPage(lhWnd,bForce);
 }
+
+long AFPDFDocInterop::RenderPageThread(long lhWnd, bool bForce){
+	return ((AFPDFDoc *)_ptr)->RenderPageThread(lhWnd,bForce);
+}
 long AFPDFDocInterop::RenderPage(long lhWnd){
 	return ((AFPDFDoc *)_ptr)->RenderPage(lhWnd);
 }
@@ -238,6 +242,12 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	void AFPDFDocInterop::SetExportFinishedHandler(void *handler){
 		((AFPDFDoc *)_ptr)->m_ExportFinishHandle = static_cast<NOTIFYHANDLE>(handler);
 	}
+
+	void AFPDFDocInterop::SetRenderFinishedHandler(void *handler){
+		((AFPDFDoc *)_ptr)->m_RenderFinishHandle = static_cast<NOTIFYHANDLE>(handler);
+	}
+
+	
 
 	void AFPDFDocInterop::CancelJpgExport(){
 		((AFPDFDoc *)_ptr)->CancelJpgSave();

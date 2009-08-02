@@ -11,7 +11,7 @@ namespace PDFViewer
 {
     public class PageViewer : UserControl
     {
-        public delegate void PaintControlHandler(object sender,Graphics g);
+        public delegate void PaintControlHandler(object sender,Rectangle view, Point location, Graphics g);
         public delegate bool MovePageHandler(object sender);
         public event MovePageHandler NextPage;
         public event MovePageHandler PreviousPage;
@@ -343,7 +343,7 @@ namespace PDFViewer
         private void Render(Graphics TempGraphics)
         {
             Rectangle page = PageBounds;
-         
+            
             //Clear with backcolor
             TempGraphics.Clear(BackColor);
             
@@ -352,12 +352,15 @@ namespace PDFViewer
             {
                 if (page.Y < Margin.Top)
                     page.Height = page.Height + page.Y;
+                if (page.X < Margin.Left)
+                    page.Width = page.Width + page.X;
                 Brush bg = new SolidBrush(_bgColor);
                 TempGraphics.FillRectangle(bg, page);
             }
+            
             //Custom Paint!
             if (PaintControl != null)
-                PaintControl.Invoke(this,TempGraphics);
+                PaintControl.Invoke(this,CurrentView,PageLocation, TempGraphics);
 
             if (!PageBounds.Size.Equals(Size.Empty) )
             {
@@ -389,14 +392,14 @@ namespace PDFViewer
                 int w = ClientSize.Width;
                 int h = ClientSize.Height;
                //Begin Coord after margin
-                x -= (x<= Margin.Left)?x:Margin.Left;
+                x -= (x <= Margin.Left)? x : Margin.Left;
                 y -= (y <= Margin.Top) ? y : Margin.Top;
                 //Add scrollbar space
                 w += (PageSize.Width <= ViewSize.Width) ? ScrollBarSize.Width : 0;
                 h += (PageSize.Height <= ViewSize.Height) ? ScrollBarSize.Height : 0;
                 //Add margin space
-                w +=  (x >= Margin.Left)?Margin.Size.Width:0;
-                h += (y >= Margin.Top) ? Margin.Size.Height : 0;
+                w += (x >= Margin.Left) ? Margin.Size.Width : Margin.Size.Width;
+                h += (y >= Margin.Top) ? Margin.Size.Height : Margin.Size.Height;
 
                 //Fix size to PageSize
                 if ((x + w) >= PageSize.Width)
@@ -437,10 +440,38 @@ namespace PDFViewer
             }
             set
             {
+                _Zoom = 1;
                 _pageSize = value;
+                
                 Resized();  //Calculate
                 Invalidate(); //Redraw
             }
+        }
+        private float _Zoom = 1;
+        
+        public virtual void ZoomIn()
+        {
+            ZoomIn(4f / 3f);
+        }
+        public virtual void ZoomIn(float factor)
+        {
+            _Zoom *= factor;
+            _pageSize = Size.Round( new SizeF(PageSize.Width * factor, PageSize.Height * factor));
+            
+            Resized();  //Calculate
+            Invalidate(); //Redraw
+        }
+        public virtual void ZoomOut()
+        {
+            ZoomOut(3f / 4f);
+        }
+        public virtual void ZoomOut(float factor)
+        {
+            _Zoom *= factor;
+            _pageSize = Size.Round(new SizeF(PageSize.Width * factor, PageSize.Height * factor));
+
+            Resized();  //Calculate
+            Invalidate(); //Redraw
         }
 
         /// <summary>

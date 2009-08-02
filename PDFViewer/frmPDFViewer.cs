@@ -8,6 +8,9 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using System.Configuration;
 using PDFLibNet;
+using System.Management;
+
+
 namespace PDFViewer
 {
   
@@ -55,6 +58,8 @@ namespace PDFViewer
                 // Force a reload of a changed section.
                 ConfigurationManager.RefreshSection("appSettings");
             }
+            pageViewControl1.PageSize = new Size(800,1024);
+            pageViewControl1.Visible = true;
             Instance = this;
         }
 
@@ -243,28 +248,36 @@ namespace PDFViewer
         {
             pageViewControl1.PageSize = new Size(_pdfDoc.PageWidth, _pdfDoc.PageHeight);
             txtPage.Text = string.Format("{0}/{1}", _pdfDoc.CurrentPage, _pdfDoc.PageCount);
-            
         }
 
         private void FitWidth()
         {
-            using (PictureBox p = new PictureBox())
+            if (_pdfDoc != null && _pdfDoc.CurrentPage > 0)
             {
-                p.Width = pageViewControl1.ClientSize.Width;
-                _pdfDoc.FitToWidth(p.Handle);
+                using (PictureBox p = new PictureBox())
+                {
+                    p.Width = pageViewControl1.ClientSize.Width;
+                    _pdfDoc.FitToWidth(p.Handle);
+                }
+                _pdfDoc.RenderFinished -= new RenderFinishedHandler(_pdfDoc_RenderFinished);
+                _pdfDoc.RenderFinished += new RenderFinishedHandler(_pdfDoc_RenderFinished);
+                _pdfDoc.RenderPageThread(pageViewControl1.Handle,true);
             }
-            _pdfDoc.RenderPage(pageViewControl1.Handle);
         }
 
         private void FitHeight()
         {
-            using (PictureBox p = new PictureBox())
+            if (_pdfDoc != null && _pdfDoc.CurrentPage > 0)
             {
-                p.Width = pageViewControl1.ClientSize.Height;
-                _pdfDoc.FitToHeight(p.Handle);
+                using (PictureBox p = new PictureBox())
+                {
+                    p.Width = pageViewControl1.ClientSize.Height;
+                    _pdfDoc.FitToHeight(p.Handle);
+                }
+                _pdfDoc.RenderFinished -= new RenderFinishedHandler(_pdfDoc_RenderFinished);
+                _pdfDoc.RenderFinished += new RenderFinishedHandler(_pdfDoc_RenderFinished);
+                _pdfDoc.RenderPageThread(pageViewControl1.Handle, false);
             }
-            _pdfDoc.RenderPage(pageViewControl1.Handle);
-            pageViewControl1.Height = _pdfDoc.PageHeight;
         }
 
         #region Outline
@@ -414,10 +427,14 @@ namespace PDFViewer
                         if (LoadFile(dlg.FileName))
                         {
                             _pdfDoc.CurrentPage = 1;
-
                             Text = "Powered by xPDF: " + _pdfDoc.Author + " - " + _pdfDoc.Title;
                             FillTree();
-                            FitWidth();
+                            using (PictureBox p = new PictureBox())
+                            {
+                                p.Width = pageViewControl1.ClientSize.Width;
+                                _pdfDoc.FitToWidth(p.Handle);
+                            }
+                            _pdfDoc.RenderPage(pageViewControl1.Handle);
                             Render();
 
                             pageViewControl1.PageSize = new Size(_pdfDoc.PageWidth, _pdfDoc.PageHeight);
@@ -603,7 +620,6 @@ namespace PDFViewer
 
             }
         }
-
         private void tsbZoomIn_Click(object sender, EventArgs e)
         {
             try
@@ -613,29 +629,43 @@ namespace PDFViewer
                     if (_pdfDoc != null)
                     {
                         _pdfDoc.ZoomIN();
-                        _pdfDoc.RenderPage(pageViewControl1.Handle);
+                        _pdfDoc.RenderFinished -= new RenderFinishedHandler(_pdfDoc_RenderFinished);
+                        _pdfDoc.RenderFinished += new RenderFinishedHandler(_pdfDoc_RenderFinished);
+                        _pdfDoc.RenderPageThread(pageViewControl1.Handle, false);
                         Render();
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
+            catch (Exception) { }
             
+        }
+
+        void _pdfDoc_RenderFinished()
+        {
+            try
+            {
+                Invoke(new frmExportJpg.FinishedInvoker(Render));
+            }
+            catch (Exception) { }
         }
 
         private void tsbZoomOut_Click(object sender, EventArgs e)
         {
-            using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
+            try
             {
-                if (_pdfDoc != null)
+                using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
                 {
-                    _pdfDoc.ZoomOut();
-                    _pdfDoc.RenderPage(pageViewControl1.Handle);
-                    Render();
+                    if (_pdfDoc != null)
+                    {
+                        _pdfDoc.ZoomOut();
+                        _pdfDoc.RenderFinished -= new RenderFinishedHandler(_pdfDoc_RenderFinished);
+                        _pdfDoc.RenderFinished += new RenderFinishedHandler(_pdfDoc_RenderFinished);
+                        _pdfDoc.RenderPageThread(pageViewControl1.Handle, false);
+                        Render();
+                    }
                 }
             }
+            catch (Exception) { }
         }
 
         #region Rubber Frame
@@ -760,14 +790,15 @@ namespace PDFViewer
             return true;
         }
 
-        private void doubleBufferControl1_PaintControl(object sender, Graphics g)
+        private void doubleBufferControl1_PaintControl(object sender,Rectangle view, Point location, Graphics g)
         {
             if (_pdfDoc != null)
             {
-                Rectangle r = new Rectangle(pageViewControl1.PageLocation, pageViewControl1.CurrentView.Size);
+                Size sF= new Size(view.Right,view.Bottom);
+                Rectangle r = new Rectangle(location, sF);
                 _pdfDoc.ClientBounds = r;
-                _pdfDoc.CurrentX = pageViewControl1.CurrentView.X;
-                _pdfDoc.CurrentY = pageViewControl1.CurrentView.Y;
+                _pdfDoc.CurrentX = view.X;
+                _pdfDoc.CurrentY = view.Y;
                 _pdfDoc.DrawPageHDC(g.GetHdc());
                 g.ReleaseHdc();
 /*
@@ -785,7 +816,6 @@ namespace PDFViewer
                     }
                 }
  */
-
             }
         }
 

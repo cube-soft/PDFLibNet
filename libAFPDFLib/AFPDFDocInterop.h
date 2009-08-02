@@ -18,7 +18,7 @@ public:
 	long LoadFromFile(char * sFileName);
 	long RenderPage(long lhWnd);
 	long RenderPage(long lhWnd, bool bForce);
-
+	long RenderPageThread(long lhWnd, bool bForce);
 	void SetUserPassword(char *pass);
 	void SetOwnerPassword(char *pass);
 	//long SavePDF(char *fileName);
@@ -29,6 +29,7 @@ public:
 	void CancelJpgExport();
 	void SetExportProgressHandler(void *);
 	void SetExportFinishedHandler(void *);
+	void SetRenderFinishedHandler(void *);
 
 	//Returns true if there is a process running
 	bool IsJpgBusy();

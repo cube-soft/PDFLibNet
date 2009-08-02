@@ -467,6 +467,9 @@
 	, m_exportJpgThread(0)
 	, hExportJpgCancel(0)
 	, _countCached(-1)
+	, m_RenderFinishHandle(0)
+	, m_PageRenderedByThread(0)
+	, m_splashOutThread(0)
 	{
 		for(int i=0;i<MAX_BITMAP_CACHE;i++){
 			_bitmapCache[i]=0;
@@ -653,7 +656,150 @@
 	}
 
 
+	long AFPDFDoc::RenderPageThread(long lhWnd, bool bForce)
+	{
+		if (m_PDFDoc != NULL) {
 
+			int bmWidth, bmHeight;
+			
+			//Heuristically check if we have enough memory ;-)
+			double newbytes = (m_renderDPI/72.0)*(m_renderDPI/72.0) * m_PDFDoc->getPageCropWidth(m_CurrentPage)* m_PDFDoc->getPageCropHeight(m_CurrentPage); //new approx. number of pixels
+			newbytes = newbytes * 3 + newbytes*2; //24-bit splashbitmap, 16-bit gdi-bitmap
+			newbytes=(newbytes*1.2); //Safety area;
+			newbytes -= m_splashOut->getBitmap()->getWidth()*m_splashOut->getBitmap()->getHeight()*3; //substract old 24-bit splash bitmap size
+			void* testAllocation = malloc((int)2*newbytes);
+			if (testAllocation==0 && newbytes>0){
+				//We better dont zoom this far in!
+				return errOutOfMemory+1;
+			} else {
+				free (testAllocation);
+			}
+			try{
+				//Wait for previous threads and delete them
+				if (m_renderingThread!=0)
+				{					
+					DWORD exitcode=0;
+					GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+					if(exitcode==STILL_ACTIVE)
+						Sleep(500);
+					TerminateThread(m_renderingThread->m_hThread,exitcode);
+					delete m_renderingThread;
+					m_renderingThread=NULL;
+				}
+				m_PageRenderedByThread=true;
+
+				//Reload the splash out
+				if (m_splashOutThread!=NULL){
+					delete m_splashOutThread;
+					m_splashOutThread=NULL;
+				}
+
+				//Establecemos el color del papel
+				SplashColor paperColor;
+				paperColor[0] = 0xff;
+				paperColor[1] = 0xff;
+				paperColor[2] = 0xff;
+				
+				//Note: the alignment is given by GDI requirements: bitmaps have to be 16-bit aligned.
+				m_splashOutThread = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+				m_splashOutThread->startDoc(m_PDFDoc->getXRef());
+				m_splashOutThread->clearModRegion();
+
+				m_PageHeight = m_PageHeight * m_renderDPI/m_LastRenderDPI;
+				m_PageWidth  = m_PageWidth * m_renderDPI/m_LastRenderDPI;
+				m_Bitmap->Resize(m_PageWidth,m_PageHeight);
+				//Run thread
+				if (m_LastPageRenderedByThread != m_CurrentPage || m_LastRenderDPI!=m_renderDPI)
+				{
+					m_PageRenderedByThread=true;
+					m_PageToRenderByThread = m_CurrentPage;
+					m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED);
+					m_renderingThread->m_bAutoDelete=FALSE;
+					m_renderingThread->ResumeThread();
+				}										
+
+				m_LastRenderDPI = m_renderDPI;
+				m_LastPageRendered=m_CurrentPage;
+
+			} catch(void *e){
+				return errOutOfMemory;
+			}
+		}
+		return 0;
+	}
+
+	int AFPDFDoc::RenderThreadFinished()
+	{
+		if(m_PageRenderedByThread)
+		{
+			m_PageRenderedByThread=false;
+			//Rendered bitmap by xpdf
+			SplashBitmap * bitmap = m_splashOutThread->getBitmap();
+			int bmWidth = bitmap->getWidth();
+			int bmHeight = bitmap->getHeight();
+			m_PageHeight = bmHeight;
+			m_PageWidth  = bmWidth;
+
+
+			BITMAPINFO bmi;
+			ZeroMemory(&bmi,sizeof(bmi));
+			bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
+			bmi.bmiHeader.biWidth=bmWidth;
+			//By default bitmaps are bottom up images which means 1st scanline is bottom when and last is top one.
+			bmi.bmiHeader.biHeight=-bmHeight;
+			bmi.bmiHeader.biPlanes=1;
+			bmi.bmiHeader.biBitCount=24;
+			bmi.bmiHeader.biCompression=BI_RGB;
+
+			bmi.bmiColors[0].rgbBlue = 0;
+			bmi.bmiColors[0].rgbGreen = 0;
+			bmi.bmiColors[0].rgbRed = 0;
+			bmi.bmiColors[0].rgbReserved = 0;
+
+			CDC clientDC;
+			clientDC.Attach(::GetWindowDC(NULL));
+
+			//Bitmap Rebuild
+			if(!m_Bitmap || (m_Bitmap && ( m_Bitmap->Width != bmWidth || m_Bitmap->Height != bmHeight)))
+			{
+				if(m_Bitmap==0){
+					m_Bitmap = new PageMemory();
+					AddBitmapCache(m_Bitmap,m_CurrentPage);
+				}
+				m_Bitmap->Create(clientDC.m_hDC,bmWidth,bmHeight);		
+			}
+			//********START DIB
+			m_Bitmap->SetDIBits(clientDC.m_hDC,(void *)m_splashOutThread->getBitmap()->getDataPtr());
+			//********END DIB
+			clientDC.Detach();
+
+			int box_left, box_top, box_right, box_bottom;
+			m_splashOutThread->getModRegion(&box_left, &box_top, &box_right, &box_bottom);
+			m_bbox = CRect(box_left, box_top, box_right, box_bottom);
+
+			
+			//prerender next page
+			if (m_CurrentPage+1 <= m_PDFDoc->getNumPages())
+			{   
+					m_PageRenderedByThread=false;
+					m_PageToRenderByThread = m_CurrentPage+1;
+					m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_BELOW_NORMAL,0,CREATE_SUSPENDED);
+					m_renderingThread->m_bAutoDelete=FALSE;
+					m_renderingThread->ResumeThread();
+			}else
+				m_renderingThread=0;
+
+			m_LastRenderDPI = m_renderDPI;
+			m_LastPageRendered=m_CurrentPage;
+
+			m_Bitmap->SetDimensions(m_PageWidth,m_PageHeight);
+
+			if(this->m_RenderFinishHandle!=0)
+				this->m_RenderFinishHandle();
+
+		}
+		return 0;
+	}
 	
 	long AFPDFDoc::RenderPage(long lhWnd)
 	{
@@ -670,6 +816,7 @@
 
 		if (m_PDFDoc != NULL) {
 
+			m_PageRenderedByThread=false;
 			int bmWidth, bmHeight;
 			
 			//Heuristically check if we have enough memory ;-)
@@ -792,14 +939,18 @@
 					m_bbox = CRect(box_left, box_top, box_right, box_bottom);
 
 					
-				} 
+				} else{
+					//Update Size
+					m_PageWidth = m_Bitmap->Width;
+					m_PageHeight = m_Bitmap->Height;
+				}
 				//prerender next page
 				if (enableThread && m_CurrentPage+1 <= m_PDFDoc->getNumPages())
-				{   
-						m_PageToRenderByThread = m_CurrentPage+1;
-						m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_BELOW_NORMAL,0,CREATE_SUSPENDED);
-						m_renderingThread->m_bAutoDelete=FALSE;
-						m_renderingThread->ResumeThread();
+				{
+					m_PageToRenderByThread = m_CurrentPage+1;
+					m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_BELOW_NORMAL,0,CREATE_SUSPENDED);
+					m_renderingThread->m_bAutoDelete=FALSE;
+					m_renderingThread->ResumeThread();
 				}else
 					m_renderingThread=0;
 
@@ -825,14 +976,23 @@
 		int page = pdfDoc->m_PageToRenderByThread;
 		//Verificar los valores de variables
 		if (renderDPI==0) renderDPI=72;
-		if(page==0) page=1;
+		if(page==0) 
+			page=1;
 		pdfDoc->m_LastPageRenderedByThread=page;
 
-		pdfDoc->m_PDFDoc->displayPage(pdfDoc->m_splashOut,page, 
-									renderDPI, renderDPI, pdfDoc->m_Rotation, 
-									gFalse, gTrue, gFalse,0,0);
+		if(pdfDoc->m_PageRenderedByThread && pdfDoc->m_splashOutThread!=NULL)
+			pdfDoc->m_PDFDoc->displayPage(pdfDoc->m_splashOutThread,page, 
+										renderDPI, renderDPI, pdfDoc->m_Rotation, 
+										gFalse, gTrue, gFalse,0,0);
+		else
+			pdfDoc->m_PDFDoc->displayPage(pdfDoc->m_splashOut,page, 
+										renderDPI, renderDPI, pdfDoc->m_Rotation, 
+										gFalse, gTrue, gFalse,0,0);
+		pdfDoc->RenderThreadFinished();
 		return TRUE;
 	}
+
+
 
 	long AFPDFDoc::GetCurrentPage(void)
 	{
@@ -877,6 +1037,8 @@
 		CDC dc;
 		if (m_Bitmap != NULL) 
 		{
+			
+		
 			// Draw the rendered document
 			m_Bitmap->Draw(
 				(HDC)lHdc,
@@ -1023,7 +1185,6 @@
 
 	long AFPDFDoc::ZoomIN(void)
 	{
-		
 		m_renderDPI =m_renderDPI * 4 / 3;
 		return m_renderDPI;
 	}
@@ -1864,13 +2025,13 @@
 			p->quality =quality;
 			p->WaitTime = waitProc;
 			
-			m_exportJpgThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::ExportingJpgThread,(LPVOID)p,THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED);
-			m_exportJpgThread->m_bAutoDelete=false;
-			m_exportJpgThread->ResumeThread();
+			m_exportJpgThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::ExportingJpgThread,(LPVOID)p,THREAD_PRIORITY_NORMAL);
+//			m_exportJpgThread->m_bAutoDelete=false;
+//			m_exportJpgThread->ResumeThread();
 			if(waitProc==-1){
-				waitRes =::WaitForSingleObject(this->hExportJpgFinished,INFINITE);
+				::WaitForSingleObject(this->hExportJpgFinished,INFINITE);
 			}else if(waitProc>0){
-				waitRes =::WaitForSingleObject(this->hExportJpgFinished,waitProc);
+				::WaitForSingleObject(this->hExportJpgFinished,waitProc);
 			}
 
 			return waitRes;

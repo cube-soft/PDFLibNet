@@ -190,7 +190,7 @@
     <value>pageViewControl1</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Type" xml:space="preserve">
-    <value>PDFViewer.PageViewer, PDFViewer, Version=1.0.5.1, Culture=neutral, PublicKeyToken=null</value>
+    <value>PDFViewer.PageViewer, PDFViewer, Version=1.0.6.1, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Parent" xml:space="preserve">
     <value>splitContainer1.Panel2</value>

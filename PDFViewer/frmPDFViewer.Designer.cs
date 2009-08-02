@@ -87,7 +87,7 @@ namespace PDFViewer
             this.pageViewControl1.DrawBorder = false;
             this.pageViewControl1.DrawShadow = true;
             this.pageViewControl1.Name = "pageViewControl1";
-            this.pageViewControl1.PageColor = System.Drawing.SystemColors.AppWorkspace;
+            this.pageViewControl1.PageColor = System.Drawing.Color.White;
             this.pageViewControl1.PageSize = new System.Drawing.Size(0, 0);
             this.pageViewControl1.PaintMethod = PDFViewer.PageViewer.DoubleBufferMethod.BuiltInOptimizedDoubleBuffer;
             this.pageViewControl1.ScrollPosition = new System.Drawing.Point(-10, -10);

@@ -78,7 +78,7 @@ namespace PDFViewer
                 else if(optFromPage.Checked)
                     _doc.ExportJpg(filename, (int)udFromPage.Value, (int)udTopage.Value, Convert.ToDouble(udResolution.Value), (int)udQuality.Value);
                 else
-                    _doc.ExportJpg(filename, (int)_doc.CurrentPage, (int)_doc.CurrentPage, Convert.ToDouble(udResolution.Value), (int)udQuality.Value);
+                    _doc.ExportJpg(filename, (int)_doc.CurrentPage, (int)_doc.CurrentPage, Convert.ToDouble(udResolution.Value), (int)udQuality.Value,-1);
 
             }
         }

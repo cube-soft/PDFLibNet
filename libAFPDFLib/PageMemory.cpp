@@ -1,9 +1,10 @@
-
 #include "PageMemory.h"
-
+#include "smoothbitmap.h"
 PageMemory::PageMemory(void)
 : _bitmap(0)
 , _bits(0)
+, _factorW(1)
+, _factorH(1)
 {
 	Width=0;
 	Height=0;
@@ -60,59 +61,102 @@ int PageMemory::SetDIBits(HDC clientDC,const void *lpBits)
 
 void PageMemory::SetDimensions(int width, int height)
 {
+	//if(this->_bitmap != NULL )
+//		Resize(width,height);
+	_factorW=1;
+	_factorH=1;
 	Width=width;
-	Height=height;
+	Height=height;	
 }
-
+void PageMemory::Resize(int width, int height)
+{
+	if(Width!=width || Height!=height){
+/*		
+		HBITMAP hbmNew = ScaleBitmap(_bitmap,width,height);
+	
+		if(_bitmap!=NULL){
+			DeleteObject(_bitmap);
+			_bitmap=NULL;
+		}
+		_bitmap=hbmNew;
+		
+		Width=width;
+		Height=height;	
+*/
+		_factorW = (float)width/((float)Width);
+		_factorH = (float)height/((float)Height);
+	}
+}
 int PageMemory::Draw(CBitmap *bmp, int xSrc, int ySrc, int width, int height, int xDest, int yDest)
 {
 	return TRUE;
 }
 
+#define MAX(a,b) a>b?a:b
 int PageMemory::Draw(HDC hdc, int xSrc, int ySrc, int width, int height, int xDest, int yDest)
 {
 	BITMAPINFO bmi=GetBitmapInfo();
 	//********START DIB
-	CDC mdc;
 	CDC dc;
-	//mdc.Attach(hdc);
+	CDC mdc;
+	CDC tmpDC;
+	CBitmap bmpTmp;
 	dc.Attach(hdc);
 	mdc.CreateCompatibleDC(&dc);
 	HGDIOBJ pOld = mdc.SelectObject(_bitmap);
-	
-/*
-	//11/07/09
-	//SetDIBitsToDevice Fails when the bitmap is too big
-	//so is necessary to write on batch
-	//Write on batchs of DIB_COPY_BATCH_SIZE 2048
-	if(bmi.bmiHeader.biHeight>2000){
-		int batchs = bmi.bmiHeader.biHeight%DIB_COPY_BATCH_SIZE;
-		int linesCopied=0;
-		int linesToCopy;
-		for(int i=0;i<batchs;i++){
-			if(linesCopied + DIB_COPY_BATCH_SIZE > -bmi.bmiHeader.biHeight)
-				linesToCopy = -bmi.bmiHeader.biHeight-linesCopied;
-			else
-				linesToCopy = -bmi.bmiHeader.biHeight;
-			int currentLine = i*DIB_COPY_BATCH_SIZE;
-			SetDIBitsToDevice(mdc.m_hDC,0,currentLine,bmi.bmiHeader.biWidth,
-				linesToCopy,0,0,currentLine,linesToCopy,
-				_bits,
-				&bmi,DIB_RGB_COLORS);
+	if(_factorW!=1 || _factorH !=1)
+	{
+		BITMAPINFO bih = GetBitmapInfo();
+		bih.bmiHeader.biHeight = -bih.bmiHeader.biHeight ; //Top-Down
+		dc.SetStretchBltMode(COLORONCOLOR );
+		/*
+		StretchDIBits(hdc,
+			xDest*_factorW,
+			yDest*_factorH,		//Location 
+			width*_factorW,		//Width dest
+			height*_factorH,	//Height dest
+			xSrc,
+			-ySrc,			//Source position
+			width,
+			height,		//Source Size
+			_bits,				//DIB Bits
+			&bih,				//Bitmap Info Header
+			DIB_RGB_COLORS,		//RGB Data
+			SRCCOPY );			//Copy the source
+		*/
+		int w=width;
+		int h=height;
+		//ZoomOut
+		if(width*_factorW<w || height*_factorH<h)
+		{
+			w*=_factorW;
+			h*=_factorH;
 		}
+		
+		dc.StretchBlt(
+			xDest,
+			yDest,
+			w*_factorW,
+			h*_factorH ,
+			&mdc,
+			xSrc/_factorW,
+			ySrc/_factorH,
+			w,
+			h,
+			SRCCOPY);
+
 	}else{
-		SetDIBitsToDevice(mdc.m_hDC,0,0,bmi.bmiHeader.biWidth,
-			-bmi.bmiHeader.biHeight,0,0,0,-bmi.bmiHeader.biHeight,
-			_bits,
-			&bmi,DIB_RGB_COLORS);
+		
+
+		dc.BitBlt(xDest,yDest,width,height,&mdc,xSrc,ySrc,SRCCOPY);		
+
+		
 	}
-*/
-	dc.BitBlt(xDest,yDest,Width,Height,&mdc,xSrc,ySrc,SRCCOPY);
-
-
 	mdc.SelectObject(pOld);
-	mdc.DeleteDC();
-	dc.Detach();
+		mdc.DeleteDC();
+		dc.Detach();
+
+
 
 	//********END DIB
 	return TRUE;

@@ -9,6 +9,12 @@ private:
 	HBITMAP _bitmap;
 
 	BITMAPINFO GetBitmapInfo();
+
+	float _factorW;
+	float _factorH;
+	int _newWidth;
+	int _newHeight;
+
 public:
 	PageMemory(void);
 	~PageMemory(void);
@@ -17,6 +23,7 @@ public:
 	int SetDIBits(HDC clientDC,const void *lpBits);
 	void SetDimensions(int width, int height);
 
+	void Resize(int width, int height);
 	int Draw(CBitmap *bmp, int xSrc, int ySrc, int width, int height, int xDest, int yDest);
 	int Draw(HDC hdc, int xSrc, int ySrc, int width, int height, int xDest, int yDest);
 	int Draw(HBITMAP hdc, int xSrc, int ySrc, int width, int height, int xDest, int yDest);

@@ -33,21 +33,22 @@ private:
 	void InvalidateBitmapCache();
 	void RemoveFromCache(int page);
 	void AddBitmapCache(PageMemory *bmp, int page);
+	int RenderThreadFinished();
 protected:
 	long m_PageToRenderByThread;
 	long m_LastPageRenderedByThread;
 	static UINT RenderingThread( LPVOID param );
 	static UINT ExportingJpgThread( LPVOID param );
-	 HANDLE hExportJpgCancel;
-	 HANDLE hExportJpgCancelled;
-	 HANDLE hExportJpgFinished;
-	
-
+	bool m_PageRenderedByThread;
+	HANDLE hExportJpgCancel;
+	HANDLE hExportJpgCancelled;
+	HANDLE hExportJpgFinished;
 
 	PDFDoc *createDoc(char *FileName);
 public:
 	PROGRESSHANDLE m_ExportProgressHandle;
 	NOTIFYHANDLE m_ExportFinishHandle;
+	NOTIFYHANDLE m_RenderFinishHandle;
 private:
 	GString m_LastOpenedFile;
 	CWinThread *m_renderingThread;
@@ -55,6 +56,7 @@ private:
 	DynArray<CPDFSearchResult> m_Selection;
 	PDFDoc *m_PDFDoc;
 	SplashOutputDev	*m_splashOut;
+	SplashOutputDev	*m_splashOutThread;
 	Outline *m_Outline;
 	PageMemory *m_Bitmap;
 	CString m_OwnerPassword;
@@ -98,6 +100,7 @@ public:
 	long RenderPage(long lhWnd);
 	long RenderPage(long lhWnd, bool bForce);
 	long RenderPage(long lhWnd, bool bForce, bool enableThread);
+	long RenderPageThread(long lhWnd, bool bForce);
 	long GetCurrentPage(void);
 	void SetCurrentPage(long newVal);
 	long GetCurrentX(void);

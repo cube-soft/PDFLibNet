@@ -20,7 +20,7 @@ namespace PDFLibNet {
 	public delegate void PageZoomChanged(System::Drawing::Size lastSize, System::Drawing::Size newSize);
 	public delegate bool ExportJpgProgressHandler(int pageCount, int currentPage);
 	public delegate void ExportJpgFinishedHandler();
-
+	public delegate	void RenderFinishedHandler();
 
 	public enum class PDFSearchOrder
 	{
@@ -50,14 +50,18 @@ namespace PDFLibNet {
 		bool _bLoading;
 		bool _ExportJpgProgress(int pageCount, int currentPage);
 		void _ExportJpgFinished();
+		void _RenderFinished();
 
 		ExportJpgProgressHandler ^_internalExportJpgProgress;
 		ExportJpgProgressHandler ^_evExportJpgProgress;
 		ExportJpgFinishedHandler ^_internalExportJpgFinished;
 		ExportJpgFinishedHandler ^_evExportJpgFinished;
+		RenderFinishedHandler ^_internalRenderFinished;
+		RenderFinishedHandler ^_evRenderFinished;
 
 		GCHandle _gchProgress;
 		GCHandle _gchFinished;
+		GCHandle _gchRenderFinished;
 	public:
 		PDFWrapper()
 			: _pdfDoc(0)
@@ -131,6 +135,7 @@ namespace PDFLibNet {
 		long PerfomLinkAction(System::Int32 linkPtr);
 		bool LoadPDF(System::String ^fileName);
 		
+		bool RenderPageThread(IntPtr hwndHandle, bool bForce);
 		bool RenderPage(IntPtr handler);
 		bool RenderPage(IntPtr handler, System::Boolean bForce);
 		
@@ -403,6 +408,24 @@ namespace PDFLibNet {
 		event PDFLoadCompletedHandler ^PDFLoadCompeted;
 		event PDFLoadBeginHandler ^PDFLoadBegin;
 
+		
+		event RenderFinishedHandler ^RenderFinished{
+			void add(RenderFinishedHandler ^ ev){
+				this->_evRenderFinished += ev;
+			}
+			void remove(RenderFinishedHandler ^ev){
+				this->_evRenderFinished -= ev;
+			}
+			 void raise() {
+				 RenderFinishedHandler^ tmp = _evRenderFinished;
+				 if (tmp) {
+					return tmp->Invoke();
+				 }
+			  }
+
+		}
+
+
 		event ExportJpgProgressHandler ^ExportJpgProgress{
 			void add(ExportJpgProgressHandler ^ ev){
 				this->_evExportJpgProgress += ev;
@@ -439,16 +462,19 @@ namespace PDFLibNet {
 
 		!PDFWrapper()
 		{
-			if(_gchProgress.IsAllocated)
-				_gchProgress.Free();
-			if(_gchFinished.IsAllocated)
-				_gchFinished.Free();
-			if(_pdfDoc!=0){
-				_pdfDoc->Dispose();
-				delete _pdfDoc;
+			try{
+				if(_gchProgress.IsAllocated)
+					_gchProgress.Free();
+				if(_gchFinished.IsAllocated)
+					_gchFinished.Free();
+				if(_pdfDoc!=0){
+					_pdfDoc->Dispose();
+					delete _pdfDoc;
+				}
+				_pdfDoc=0;
 			}
-			_pdfDoc=0;
-			
+			catch(Exception ^){}
+
 			//_pdfDoc.Reset();
 		}
 

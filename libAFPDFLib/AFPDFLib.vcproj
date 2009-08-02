@@ -304,6 +304,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\smoothbitmap.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>

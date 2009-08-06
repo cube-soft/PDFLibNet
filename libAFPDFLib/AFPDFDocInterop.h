@@ -77,7 +77,7 @@ public:
 	long FindString(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc);
 	long FindNext(const wchar_t *sText);
 	long FindPrior(const wchar_t *sText);
-	long FindFirst(const wchar_t *sText, long SearchOrder, bool Backward);
+	long FindFirst(const wchar_t *sText, long SearchOrder, bool Backward, bool WholeWord);
 	long RenderHDC(long lHdc);
 
 

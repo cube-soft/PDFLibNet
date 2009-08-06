@@ -457,6 +457,12 @@ public:
 		 GBool caseSensitive, GBool backward,
 		 double *xMin, double *yMin,
 		 double *xMax, double *yMax);
+  GBool findTextWholeWord(Unicode *s, int len,
+		 GBool startAtTop, GBool stopAtBottom,
+		 GBool startAtLast, GBool stopAtLast,
+		 GBool caseSensitive, GBool backward,
+		 double *xMin, double *yMin,
+		 double *xMax, double *yMax);
 
   // Get the text which is inside the specified rectangle.
   GString *getText(double xMin, double yMin,
@@ -612,6 +618,12 @@ public:
   // just before the last find result; else stops looking at
   // <xMax>,<yMax>.
   GBool findText(Unicode *s, int len,
+		 GBool startAtTop, GBool stopAtBottom,
+		 GBool startAtLast, GBool stopAtLast,
+		 GBool caseSensitive, GBool backward,
+		 double *xMin, double *yMin,
+		 double *xMax, double *yMax);
+    GBool findTextWholeWord(Unicode *s, int len,
 		 GBool startAtTop, GBool stopAtBottom,
 		 GBool startAtLast, GBool stopAtLast,
 		 GBool caseSensitive, GBool backward,

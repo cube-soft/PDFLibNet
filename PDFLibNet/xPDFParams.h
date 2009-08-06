@@ -11,6 +11,7 @@ namespace PDFLibNet
 		static xPDFParams ^_default = gcnew xPDFParams(System::Convert::ToString(System::Configuration::ConfigurationSettings::GetConfig("xpdfrc")));
 		XPDFParamsInterop *_globalParams;
 		System::String ^_configFile;
+		System::String ^_errorFile;
 	public:
 		xPDFParams(System::String ^configFile);
 		!xPDFParams();
@@ -24,7 +25,7 @@ namespace PDFLibNet
 			void set(System::String ^value){
 				IntPtr ptr = Marshal::StringToCoTaskMemAnsi(value);
 				char *singleByte= (char*)ptr.ToPointer();
-				int ret;
+//				int ret;
 				try{
 					_default->_globalParams->OpenFile(singleByte);
 					_default->_configFile = value;
@@ -48,6 +49,33 @@ namespace PDFLibNet
 			}
 			void set(System::Boolean value){
 				_default->_globalParams->setVectorAntialias(value);
+			}
+		}
+
+		property static System::Boolean ErrorQuiet {
+			System::Boolean get(){
+				return _default->_globalParams->getPrintError();
+			}
+			void set(System::Boolean value){
+				_default->_globalParams->setPrintError(value);
+			}
+		}
+
+		property static System::String ^ErrorFile 
+		{
+			System::String ^get(){
+				return _default->_errorFile;
+			}
+			void set(System::String ^value){
+				IntPtr ptr = Marshal::StringToCoTaskMemAnsi(value);
+				char *singleByte= (char*)ptr.ToPointer();
+//				int ret;
+				try{
+					_default->_globalParams->setPrintErrorFile(singleByte);
+					_default->_errorFile = value;
+				}finally{
+					Marshal::FreeCoTaskMem(ptr);
+				}	
 			}
 		}
 	};

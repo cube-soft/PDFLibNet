@@ -15,7 +15,7 @@ namespace PDFLibNet
 	{
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(configFile);
 		char *singleByte= (char*)ptr.ToPointer();
-		int ret;
+//		int ret;
 		try{
 			_globalParams=new XPDFParamsInterop(singleByte);
 		}finally{

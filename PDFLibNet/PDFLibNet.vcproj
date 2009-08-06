@@ -104,7 +104,7 @@
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			CharacterSet="1"
 			ManagedExtensions="1"
 			WholeProgramOptimization="1"

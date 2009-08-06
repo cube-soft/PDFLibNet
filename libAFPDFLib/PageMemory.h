@@ -24,7 +24,6 @@ public:
 	void SetDimensions(int width, int height);
 
 	void Resize(int width, int height);
-	int Draw(CBitmap *bmp, int xSrc, int ySrc, int width, int height, int xDest, int yDest);
 	int Draw(HDC hdc, int xSrc, int ySrc, int width, int height, int xDest, int yDest);
 	int Draw(HBITMAP hdc, int xSrc, int ySrc, int width, int height, int xDest, int yDest);
 

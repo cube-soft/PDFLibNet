@@ -24,7 +24,7 @@ int PageMemory::Create(HDC clientDC, int width, int height)
 	BITMAPINFO bmi=GetBitmapInfo();
 	bmi.bmiHeader.biHeight=-bmi.bmiHeader.biHeight;
 	if((_bitmap = CreateDIBSection(clientDC, &bmi, DIB_RGB_COLORS, &_bits,NULL,0))==NULL){
-		ASSERT(1==0);
+//		ASSERT(1==0);
 		return FALSE;
 	}
 	
@@ -87,28 +87,25 @@ void PageMemory::Resize(int width, int height)
 		_factorH = (float)height/((float)Height);
 	}
 }
-int PageMemory::Draw(CBitmap *bmp, int xSrc, int ySrc, int width, int height, int xDest, int yDest)
-{
-	return TRUE;
-}
 
 #define MAX(a,b) a>b?a:b
 int PageMemory::Draw(HDC hdc, int xSrc, int ySrc, int width, int height, int xDest, int yDest)
 {
 	BITMAPINFO bmi=GetBitmapInfo();
 	//********START DIB
-	CDC dc;
-	CDC mdc;
-	CDC tmpDC;
-	CBitmap bmpTmp;
-	dc.Attach(hdc);
-	mdc.CreateCompatibleDC(&dc);
-	HGDIOBJ pOld = mdc.SelectObject(_bitmap);
+	//HDC dc;
+	HDC mdc;
+	//CDC tmpDC;
+	//HBitmap bmpTmp;
+	//dc.Attach(hdc);
+	//mdc.CreateCompatibleDC(&dc);
+	mdc = CreateCompatibleDC(hdc);
+	HGDIOBJ pOld = SelectObject(mdc,_bitmap);
 	if(_factorW!=1 || _factorH !=1)
 	{
 		BITMAPINFO bih = GetBitmapInfo();
 		bih.bmiHeader.biHeight = -bih.bmiHeader.biHeight ; //Top-Down
-		dc.SetStretchBltMode(COLORONCOLOR );
+		SetStretchBltMode(hdc,COLORONCOLOR );
 		/*
 		StretchDIBits(hdc,
 			xDest*_factorW,
@@ -133,12 +130,12 @@ int PageMemory::Draw(HDC hdc, int xSrc, int ySrc, int width, int height, int xDe
 			h*=_factorH;
 		}
 		
-		dc.StretchBlt(
+		StretchBlt(hdc,
 			xDest,
 			yDest,
 			w*_factorW,
 			h*_factorH ,
-			&mdc,
+			mdc,
 			xSrc/_factorW,
 			ySrc/_factorH,
 			w,
@@ -148,13 +145,13 @@ int PageMemory::Draw(HDC hdc, int xSrc, int ySrc, int width, int height, int xDe
 	}else{
 		
 
-		dc.BitBlt(xDest,yDest,width,height,&mdc,xSrc,ySrc,SRCCOPY);		
+		BitBlt(hdc,xDest,yDest,width,height,mdc,xSrc,ySrc,SRCCOPY);		
 
 		
 	}
-	mdc.SelectObject(pOld);
-		mdc.DeleteDC();
-		dc.Detach();
+	SelectObject(mdc,pOld);
+		DeleteDC(mdc);
+		//dc.Detach();
 
 
 

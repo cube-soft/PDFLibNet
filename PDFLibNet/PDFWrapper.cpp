@@ -102,7 +102,7 @@ namespace PDFLibNet
 		return 0;
 	}
 
-	long PDFWrapper::FindFirst(String ^sText,PDFSearchOrder SearchOrder, Boolean bBackward)
+	long PDFWrapper::FindFirst(String ^sText,PDFSearchOrder SearchOrder, Boolean bBackward, Boolean bWholeWord)
 	{
 		IntPtr ptr = Marshal::StringToCoTaskMemUni(sText);
 		wchar_t *singleByte= (wchar_t*)ptr.ToPointer();
@@ -113,7 +113,7 @@ namespace PDFLibNet
 				_searchResults=nullptr;
 			}
 			
-			return _pdfDoc->FindFirst(singleByte,(long)SearchOrder,bBackward);
+			return _pdfDoc->FindFirst(singleByte,(long)SearchOrder,bBackward, bWholeWord);
 		}finally{
 			Marshal::FreeCoTaskMem(ptr);
 		}

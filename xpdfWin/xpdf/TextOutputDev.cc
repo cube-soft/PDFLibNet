@@ -2928,202 +2928,399 @@ void TextPage::coalesce(GBool physLayout, GBool doHTML) {
   }
 }
 
-GBool TextPage::findText(Unicode *s, int len,
-			 GBool startAtTop, GBool stopAtBottom,
-			 GBool startAtLast, GBool stopAtLast,
-			 GBool caseSensitive, GBool backward,
-			 double *xMin, double *yMin,
-			 double *xMax, double *yMax) {
-  TextBlock *blk;
-  TextLine *line;
-  Unicode *s2, *txt;
-  Unicode *p;
-  int txtSize, m, i, j, k;
-  double xStart, yStart, xStop, yStop;
-  double xMin0, yMin0, xMax0, yMax0;
-  double xMin1, yMin1, xMax1, yMax1;
-  GBool found;
-
-  //~ needs to handle right-to-left text
-
-  if (rawOrder) {
-    return gFalse;
-  }
-
-  // convert the search string to uppercase
-  if (!caseSensitive) {
-    s2 = (Unicode *)gmallocn(len, sizeof(Unicode));
-    for (i = 0; i < len; ++i) {
-      s2[i] = unicodeToUpper(s[i]);
-    }
-  } else {
-    s2 = s;
-  }
-
-  txt = NULL;
-  txtSize = 0;
-
-  xStart = yStart = xStop = yStop = 0;
-  if (startAtLast && haveLastFind) {
-    xStart = lastFindXMin;
-    yStart = lastFindYMin;
-  } else if (!startAtTop) {
-    xStart = *xMin;
-    yStart = *yMin;
-  }
-  if (stopAtLast && haveLastFind) {
-    xStop = lastFindXMin;
-    yStop = lastFindYMin;
-  } else if (!stopAtBottom) {
-    xStop = *xMax;
-    yStop = *yMax;
-  }
-
-  found = gFalse;
-  xMin0 = xMax0 = yMin0 = yMax0 = 0; // make gcc happy
-  xMin1 = xMax1 = yMin1 = yMax1 = 0; // make gcc happy
-
-  for (i = backward ? nBlocks - 1 : 0;
-       backward ? i >= 0 : i < nBlocks;
-       i += backward ? -1 : 1) {
-    blk = blocks[i];
-
-    // check: is the block above the top limit?
-    if (!startAtTop && (backward ? blk->yMin > yStart : blk->yMax < yStart)) {
-      continue;
-    }
-
-    // check: is the block below the bottom limit?
-    if (!stopAtBottom && (backward ? blk->yMax < yStop : blk->yMin > yStop)) {
-      break;
-    }
-
-    for (line = blk->lines; line; line = line->next) {
-
-      // check: is the line above the top limit?
-      if (!startAtTop &&
-	  (backward ? line->yMin > yStart : line->yMin < yStart)) {
-	continue;
-      }
-
-      // check: is the line below the bottom limit?
-      if (!stopAtBottom &&
-	  (backward ? line->yMin < yStop : line->yMin > yStop)) {
-	continue;
-      }
-
-      // convert the line to uppercase
-      m = line->len;
-      if (!caseSensitive) {
-	if (m > txtSize) {
-	  txt = (Unicode *)greallocn(txt, m, sizeof(Unicode));
-	  txtSize = m;
-	}
-	for (k = 0; k < m; ++k) {
-	  txt[k] = unicodeToUpper(line->text[k]);
-	}
-      } else {
-	txt = line->text;
-      }
-
-      // search each position in this line
-      j = backward ? m - len : 0;
-      p = txt + j;
-      while (backward ? j >= 0 : j <= m - len) {
-
-	// compare the strings
-	for (k = 0; k < len; ++k) {
-	  if (p[k] != s2[k]) {
-	    break;
-	  }
+GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool stopAtBottom,	 GBool startAtLast, GBool stopAtLast, GBool caseSensitive, GBool backward, double *xMinO, double *yMinO, double *xMaxO, double *yMaxO) {
+	TextBlock *blk;
+	TextLine *line;
+	Unicode *s2, *txt;
+	Unicode *p;
+	int txtSize, m, i, j, k;
+	double xStart, yStart, xStop, yStop;
+	double xMin0, yMin0, xMax0, yMax0;
+	double xMin1, yMin1, xMax1, yMax1;
+	GBool found;
+	int cWords;
+	TextWord *word;
+	
+	//~ needs to handle right-to-left text
+	if (rawOrder) {
+		return gFalse;
 	}
 
-	// found it
-	if (k == len) {
-	  switch (line->rot) {
-	  case 0:
-	    xMin1 = line->edge[j];
-	    xMax1 = line->edge[j + len];
-	    yMin1 = line->yMin;
-	    yMax1 = line->yMax;
-	    break;
-	  case 1:
-	    xMin1 = line->xMin;
-	    xMax1 = line->xMax;
-	    yMin1 = line->edge[j];
-	    yMax1 = line->edge[j + len];
-	    break;
-	  case 2:
-	    xMin1 = line->edge[j + len];
-	    xMax1 = line->edge[j];
-	    yMin1 = line->yMin;
-	    yMax1 = line->yMax;
-	    break;
-	  case 3:
-	    xMin1 = line->xMin;
-	    xMax1 = line->xMax;
-	    yMin1 = line->edge[j + len];
-	    yMax1 = line->edge[j];
-	    break;
-	  }
-	  if (backward) {
-	    if ((startAtTop ||
-		 yMin1 < yStart || (yMin1 == yStart && xMin1 < xStart)) &&
-		(stopAtBottom ||
-		 yMin1 > yStop || (yMin1 == yStop && xMin1 > xStop))) {
-	      if (!found ||
-		  yMin1 > yMin0 || (yMin1 == yMin0 && xMin1 > xMin0)) {
-		xMin0 = xMin1;
-		xMax0 = xMax1;
-		yMin0 = yMin1;
-		yMax0 = yMax1;
-		found = gTrue;
-	      }
-	    }
-	  } else {
-	    if ((startAtTop ||
-		 yMin1 > yStart || (yMin1 == yStart && xMin1 > xStart)) &&
-		(stopAtBottom ||
-		 yMin1 < yStop || (yMin1 == yStop && xMin1 < xStop))) {
-	      if (!found ||
-		  yMin1 < yMin0 || (yMin1 == yMin0 && xMin1 < xMin0)) {
-		xMin0 = xMin1;
-		xMax0 = xMax1;
-		yMin0 = yMin1;
-		yMax0 = yMax1;
-		found = gTrue;
-	      }
-	    }
-	  }
-	}
-	if (backward) {
-	  --j;
-	  --p;
+	// convert the search string to uppercase
+	if (!caseSensitive) {
+		s2 = (Unicode *)gmallocn(len, sizeof(Unicode));
+		for (i = 0; i < len; ++i) {
+			s2[i] = unicodeToUpper(s[i]);
+		}
 	} else {
-	  ++j;
-	  ++p;
+		s2 = s;
 	}
-      }
-    }
-  }
 
-  if (!caseSensitive) {
-    gfree(s2);
-    gfree(txt);
-  }
+	word=NULL;
+	cWords=0;
+	txt = NULL;
+	txtSize = 0;
 
-  if (found) {
-    *xMin = xMin0;
-    *xMax = xMax0;
-    *yMin = yMin0;
-    *yMax = yMax0;
-    lastFindXMin = xMin0;
-    lastFindYMin = yMin0;
-    haveLastFind = gTrue;
-    return gTrue;
-  }
+	xStart = yStart = xStop = yStop = 0;
+	if (startAtLast && haveLastFind) {
+		xStart = lastFindXMin;
+		yStart = lastFindYMin;
+	} else if (!startAtTop) {
+		xStart = *xMinO;
+		yStart = *yMinO;
+	}
+	if (stopAtLast && haveLastFind) {
+		xStop = lastFindXMin;
+		yStop = lastFindYMin;
+	} else if (!stopAtBottom) {
+		xStop = *xMaxO;
+		yStop = *yMaxO;
+	}
 
-  return gFalse;
+	found = gFalse;
+	xMin0 = xMax0 = yMin0 = yMax0 = 0; // make gcc happy
+	xMin1 = xMax1 = yMin1 = yMax1 = 0; // make gcc happy
+
+	for (i = backward ? nBlocks - 1 : 0;backward ? i >= 0 : i < nBlocks;i += backward ? -1 : 1) {
+			blk = blocks[i];
+
+			// check: is the block above the top limit?
+			if (!startAtTop && (backward ? blk->yMin > yStart : blk->yMax < yStart))
+				continue;
+			// check: is the block below the bottom limit?
+			if (!stopAtBottom && (backward ? blk->yMax < yStop : blk->yMin > yStop))
+				break;
+
+			for (line = blk->lines; line; line = line->next) {
+
+				// check: is the line above the top limit?
+				if (!startAtTop && (backward ? line->yMin > yStart : line->yMin < yStart)) 
+						continue;
+				// check: is the line below the bottom limit?
+				if (!stopAtBottom && (backward ? line->yMin < yStop : line->yMin > yStop)) 
+					continue;
+				
+				//Count the words
+				for(word = line->words; word; word = word->next)
+					cWords++;
+				//search each word in this line
+				j=backward ? cWords - 1: 0;
+				GBool bFound=gFalse;
+				int ej=0;
+				while(backward ? j>=0 :j < cWords){
+					word = line->words + j;	
+					// convert the word to uppercase
+					m = word->len;
+					ej+=m;
+					if(m==len){
+						bFound=gTrue;
+						if (!caseSensitive) {
+							if (m > txtSize) {
+								txt = (Unicode *)greallocn(txt, m, sizeof(Unicode));
+								txtSize = m;
+							}
+							for (k = 0; k < m; ++k) {
+								txt[k] = unicodeToUpper(word->text[k]);
+							}
+						} else {
+							txt = word->text;
+						}
+						for(int k=0; k<len; ++k){
+							if(txt[k] != s2[k]){
+								bFound=gFalse;
+								break;
+							}
+						}
+						//We found it!
+						if(bFound){
+							xMin1 = word->xMin;
+							xMax1 = word->xMax;
+							yMin1 = word->yMin;
+							yMax1 = word->yMax;
+
+							switch (line->rot) 
+							{
+								case 0:
+								  xMin1 = line->edge[j];
+								  xMax1 = line->edge[j + len];
+								  yMin1 = line->yMin;
+								  yMax1 = line->yMax;
+								  break;
+								case 1:
+								  xMin1 = line->xMin;
+								  xMax1 = line->xMax;
+								  yMin1 = line->edge[j];
+								  yMax1 = line->edge[j + len];
+								  break;
+								case 2:
+								  xMin1 = line->edge[j + len];
+								  xMax1 = line->edge[j];
+								  yMin1 = line->yMin;
+								  yMax1 = line->yMax;
+								  break;
+								case 3:
+								  xMin1 = line->xMin;
+								  xMax1 = line->xMax;
+								  yMin1 = line->edge[j + len];
+								  yMax1 = line->edge[j];
+								  break;
+							}
+						}
+						
+
+						if (backward) {
+							if ((startAtTop ||	 yMin1 < yStart || (yMin1 == yStart && xMin1 < xStart)) &&
+								(stopAtBottom || yMin1 > yStop || (yMin1 == yStop && xMin1 > xStop))) 
+							{
+									if (!found || yMin1 > yMin0 || (yMin1 == yMin0 && xMin1 > xMin0)) 
+									{
+											xMin0 = xMin1;
+											xMax0 = xMax1;
+											yMin0 = yMin1;
+											yMax0 = yMax1;
+											found = gTrue;
+									}
+							}
+						} else {
+							if ((startAtTop || yMin1 > yStart || (yMin1 == yStart && xMin1 > xStart)) &&
+								(stopAtBottom || yMin1 < yStop || (yMin1 == yStop && xMin1 < xStop))) 
+							{
+									if (!found || yMin1 < yMin0 || (yMin1 == yMin0 && xMin1 < xMin0)) 
+									{
+											xMin0 = xMin1;
+											xMax0 = xMax1;
+											yMin0 = yMin1;
+											yMax0 = yMax1;
+											found = gTrue;
+									}
+							}
+						}
+					
+					}
+
+					if(bFound)
+						break;
+
+					//Go next/previous word
+					if (backward) {
+						--j;
+					} else {
+						++j;
+					}
+				}
+			}
+		}
+
+		if (!caseSensitive) {
+			gfree(s2);
+			gfree(txt);
+		}
+		if (found) {
+			*xMinO = xMin0;
+			*xMaxO = xMax0;
+			*yMinO = yMin0;
+			*yMaxO = yMax0;
+*xMinO = 10;
+*xMaxO = 10;
+*yMinO = 10;
+*yMaxO = 10;
+			lastFindXMin = xMin0;
+			lastFindYMin = yMin0;
+			haveLastFind = gTrue;
+			return gTrue;
+		}
+
+		return gFalse;
+}
+
+GBool TextPage::findText(Unicode *s, int len, GBool startAtTop, GBool stopAtBottom,	 GBool startAtLast, GBool stopAtLast, GBool caseSensitive, GBool backward, double *xMin, double *yMin, double *xMax, double *yMax) {
+	TextBlock *blk;
+	TextLine *line;
+	Unicode *s2, *txt;
+	Unicode *p;
+	int txtSize, m, i, j, k;
+	double xStart, yStart, xStop, yStop;
+	double xMin0, yMin0, xMax0, yMax0;
+	double xMin1, yMin1, xMax1, yMax1;
+	GBool found;
+
+	//~ needs to handle right-to-left text
+
+	if (rawOrder) {
+		return gFalse;
+	}
+
+	// convert the search string to uppercase
+	if (!caseSensitive) {
+		s2 = (Unicode *)gmallocn(len, sizeof(Unicode));
+		for (i = 0; i < len; ++i) {
+			s2[i] = unicodeToUpper(s[i]);
+		}
+	} else {
+		s2 = s;
+	}
+
+	txt = NULL;
+	txtSize = 0;
+
+	xStart = yStart = xStop = yStop = 0;
+	if (startAtLast && haveLastFind) {
+		xStart = lastFindXMin;
+		yStart = lastFindYMin;
+	} else if (!startAtTop) {
+		xStart = *xMin;
+		yStart = *yMin;
+	}
+	if (stopAtLast && haveLastFind) {
+		xStop = lastFindXMin;
+		yStop = lastFindYMin;
+	} else if (!stopAtBottom) {
+		xStop = *xMax;
+		yStop = *yMax;
+	}
+
+	found = gFalse;
+	xMin0 = xMax0 = yMin0 = yMax0 = 0; // make gcc happy
+	xMin1 = xMax1 = yMin1 = yMax1 = 0; // make gcc happy
+
+	for (i = backward ? nBlocks - 1 : 0;backward ? i >= 0 : i < nBlocks;i += backward ? -1 : 1) {
+			blk = blocks[i];
+
+			// check: is the block above the top limit?
+			if (!startAtTop && (backward ? blk->yMin > yStart : blk->yMax < yStart)) {
+				continue;
+			}
+
+			// check: is the block below the bottom limit?
+			if (!stopAtBottom && (backward ? blk->yMax < yStop : blk->yMin > yStop)) {
+				break;
+			}
+
+			for (line = blk->lines; line; line = line->next) {
+
+				// check: is the line above the top limit?
+				if (!startAtTop && (backward ? line->yMin > yStart : line->yMin < yStart)) {
+						continue;
+				}
+
+				// check: is the line below the bottom limit?
+				if (!stopAtBottom && (backward ? line->yMin < yStop : line->yMin > yStop)) {
+						continue;
+				}
+
+				// convert the line to uppercase
+				m = line->len;
+				if (!caseSensitive) {
+					if (m > txtSize) {
+						txt = (Unicode *)greallocn(txt, m, sizeof(Unicode));
+						txtSize = m;
+					}
+					for (k = 0; k < m; ++k) {
+						txt[k] = unicodeToUpper(line->text[k]);
+					}
+				} else {
+					txt = line->text;
+				}
+
+				// search each position in this line
+				j = backward ? m - len : 0;
+				p = txt + j;
+				while (backward ? j >= 0 : j <= m - len) {
+
+					// compare the strings
+					for (k = 0; k < len; ++k) {
+						if (p[k] != s2[k]) {
+							break;
+						}
+					}
+
+					// found it
+					if (k == len) {
+						switch (line->rot) 
+						{
+							case 0:
+							  xMin1 = line->edge[j];
+							  xMax1 = line->edge[j + len];
+							  yMin1 = line->yMin;
+							  yMax1 = line->yMax;
+							  break;
+							case 1:
+							  xMin1 = line->xMin;
+							  xMax1 = line->xMax;
+							  yMin1 = line->edge[j];
+							  yMax1 = line->edge[j + len];
+							  break;
+							case 2:
+							  xMin1 = line->edge[j + len];
+							  xMax1 = line->edge[j];
+							  yMin1 = line->yMin;
+							  yMax1 = line->yMax;
+							  break;
+							case 3:
+							  xMin1 = line->xMin;
+							  xMax1 = line->xMax;
+							  yMin1 = line->edge[j + len];
+							  yMax1 = line->edge[j];
+							  break;
+						}
+						if (backward) {
+							if ((startAtTop ||
+								yMin1 < yStart || (yMin1 == yStart && xMin1 < xStart)) &&
+								(stopAtBottom ||
+								yMin1 > yStop || (yMin1 == yStop && xMin1 > xStop))) {
+									if (!found ||
+										yMin1 > yMin0 || (yMin1 == yMin0 && xMin1 > xMin0)) {
+											xMin0 = xMin1;
+											xMax0 = xMax1;
+											yMin0 = yMin1;
+											yMax0 = yMax1;
+											found = gTrue;
+									}
+							}
+						} else {
+							if ((startAtTop ||
+								yMin1 > yStart || (yMin1 == yStart && xMin1 > xStart)) &&
+								(stopAtBottom ||
+								yMin1 < yStop || (yMin1 == yStop && xMin1 < xStop))) {
+									if (!found ||
+										yMin1 < yMin0 || (yMin1 == yMin0 && xMin1 < xMin0)) {
+											xMin0 = xMin1;
+											xMax0 = xMax1;
+											yMin0 = yMin1;
+											yMax0 = yMax1;
+											found = gTrue;
+									}
+							}
+						}
+					}
+					if (backward) {
+						--j;
+						--p;
+					} else {
+						++j;
+						++p;
+					}
+				}
+			}
+	}
+
+	if (!caseSensitive) {
+		gfree(s2);
+		gfree(txt);
+	}
+
+	if (found) {
+		*xMin = xMin0;
+		*xMax = xMax0;
+		*yMin = yMin0;
+		*yMax = yMax0;
+		lastFindXMin = xMin0;
+		lastFindYMin = yMin0;
+		haveLastFind = gTrue;
+		return gTrue;
+	}
+
+	return gFalse;
 }
 
 GString *TextPage::getText(double xMin, double yMin,
@@ -4051,6 +4248,18 @@ void TextOutputDev::processLink(Link *link, Catalog *catalog) {
     yMax = y;
   }
   text->addLink(xMin, yMin, xMax, yMax, link);
+}
+
+
+GBool TextOutputDev::findTextWholeWord(Unicode *s, int len,
+			      GBool startAtTop, GBool stopAtBottom,
+			      GBool startAtLast, GBool stopAtLast,
+			      GBool caseSensitive, GBool backward,
+			      double *xMin, double *yMin,
+			      double *xMax, double *yMax) {
+  return text->findTextWholeWord(s, len, startAtTop, stopAtBottom,
+			startAtLast, stopAtLast, caseSensitive, backward,
+			xMin, yMin, xMax, yMax);
 }
 
 GBool TextOutputDev::findText(Unicode *s, int len,

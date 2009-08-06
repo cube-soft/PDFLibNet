@@ -37,6 +37,7 @@ namespace PDFViewer
             this.chkWholeWord = new System.Windows.Forms.CheckBox();
             this.chkSearchUp = new System.Windows.Forms.CheckBox();
             this.chkFullSearch = new System.Windows.Forms.CheckBox();
+            this.chkMatchCase = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // txtSearch
@@ -90,6 +91,12 @@ namespace PDFViewer
             this.chkFullSearch.Name = "chkFullSearch";
             this.chkFullSearch.UseVisualStyleBackColor = true;
             // 
+            // chkMatchCase
+            // 
+            resources.ApplyResources(this.chkMatchCase, "chkMatchCase");
+            this.chkMatchCase.Name = "chkMatchCase";
+            this.chkMatchCase.UseVisualStyleBackColor = true;
+            // 
             // frmSearch
             // 
             resources.ApplyResources(this, "$this");
@@ -97,6 +104,7 @@ namespace PDFViewer
             this.CancelButton = this.btnCancelSearch;
             this.Controls.Add(this.chkFullSearch);
             this.Controls.Add(this.chkSearchUp);
+            this.Controls.Add(this.chkMatchCase);
             this.Controls.Add(this.chkWholeWord);
             this.Controls.Add(this.btnCancelSearch);
             this.Controls.Add(this.btnSearchNext);
@@ -119,5 +127,6 @@ namespace PDFViewer
         private System.Windows.Forms.CheckBox chkWholeWord;
         private System.Windows.Forms.CheckBox chkSearchUp;
         private System.Windows.Forms.CheckBox chkFullSearch;
+        private System.Windows.Forms.CheckBox chkMatchCase;
     }
 }

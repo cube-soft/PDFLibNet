@@ -43,11 +43,14 @@ namespace PDFViewer
             int res = 0;
             if (_callback != null)
                 res = _callback.Invoke(sender, new SearchArgs(
-                    txtSearch.Text, true,
-                    chkWholeWord.Checked,
-                    chkFullSearch.Checked,
-                    false,
-                    chkSearchUp.Checked));
+                    txtSearch.Text,
+                    true,                   //Search from begin
+                    chkMatchCase.Checked,   //Match upper/lower
+                    chkFullSearch.Checked,  //Full document
+                    false,                  //Find Next
+                    chkSearchUp.Checked,    //Backward
+                    chkWholeWord.Checked    //Match whole word
+                    ));
         }
 
         private void btnSearchNext_Click(object sender, EventArgs e)
@@ -57,10 +60,12 @@ namespace PDFViewer
                 res = _callback.Invoke(sender, new SearchArgs(
                     txtSearch.Text, 
                     _fromBegin,
-                    chkWholeWord.Checked,
-                    chkFullSearch.Checked,
-                    true,
-                    chkSearchUp.Checked));
+                    chkMatchCase.Checked,   //Match upper/lower
+                    chkFullSearch.Checked,  //Full document
+                    true,                   //Find Next
+                    chkSearchUp.Checked,    //backward
+                    chkWholeWord.Checked    //Match whole word
+                    ));
             _fromBegin = false;
             if (res == 0)
             {

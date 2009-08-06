@@ -28,11 +28,15 @@
 
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
 
-#include <afxwin.h>         // MFC core and standard components
+//#include <afxwin.h>         // MFC core and standard components
+#include <time.h>
 #include <locale.h>
 #include <stdio.h>
 #include <string.h>
 #include <wchar.h> 
+#include <tchar.h>
+#include <atlstr.h>
+
 #include "pdfdoc.h"
 #include "splashoutputdev.h"
 #include "outline.h"

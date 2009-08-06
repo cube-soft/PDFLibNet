@@ -58,7 +58,7 @@ namespace PDFViewer
                 // Force a reload of a changed section.
                 ConfigurationManager.RefreshSection("appSettings");
             }
-            pageViewControl1.PageSize = new Size(800,1024);
+            pageViewControl1.PageSize = new Size(pageViewControl1.Width,(int)( pageViewControl1.Width*11/8.5));
             pageViewControl1.Visible = true;
             Instance = this;
         }
@@ -521,7 +521,8 @@ namespace PDFViewer
                 {
                     lFound = _pdfDoc.FindFirst(e.Text,
                     e.WholeDoc ? PDFLibNet.PDFSearchOrder.PDFSearchFromdBegin : PDFLibNet.PDFSearchOrder.PDFSearchFromCurrent,
-                    e.Up);
+                    e.Up,
+                    e.WholeWord);
                 }
                 else if (e.FindNext)
                 {
@@ -540,7 +541,7 @@ namespace PDFViewer
                         e.Exact,
                         e.Up,
                         true,
-                        e.WholeDoc);    
+                        e.WholeWord);    
                 }
                 if (lFound > 0)
                 {
@@ -919,14 +920,16 @@ namespace PDFViewer
         public bool WholeDoc;
         public bool FindNext;
         public bool Up;
+        public bool WholeWord;
 
-        internal SearchArgs(string text, bool frombegin, bool exact, bool wholedoc, bool findnext, bool up)
+        internal SearchArgs(string text, bool frombegin, bool exact, bool wholedoc, bool findnext, bool up, bool wholeword)
         {
             Text = text;
             FromBegin = frombegin;
             Exact = exact;
             WholeDoc = wholedoc;
             FindNext = findnext;
+            WholeWord = wholeword;
             Up = up;
         }
     }

@@ -17,7 +17,7 @@
 		if(globalParams==0){
 			TCHAR szExe[MAX_PATH];
 			int size = ::GetModuleFileName(NULL, szExe, MAX_PATH); 
-			TCHAR *pLastSlash = _tcsrchr(szExe, _T('\\'));
+			TCHAR *pLastSlash = _tcsrchr(szExe, ('\\'));
 			
 			if (pLastSlash){
 				// Truncate at slash to get app dir
@@ -244,10 +244,10 @@
 	{
 		
 		wchar_t *ret;
-		int j,n;
+		int j;
 		//char buf[8];
 		//GString *title=new GString();
-		char *s;
+//		char *s;
 		if(item /*&& uMap!=NULL*/){
 			ret =new wchar_t[item->getTitleLength()+1];
 
@@ -292,8 +292,8 @@
 		GString *s1;
 		GBool isUnicode;
 		Unicode u;
-		char buf[8];
-		int i, n;
+//		char buf[8];
+		int i;
 
 	
 		if (infoDict->lookup(key, &obj)->isString()) 
@@ -643,7 +643,7 @@
 			
 		}
 		m_LastOpenedFile.clear();
-		m_LastOpenedFile.insert(0,FileName,strlen(FileName));
+		m_LastOpenedFile.insert((int)0,FileName,strlen(FileName));
 		//El archivo de cargo correctamente
 		m_splashOut->startDoc(m_PDFDoc->getXRef());
 		m_Outline = m_PDFDoc->getOutline();
@@ -660,14 +660,14 @@
 	{
 		if (m_PDFDoc != NULL) {
 
-			int bmWidth, bmHeight;
+//			int bmWidth, bmHeight;
 			
 			//Heuristically check if we have enough memory ;-)
 			double newbytes = (m_renderDPI/72.0)*(m_renderDPI/72.0) * m_PDFDoc->getPageCropWidth(m_CurrentPage)* m_PDFDoc->getPageCropHeight(m_CurrentPage); //new approx. number of pixels
 			newbytes = newbytes * 3 + newbytes*2; //24-bit splashbitmap, 16-bit gdi-bitmap
 			newbytes=(newbytes*1.2); //Safety area;
 			newbytes -= m_splashOut->getBitmap()->getWidth()*m_splashOut->getBitmap()->getHeight()*3; //substract old 24-bit splash bitmap size
-			void* testAllocation = malloc((int)2*newbytes);
+			void* testAllocation = malloc((int)2.0*newbytes);
 			if (testAllocation==0 && newbytes>0){
 				//We better dont zoom this far in!
 				return errOutOfMemory+1;
@@ -679,11 +679,11 @@
 				if (m_renderingThread!=0)
 				{					
 					DWORD exitcode=0;
-					GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+					GetExitCodeThread(m_renderingThread,&exitcode);
 					if(exitcode==STILL_ACTIVE)
 						Sleep(500);
-					TerminateThread(m_renderingThread->m_hThread,exitcode);
-					delete m_renderingThread;
+					TerminateThread(m_renderingThread,exitcode);
+					CloseHandle(m_renderingThread);
 					m_renderingThread=NULL;
 				}
 				m_PageRenderedByThread=true;
@@ -705,17 +705,18 @@
 				m_splashOutThread->startDoc(m_PDFDoc->getXRef());
 				m_splashOutThread->clearModRegion();
 
-				m_PageHeight = m_PageHeight * m_renderDPI/m_LastRenderDPI;
-				m_PageWidth  = m_PageWidth * m_renderDPI/m_LastRenderDPI;
+				m_PageHeight =(long)( m_PageHeight * m_renderDPI/m_LastRenderDPI);
+				m_PageWidth  =(long)( m_PageWidth * m_renderDPI/m_LastRenderDPI);
 				m_Bitmap->Resize(m_PageWidth,m_PageHeight);
 				//Run thread
 				if (m_LastPageRenderedByThread != m_CurrentPage || m_LastRenderDPI!=m_renderDPI)
 				{
 					m_PageRenderedByThread=true;
 					m_PageToRenderByThread = m_CurrentPage;
-					m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED);
-					m_renderingThread->m_bAutoDelete=FALSE;
-					m_renderingThread->ResumeThread();
+					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID) this,CREATE_SUSPENDED,0);
+					ResumeThread(m_renderingThread);
+					//m_renderingThread->m_bAutoDelete=FALSE;
+					//m_renderingThread->ResumeThread();
 				}										
 
 				m_LastRenderDPI = m_renderDPI;
@@ -756,8 +757,9 @@
 			bmi.bmiColors[0].rgbRed = 0;
 			bmi.bmiColors[0].rgbReserved = 0;
 
-			CDC clientDC;
-			clientDC.Attach(::GetWindowDC(NULL));
+			HDC clientDC;
+			//clientDC.Attach(::GetWindowDC(NULL));
+			clientDC = GetWindowDC(NULL);
 
 			//Bitmap Rebuild
 			if(!m_Bitmap || (m_Bitmap && ( m_Bitmap->Width != bmWidth || m_Bitmap->Height != bmHeight)))
@@ -766,12 +768,12 @@
 					m_Bitmap = new PageMemory();
 					AddBitmapCache(m_Bitmap,m_CurrentPage);
 				}
-				m_Bitmap->Create(clientDC.m_hDC,bmWidth,bmHeight);		
+				m_Bitmap->Create(clientDC,bmWidth,bmHeight);		
 			}
 			//********START DIB
-			m_Bitmap->SetDIBits(clientDC.m_hDC,(void *)m_splashOutThread->getBitmap()->getDataPtr());
+			m_Bitmap->SetDIBits(clientDC,(void *)m_splashOutThread->getBitmap()->getDataPtr());
 			//********END DIB
-			clientDC.Detach();
+			//clientDC.Detach();
 
 			int box_left, box_top, box_right, box_bottom;
 			m_splashOutThread->getModRegion(&box_left, &box_top, &box_right, &box_bottom);
@@ -783,9 +785,9 @@
 			{   
 					m_PageRenderedByThread=false;
 					m_PageToRenderByThread = m_CurrentPage+1;
-					m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_BELOW_NORMAL,0,CREATE_SUSPENDED);
-					m_renderingThread->m_bAutoDelete=FALSE;
-					m_renderingThread->ResumeThread();
+					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID) this,CREATE_SUSPENDED,0);
+					SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
+					ResumeThread(m_renderingThread);
 			}else
 				m_renderingThread=0;
 
@@ -824,7 +826,7 @@
 			newbytes = newbytes * 3 + newbytes*2; //24-bit splashbitmap, 16-bit gdi-bitmap
 			newbytes=(newbytes*1.2); //Safety area;
 			newbytes -= m_splashOut->getBitmap()->getWidth()*m_splashOut->getBitmap()->getHeight()*3; //substract old 24-bit splash bitmap size
-			void* testAllocation = malloc((int)2*newbytes);
+			void* testAllocation = malloc((size_t)(2*newbytes));
 			if (testAllocation==0 && newbytes>0){
 				//We better dont zoom this far in!
 				return errOutOfMemory+1;
@@ -837,17 +839,17 @@
 				{					
 					DWORD exitcode=0;
 					//hurry up!
-					m_renderingThread->SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
-					GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
-
+					SetThreadPriority(m_renderingThread,THREAD_PRIORITY_ABOVE_NORMAL);
+					GetExitCodeThread(m_renderingThread,&exitcode);
+					error(-1,"Running out last thread");
 					while (exitcode==STILL_ACTIVE){
-						GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+						GetExitCodeThread(m_renderingThread,&exitcode);
 						Sleep(50);
 					}
-					delete m_renderingThread;
+					CloseHandle(m_renderingThread);
 					m_renderingThread=NULL;
 				}
-
+				error(-1,"Clear mod region");
 				m_splashOut->clearModRegion();
 				if (m_renderDPI!=m_LastRenderDPI || bForce){
 					//Invalidate prerendered page
@@ -881,17 +883,20 @@
 					if (m_LastPageRenderedByThread != m_CurrentPage)
 					{
 						m_PageToRenderByThread = m_CurrentPage;
-						m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_NORMAL,0,CREATE_SUSPENDED);
-						m_renderingThread->m_bAutoDelete=FALSE;
-						m_renderingThread->ResumeThread();
+						m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID) this,CREATE_SUSPENDED,0);
+//						m_renderingThread->m_bAutoDelete=FALSE;
+//						m_renderingThread->ResumeThread();
+						ResumeThread(m_renderingThread);
 						
 						DWORD exitcode;
-						GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+						GetExitCodeThread(m_renderingThread,&exitcode);
 						while (exitcode==STILL_ACTIVE){
-							GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+							GetExitCodeThread(m_renderingThread,&exitcode);
 							Sleep(50);
 						}
-						delete m_renderingThread;
+
+						CloseHandle(m_renderingThread);
+						m_renderingThread=0;
 					}
 					
 					//Rendered bitmap by xpdf
@@ -917,9 +922,9 @@
 					bmi.bmiColors[0].rgbRed = 0;
 					bmi.bmiColors[0].rgbReserved = 0;
 
-					CDC clientDC;
-					clientDC.Attach(::GetWindowDC((HWND)lhWnd));
-
+					HDC clientDC;
+					//clientDC.Attach(::GetWindowDC((HWND)lhWnd));
+					clientDC = GetWindowDC((HWND)lhWnd);
 					//Bitmap Rebuild
 					if(!m_Bitmap || (m_Bitmap && ( m_Bitmap->Width != bmWidth || m_Bitmap->Height != bmHeight)))
 					{
@@ -927,12 +932,12 @@
 							m_Bitmap = new PageMemory();
 							AddBitmapCache(m_Bitmap,m_CurrentPage);
 						}
-						m_Bitmap->Create(clientDC.m_hDC,bmWidth,bmHeight);		
+						m_Bitmap->Create(clientDC,bmWidth,bmHeight);		
 					}
 					//********START DIB
-					m_Bitmap->SetDIBits(clientDC.m_hDC,(void *)m_splashOut->getBitmap()->getDataPtr());
+					m_Bitmap->SetDIBits(clientDC,(void *)m_splashOut->getBitmap()->getDataPtr());
 					//********END DIB
-					clientDC.Detach();
+					//clientDC.Detach();
 
 					int box_left, box_top, box_right, box_bottom;
 					m_splashOut->getModRegion(&box_left, &box_top, &box_right, &box_bottom);
@@ -948,9 +953,9 @@
 				if (enableThread && m_CurrentPage+1 <= m_PDFDoc->getNumPages())
 				{
 					m_PageToRenderByThread = m_CurrentPage+1;
-					m_renderingThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::RenderingThread,(LPVOID) this,THREAD_PRIORITY_BELOW_NORMAL,0,CREATE_SUSPENDED);
-					m_renderingThread->m_bAutoDelete=FALSE;
-					m_renderingThread->ResumeThread();
+					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID) this,CREATE_SUSPENDED,0);
+					SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
+					ResumeThread(m_renderingThread);
 				}else
 					m_renderingThread=0;
 
@@ -1034,7 +1039,7 @@
 	//Render from x to x+w, y to y+h
 	long AFPDFDoc::RenderHDC(long lHdc)
 	{
-		CDC dc;
+		HDC dc=(HDC)lHdc;
 		if (m_Bitmap != NULL) 
 		{
 			
@@ -1051,17 +1056,18 @@
 	
 			// draw selection 
 			if (!m_HideMarks && m_CurrentPage == m_SearchPage) {
-				dc.Attach((HDC)lHdc);
+				//dc.Attach((HDC)lHdc);
 
 				const double mul = m_renderDPI / FIND_DPI;
 
-				CPen draw_pen, * old_pen;
-				CGdiObject * old_brush;
-
-				draw_pen.CreatePen(PS_SOLID, 0, RGB(127, 127, 255));
-				old_pen = dc.SelectObject(&draw_pen);
-				old_brush = dc.SelectStockObject(NULL_BRUSH);
-
+				HGDIOBJ draw_pen, old_pen;
+				HGDIOBJ old_brush;
+				
+				draw_pen = CreatePen(PS_SOLID, 0, RGB(127, 127, 255));
+				old_pen = SelectObject(dc,draw_pen);
+//				old_brush = SelectStockObject(dc,NULL_BRUSH);
+				old_brush = SelectObject(dc,GetStockObject(NULL_BRUSH));
+				
 				for(int j = 0; j < m_Selection.GetCount(); j++) {
 					 // transform selection into current DPI and
 					 // offset it by current upper/left corner.
@@ -1110,19 +1116,21 @@
 								m_PageHeight - nsel.left);
 							break;
 						}
-
+						
 						r.OffsetRect(-m_ViewOffsetX, -m_ViewOffsetY);
 						r.OffsetRect(m_ViewX, m_ViewY);
 						r.InflateRect(1,0);
-						dc.Rectangle(r);
+						::Rectangle(dc,r.left,r.top,r.right,r.bottom);
+						//Rectangle(r);
 						r.DeflateRect(1,1);
-						dc.InvertRect(r);
+						::InvertRect(dc,&r);
+						//dc.InvertRect(r);
 					}
 				}
 
-				dc.SelectObject(old_pen);
-				dc.SelectObject(old_brush);
-				dc.Detach();
+				SelectObject(dc,old_pen);
+				SelectObject(dc,old_brush);
+				//dc.Detach();
 			}	
 		}
 		return 0;
@@ -1441,7 +1449,7 @@
 
 	float AFPDFDoc::GetRenderDPI(void)
 	{		
-		return m_renderDPI;
+		return (float)m_renderDPI;
 	}
 
 	void AFPDFDoc::SetRenderDPI(FLOAT newVal)
@@ -1480,7 +1488,7 @@
 		//Tratar de reservar la cadena
 		ucstring = GetUnicodeString(sText, length);
 		if (ucstring == NULL) {
-			AfxMessageBox("Out of memory");
+//			AfxMessageBox("Out of memory");
 			return FALSE;
 		}
 
@@ -1505,7 +1513,7 @@
 			FIND_DPI, FIND_DPI, 0, gFalse, gTrue, gFalse);
 
 		if (!FindPage.isOk()) {
-			AfxMessageBox("Error al mostrar la pagina");
+//			AfxMessageBox("Error al mostrar la pagina");
 			delete [] ucstring;
 			return -1;
 		}
@@ -1555,7 +1563,7 @@
 				FIND_DPI, FIND_DPI, 0, gFalse, gTrue, gFalse);
 
 			if (!FindPage.isOk()) {
-				AfxMessageBox("Error al mostrar la pagina");
+//				AfxMessageBox("Error al mostrar la pagina");
 				delete [] ucstring;
 				return -1;	//No hay resultados
 			}
@@ -1587,7 +1595,7 @@
 		//Tratar de reservar la cadena
 		ucstring = GetUnicodeString(sText, length);
 		if (ucstring == NULL) {
-			AfxMessageBox("Out of memory");
+//			AfxMessageBox("Out of memory");
 			return FALSE;
 		}
 		//Comenzar en xMin, yMin
@@ -1604,7 +1612,7 @@
 			FIND_DPI, FIND_DPI, 0, gFalse, gTrue, gFalse);
 
 		if (!FindPage.isOk()) {
-			AfxMessageBox("Error al mostrar la pagina");
+//			AfxMessageBox("Error al mostrar la pagina");
 			delete [] ucstring;
 			return -1;
 		}
@@ -1641,7 +1649,7 @@
 					FIND_DPI, FIND_DPI, 0, gFalse, gTrue, gFalse);
 				//Si no se mostro correctamente, salir
 				if (!FindPage.isOk()) {
-					AfxMessageBox("Error al mostrar la pagina");
+//					AfxMessageBox("Error al mostrar la pagina");
 					delete [] ucstring;
 					return -1;	//No hay resultados
 				}
@@ -1677,7 +1685,7 @@
 		//Tratar de reservar la cadena
 		ucstring = GetUnicodeString(sText, length);
 		if (ucstring == NULL) {
-			AfxMessageBox("Out of memory");
+//			AfxMessageBox("Out of memory");
 			return FALSE;
 		}
 		//Comenzar en xMin, yMin
@@ -1694,7 +1702,7 @@
 			FIND_DPI, FIND_DPI, 0, gFalse, gTrue, gFalse);
 
 		if (!FindPage.isOk()) {
-			AfxMessageBox("Error al mostrar la pagina");
+//			AfxMessageBox("Error al mostrar la pagina");
 			delete [] ucstring;
 			return -1;
 		}
@@ -1731,7 +1739,7 @@
 					FIND_DPI, FIND_DPI, 0, gFalse, gTrue, gFalse);
 				//Si no se mostro correctamente, salir
 				if (!FindPage.isOk()) {
-					AfxMessageBox("Error al mostrar la pagina");
+//					AfxMessageBox("Error al mostrar la pagina");
 					delete [] ucstring;
 					return -1;	//No hay resultados
 				}
@@ -1769,11 +1777,12 @@
 		return 0;
 	}
 
-	long AFPDFDoc::FindFirst(const wchar_t *sText, long SearchOrder, bool Backward)
+	long AFPDFDoc::FindFirst(const wchar_t *sText, long SearchOrder, bool Backward, bool WholeWord)
 	{
 		
 
 		double x0, y0, x1, y1;
+		x0=y0=x1=y1=0;
 		long iFirstPageFound=0;
 		long searchPage=0;
 		GBool rc, startAtTop, startAtLast, backward;
@@ -1786,7 +1795,7 @@
 		//Tratar de reservar la cadena
 		ucstring = GetUnicodeString(sText, length);
 		if (ucstring == NULL) {
-			AfxMessageBox("Out of memory");
+//			AfxMessageBox("Out of memory");
 			return FALSE;
 		}
 
@@ -1810,18 +1819,26 @@
 			FIND_DPI, FIND_DPI, 0, gFalse, gTrue, gFalse);
 
 		if (!FindPage.isOk()) {
-			AfxMessageBox("Error al mostrar la pagina");
+//			AfxMessageBox("Error al mostrar la pagina");
 			delete [] ucstring;
 			return -1;
 		}
 
 		//Mientras haya que hacer
 		while(true) {
-			//Buscar el texto
-			rc = FindPage.findText(ucstring, length,
-				startAtTop, gTrue, startAtLast, gFalse,
-				m_bCaseSensitive, backward,
-				&x0, &y0, &x1, &y1);
+			if(WholeWord){
+				//Make a whole word search!
+				rc = FindPage.findTextWholeWord(ucstring, length,
+					startAtTop, gTrue, startAtLast, gFalse,
+					m_bCaseSensitive, backward,
+					&x0, &y0, &x1, &y1);
+			}else{
+				//Buscar el texto
+				rc = FindPage.findText(ucstring, length,
+					startAtTop, gTrue, startAtLast, gFalse,
+					m_bCaseSensitive, backward,
+					&x0, &y0, &x1, &y1);
+			}
 			//Si existen resultados, agregamos esta coincidencia a la lista
 			if (rc) {
 				m_Selection.Add(CPDFSearchResult(CRect((int)x0, (int)y0, (int)x1, (int)y1),searchPage));
@@ -1853,7 +1870,7 @@
 				FIND_DPI, FIND_DPI, 0, gFalse, gTrue, gFalse);
 
 			if (!FindPage.isOk()) {
-				AfxMessageBox("Error al mostrar la pagina");
+//				AfxMessageBox("Error al mostrar la pagina");
 				delete [] ucstring;
 				return -1;	//No hay resultados
 			}
@@ -1954,14 +1971,14 @@
 			{
 				DWORD exitcode=0;
 				//hurry up!
-				m_renderingThread->SetThreadPriority(THREAD_PRIORITY_ABOVE_NORMAL);
-				GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+				SetThreadPriority(m_renderingThread,THREAD_PRIORITY_ABOVE_NORMAL);
+				GetExitCodeThread(m_renderingThread,&exitcode);
 				
 				while (exitcode==STILL_ACTIVE){
-					GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+					GetExitCodeThread(m_renderingThread,&exitcode);
 					Sleep(50);
 				}
-				delete m_renderingThread;
+				CloseHandle(m_renderingThread);
 				m_renderingThread=NULL;
 			}
 			SplashColor paperColor;
@@ -1994,14 +2011,14 @@
 		}else{
 			if(m_exportJpgThread!=0){
 				DWORD exitcode=0;
-				GetExitCodeThread(m_exportJpgThread->m_hThread,&exitcode);
+				GetExitCodeThread(m_exportJpgThread,&exitcode);
 				if (exitcode==STILL_ACTIVE){	
 					//Cancel event
 					SetEvent(this->hExportJpgCancel);
 					//Wait for finished
 					WaitForSingleObject(this->hExportJpgFinished,INFINITE);
 				}
-				delete m_exportJpgThread;
+				CloseHandle(m_exportJpgThread);
 				m_exportJpgThread=0;
 
 			}
@@ -2024,8 +2041,9 @@
 			p->toPage = toPage;
 			p->quality =quality;
 			p->WaitTime = waitProc;
-			
-			m_exportJpgThread = AfxBeginThread((AFX_THREADPROC)AFPDFDoc::ExportingJpgThread,(LPVOID)p,THREAD_PRIORITY_NORMAL);
+			DWORD dThread;
+			m_exportJpgThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::ExportingJpgThread,(LPVOID)p,THREAD_PRIORITY_NORMAL,&dThread);
+
 //			m_exportJpgThread->m_bAutoDelete=false;
 //			m_exportJpgThread->ResumeThread();
 			if(waitProc==-1){
@@ -2279,7 +2297,7 @@
 		  TextOutputDev *textOut;
 		  FILE *f;
 		  Object info;
-		  GBool ok;
+//		  GBool ok;
 		  GString *textFileName = new GString(fileName);
 		 // check for copy permission
 		  if (!m_PDFDoc->okToCopy()) {
@@ -2400,7 +2418,7 @@
 	bool AFPDFDoc::JpgIsBusy(){
 		if(m_exportJpgThread!=0){
 			DWORD exitcode=0;
-			GetExitCodeThread(m_exportJpgThread->m_hThread,&exitcode);
+			GetExitCodeThread(m_exportJpgThread,&exitcode);
 			if (exitcode==STILL_ACTIVE){	
 				return true;
 			}
@@ -2412,7 +2430,7 @@
 	bool AFPDFDoc::IsBusy(){
 		if(this->m_renderingThread!=0){
 			DWORD exitcode=0;
-			GetExitCodeThread(m_renderingThread->m_hThread,&exitcode);
+			GetExitCodeThread(m_renderingThread,&exitcode);
 			if (exitcode==STILL_ACTIVE){	
 				return true;
 			}

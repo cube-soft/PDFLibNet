@@ -102,8 +102,8 @@ long AFPDFDocInterop::FindNext(const wchar_t *sText){
 long AFPDFDocInterop::FindPrior(const wchar_t *sText){
 	return ((AFPDFDoc *)_ptr)->FindPrior(sText);
 }
-long AFPDFDocInterop::FindFirst(const wchar_t *sText, long SearchOrder, bool Backward){
-	return ((AFPDFDoc *)_ptr)->FindFirst(sText,SearchOrder,Backward);
+long AFPDFDocInterop::FindFirst(const wchar_t *sText, long SearchOrder, bool Backward, bool WholeWord){
+	return ((AFPDFDoc *)_ptr)->FindFirst(sText,SearchOrder,Backward, WholeWord);
 }
 long AFPDFDocInterop::RenderHDC(long lHdc){
 	return ((AFPDFDoc *)_ptr)->RenderHDC(lHdc);

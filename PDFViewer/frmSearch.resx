@@ -138,7 +138,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;txtSearch.ZOrder" xml:space="preserve">
-    <value>7</value>
+    <value>8</value>
   </data>
   <data name="label1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -165,7 +165,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;label1.ZOrder" xml:space="preserve">
-    <value>6</value>
+    <value>7</value>
   </data>
   <data name="btnSearch.Location" type="System.Drawing.Point, System.Drawing">
     <value>345, 7</value>
@@ -189,7 +189,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnSearch.ZOrder" xml:space="preserve">
-    <value>5</value>
+    <value>6</value>
   </data>
   <data name="btnSearchNext.Location" type="System.Drawing.Point, System.Drawing">
     <value>345, 36</value>
@@ -213,7 +213,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnSearchNext.ZOrder" xml:space="preserve">
-    <value>4</value>
+    <value>5</value>
   </data>
   <data name="btnCancelSearch.Location" type="System.Drawing.Point, System.Drawing">
     <value>345, 69</value>
@@ -237,7 +237,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;btnCancelSearch.ZOrder" xml:space="preserve">
-    <value>3</value>
+    <value>4</value>
   </data>
   <data name="chkWholeWord.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
@@ -264,13 +264,13 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;chkWholeWord.ZOrder" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
   </data>
   <data name="chkSearchUp.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
   <data name="chkSearchUp.Location" type="System.Drawing.Point, System.Drawing">
-    <value>65, 56</value>
+    <value>65, 70</value>
   </data>
   <data name="chkSearchUp.Size" type="System.Drawing.Size, System.Drawing">
     <value>75, 17</value>
@@ -297,7 +297,7 @@
     <value>True</value>
   </data>
   <data name="chkFullSearch.Location" type="System.Drawing.Point, System.Drawing">
-    <value>65, 76</value>
+    <value>65, 87</value>
   </data>
   <data name="chkFullSearch.Size" type="System.Drawing.Size, System.Drawing">
     <value>137, 17</value>
@@ -320,6 +320,37 @@
   <data name="&gt;&gt;chkFullSearch.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="chkMatchCase.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="chkMatchCase.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <data name="chkMatchCase.Location" type="System.Drawing.Point, System.Drawing">
+    <value>65, 53</value>
+  </data>
+  <data name="chkMatchCase.Size" type="System.Drawing.Size, System.Drawing">
+    <value>83, 17</value>
+  </data>
+  <data name="chkMatchCase.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="chkMatchCase.Text" xml:space="preserve">
+    <value>Match Case</value>
+  </data>
+  <data name="&gt;&gt;chkMatchCase.Name" xml:space="preserve">
+    <value>chkMatchCase</value>
+  </data>
+  <data name="&gt;&gt;chkMatchCase.Type" xml:space="preserve">
+    <value>System.Windows.Forms.CheckBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;chkMatchCase.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;chkMatchCase.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
@@ -327,7 +358,7 @@
     <value>6, 13</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>432, 100</value>
+    <value>432, 134</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Search in file</value>

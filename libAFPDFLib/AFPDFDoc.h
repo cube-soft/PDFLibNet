@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "OutlineItemA.h"
-#include "PageMemory.h";
+#include "PageMemory.h"
 
 void InitGlobalParams(char *configFile);
 
@@ -11,6 +11,36 @@ void InitGlobalParams(char *configFile);
 
 typedef int (__stdcall *NOTIFYHANDLE)();
 typedef int (__stdcall *PROGRESSHANDLE)(int, int);
+
+class CRect 
+	: public tagRECT
+{
+public:
+	int width;
+	int height;
+	CRect(int x, int y, int r, int b){
+		left=x;
+		top=y;
+		width = r - x;
+		height = b - y;
+		right = r;
+		bottom = b;
+	}
+	
+	void OffsetRect(int dx, int dy){
+		::OffsetRect(this,dx,dy);
+	}
+	void InflateRect(int dx, int dy)
+	{	
+		::InflateRect(this,dx,dy);
+	}
+	void DeflateRect(int dx, int dy){
+		::InflateRect(this,-dx,-dy);
+	}
+	CRect(){
+		left=right=top=bottom=width=height=0;
+	}
+};
 
 class CPDFSearchResult 
 	: public CRect
@@ -51,8 +81,8 @@ public:
 	NOTIFYHANDLE m_RenderFinishHandle;
 private:
 	GString m_LastOpenedFile;
-	CWinThread *m_renderingThread;
-	CWinThread *m_exportJpgThread;
+	HANDLE m_renderingThread;
+	HANDLE m_exportJpgThread;
 	DynArray<CPDFSearchResult> m_Selection;
 	PDFDoc *m_PDFDoc;
 	SplashOutputDev	*m_splashOut;
@@ -154,7 +184,7 @@ public:
 	long FindText(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc);
 	long FindNext(const wchar_t *sText);
 	long FindPrior(const wchar_t *sText);
-	long FindFirst(const wchar_t *sText, long SearchOrder, bool Backward);
+	long FindFirst(const wchar_t *sText, long SearchOrder, bool Backward, bool WholeWord);
 	long RenderHDC(long lHdc);
 	Links *GetLinksPage(long iPage);
 	LinkDest *findDest(char *destName);

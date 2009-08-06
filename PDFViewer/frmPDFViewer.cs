@@ -515,6 +515,8 @@ namespace PDFViewer
             int lFound=0;
             if (_pdfDoc != null)
             {
+                //PDFLibNet.xPDFParams.ErrorQuiet = false;
+                //PDFLibNet.xPDFParams.ErrorFile="C:\\errorstd.log";
                 _pdfDoc.SearchCaseSensitive = e.Exact;
                 
                 if (e.FromBegin)
@@ -525,13 +527,11 @@ namespace PDFViewer
                     e.WholeWord);
                 }
                 else if (e.FindNext)
-                {
-                    
+                {   
                     if (e.Up)
                         lFound = _pdfDoc.FindPrevious(e.Text);
                     else
-                        lFound = _pdfDoc.FindNext(e.Text);
-                     
+                        lFound = _pdfDoc.FindNext(e.Text);    
                 }
                 else
                 {
@@ -556,11 +556,12 @@ namespace PDFViewer
 
         private void FocusSearchResult(PDFLibNet.PDFSearchResult res)
         {
+            Point loc = res.Position.Location; 
             Point dr = pageViewControl1.ScrollPosition;
             if (_pdfDoc.PageWidth > pageViewControl1.Width)
-                dr.X = res.Position.Left - pageViewControl1.Width - pageViewControl1.Margin.Size.Width;
+                dr.X =(int)( loc.X * _pdfDoc.RenderDPI / 72) -pageViewControl1.Width - pageViewControl1.Margin.Size.Width;
             if (_pdfDoc.PageHeight > pageViewControl1.Height)
-                dr.Y = res.Position.Top - pageViewControl1.Height - pageViewControl1.Margin.Size.Height;
+                dr.Y =(int) ( loc.Y * _pdfDoc.RenderDPI / 72) -pageViewControl1.Height - pageViewControl1.Margin.Size.Height;
             pageViewControl1.ScrollPosition = dr;
 
         }

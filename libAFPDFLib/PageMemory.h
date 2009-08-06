@@ -12,6 +12,7 @@ private:
 
 	float _factorW;
 	float _factorH;
+	double _renderDPI;
 	int _newWidth;
 	int _newHeight;
 
@@ -19,14 +20,20 @@ public:
 	PageMemory(void);
 	~PageMemory(void);
 
-	int Create(HDC clientDC, int width, int height);
+	int Create(HDC clientDC, int width, int height, double renderDPI);
 	int SetDIBits(HDC clientDC,const void *lpBits);
-	void SetDimensions(int width, int height);
+	void SetDimensions(int width, int height, double renderDPI);
 
-	void Resize(int width, int height);
+	void Resize(int width, int height, double renderDPI);
 	int Draw(HDC hdc, int xSrc, int ySrc, int width, int height, int xDest, int yDest);
 	int Draw(HBITMAP hdc, int xSrc, int ySrc, int width, int height, int xDest, int yDest);
 
+	double getRenderDPI(){
+		return _renderDPI;
+	}
+	void setRenderDPI(double value){
+		_renderDPI = value;
+	}
 	void *GetDIBits();
 
 	void Dispose();

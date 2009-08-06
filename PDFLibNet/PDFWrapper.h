@@ -166,7 +166,14 @@ namespace PDFLibNet {
 		PointF PointUserToDev(PointF point);
 		PointF PointDevToUser(PointF point);
 
-		property bool SearchCaseSensitive;
+		property bool SearchCaseSensitive{
+			bool get(){
+				return _pdfDoc->GetSearchCaseSensitive();
+			}
+			void set(bool value){
+				_pdfDoc->SetSearchCaseSensitive(value);
+			}
+		}
 		property double RenderDPI {
 			double get(){
 				return _pdfDoc->GetRenderDPI();

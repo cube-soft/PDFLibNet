@@ -3,8 +3,8 @@
 #include "jpeg.h"
 #include "error.h"
 	//------DECLARATIONS	
-	#define			FIND_DPI			150
-	#define			PRINT_DPI			72
+	#define			FIND_DPI			72
+	#define			PRINT_DPI			150
 	#define			SPACE_X				16
 	#define			SPACE_Y				16
 
@@ -707,9 +707,11 @@
 
 				m_PageHeight =(long)( m_PageHeight * m_renderDPI/m_LastRenderDPI);
 				m_PageWidth  =(long)( m_PageWidth * m_renderDPI/m_LastRenderDPI);
-				m_Bitmap->Resize(m_PageWidth,m_PageHeight);
+				m_Bitmap->Resize(m_PageWidth,m_PageHeight,m_renderDPI);
+
 				//Run thread
-				if (m_LastPageRenderedByThread != m_CurrentPage || m_LastRenderDPI!=m_renderDPI)
+				if (m_LastPageRenderedByThread != m_CurrentPage 
+					|| m_LastRenderDPI!=m_renderDPI)
 				{
 					m_PageRenderedByThread=true;
 					m_PageToRenderByThread = m_CurrentPage;
@@ -768,7 +770,8 @@
 					m_Bitmap = new PageMemory();
 					AddBitmapCache(m_Bitmap,m_CurrentPage);
 				}
-				m_Bitmap->Create(clientDC,bmWidth,bmHeight);		
+				m_Bitmap->Create(clientDC,bmWidth,bmHeight,m_renderDPI);	
+				
 			}
 			//********START DIB
 			m_Bitmap->SetDIBits(clientDC,(void *)m_splashOutThread->getBitmap()->getDataPtr());
@@ -780,10 +783,10 @@
 			m_bbox = CRect(box_left, box_top, box_right, box_bottom);
 
 			
+			m_PageRenderedByThread=false;
 			//prerender next page
 			if (m_CurrentPage+1 <= m_PDFDoc->getNumPages())
 			{   
-					m_PageRenderedByThread=false;
 					m_PageToRenderByThread = m_CurrentPage+1;
 					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID) this,CREATE_SUSPENDED,0);
 					SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
@@ -794,7 +797,7 @@
 			m_LastRenderDPI = m_renderDPI;
 			m_LastPageRendered=m_CurrentPage;
 
-			m_Bitmap->SetDimensions(m_PageWidth,m_PageHeight);
+			m_Bitmap->SetDimensions(m_PageWidth,m_PageHeight,m_renderDPI);
 
 			if(this->m_RenderFinishHandle!=0)
 				this->m_RenderFinishHandle();
@@ -851,7 +854,9 @@
 				}
 				error(-1,"Clear mod region");
 				m_splashOut->clearModRegion();
-				if (m_renderDPI!=m_LastRenderDPI || bForce){
+				if ( bForce ||
+					m_renderDPI!=m_LastRenderDPI || 
+					(m_Bitmap && m_Bitmap->getRenderDPI() != m_renderDPI) ){
 					//Invalidate prerendered page
 					m_LastPageRenderedByThread=-1;
 					//Invalidate cache
@@ -932,7 +937,7 @@
 							m_Bitmap = new PageMemory();
 							AddBitmapCache(m_Bitmap,m_CurrentPage);
 						}
-						m_Bitmap->Create(clientDC,bmWidth,bmHeight);		
+						m_Bitmap->Create(clientDC,bmWidth,bmHeight,m_renderDPI);		
 					}
 					//********START DIB
 					m_Bitmap->SetDIBits(clientDC,(void *)m_splashOut->getBitmap()->getDataPtr());
@@ -1619,11 +1624,20 @@
 
 		//Mientras haya que hacer
 		while(true) {
-			//Buscar el texto
-			rc = FindPage.findText(ucstring, length,
-				startAtTop, gTrue, startAtLast, gFalse,
-				m_bCaseSensitive, gFalse,
-				&x0, &y0, &x1, &y1);
+			if(m_searchWholeWord){
+					//Buscar el texto
+				rc = FindPage.findTextWholeWord(ucstring, length,
+					startAtTop, gTrue, startAtLast, gFalse,
+					m_bCaseSensitive, gFalse,
+					&x0, &y0, &x1, &y1);
+			}else{
+
+				//Buscar el texto
+				rc = FindPage.findText(ucstring, length,
+					startAtTop, gTrue, startAtLast, gFalse,
+					m_bCaseSensitive, gFalse,
+					&x0, &y0, &x1, &y1);
+			}
 
 			//Si existen resultados, agregamos esta coincidencia a la lista
 			if (rc) {
@@ -1709,11 +1723,19 @@
 
 		//Mientras haya que hacer
 		while(true) {
-			//Buscar el texto
-			rc = FindPage.findText(ucstring, length,
-				startAtTop, gTrue, startAtLast, gFalse,
-				m_bCaseSensitive,gTrue,
-				&x0, &y0, &x1, &y1);
+			if(m_searchWholeWord){
+					//Buscar el texto
+				rc = FindPage.findTextWholeWord(ucstring, length,
+					startAtTop, gTrue, startAtLast, gFalse,
+					m_bCaseSensitive,gTrue,
+					&x0, &y0, &x1, &y1);
+			}else{
+				//Buscar el texto
+				rc = FindPage.findText(ucstring, length,
+					startAtTop, gTrue, startAtLast, gFalse,
+					m_bCaseSensitive,gTrue,
+					&x0, &y0, &x1, &y1);
+			}
 
 			//Si existen resultados, agregamos esta coincidencia a la lista
 			if (rc) {
@@ -1823,20 +1845,21 @@
 			delete [] ucstring;
 			return -1;
 		}
-
+		m_searchWholeWord = WholeWord;
 		//Mientras haya que hacer
 		while(true) {
+			
 			if(WholeWord){
 				//Make a whole word search!
 				rc = FindPage.findTextWholeWord(ucstring, length,
 					startAtTop, gTrue, startAtLast, gFalse,
-					m_bCaseSensitive, backward,
+					(m_bCaseSensitive?gTrue:gFalse), backward,
 					&x0, &y0, &x1, &y1);
 			}else{
 				//Buscar el texto
 				rc = FindPage.findText(ucstring, length,
 					startAtTop, gTrue, startAtLast, gFalse,
-					m_bCaseSensitive, backward,
+					(m_bCaseSensitive?gTrue:gFalse), backward,
 					&x0, &y0, &x1, &y1);
 			}
 			//Si existen resultados, agregamos esta coincidencia a la lista

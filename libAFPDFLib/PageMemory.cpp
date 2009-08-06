@@ -5,6 +5,7 @@ PageMemory::PageMemory(void)
 , _bits(0)
 , _factorW(1)
 , _factorH(1)
+, _renderDPI(0)
 {
 	Width=0;
 	Height=0;
@@ -15,12 +16,13 @@ PageMemory::~PageMemory(void)
 	Dispose();
 }
 
-int PageMemory::Create(HDC clientDC, int width, int height)
+int PageMemory::Create(HDC clientDC, int width, int height, double renderDPI)
 {
 	//Delete object
 	Dispose();
 	Width=width;
 	Height=height;
+	_renderDPI = renderDPI;
 	BITMAPINFO bmi=GetBitmapInfo();
 	bmi.bmiHeader.biHeight=-bmi.bmiHeader.biHeight;
 	if((_bitmap = CreateDIBSection(clientDC, &bmi, DIB_RGB_COLORS, &_bits,NULL,0))==NULL){
@@ -59,16 +61,17 @@ int PageMemory::SetDIBits(HDC clientDC,const void *lpBits)
 	return TRUE;
 }
 
-void PageMemory::SetDimensions(int width, int height)
+void PageMemory::SetDimensions(int width, int height, double renderDPI)
 {
 	//if(this->_bitmap != NULL )
 //		Resize(width,height);
 	_factorW=1;
 	_factorH=1;
+	_renderDPI = renderDPI;
 	Width=width;
 	Height=height;	
 }
-void PageMemory::Resize(int width, int height)
+void PageMemory::Resize(int width, int height, double renderDPI)
 {
 	if(Width!=width || Height!=height){
 /*		
@@ -85,6 +88,7 @@ void PageMemory::Resize(int width, int height)
 */
 		_factorW = (float)width/((float)Width);
 		_factorH = (float)height/((float)Height);
+		_renderDPI = renderDPI;
 	}
 }
 

@@ -58,6 +58,7 @@ private:
 	PageMemory	*_bitmapCache[MAX_BITMAP_CACHE+1];
 	int			 _pageCached[MAX_BITMAP_CACHE+1];
 	int			 _countCached;
+	bool		m_searchWholeWord;
 
 	PageMemory *GetBitmapCache(int page);
 	void InvalidateBitmapCache();

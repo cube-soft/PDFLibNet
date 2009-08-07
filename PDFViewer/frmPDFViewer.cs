@@ -515,8 +515,8 @@ namespace PDFViewer
             int lFound=0;
             if (_pdfDoc != null)
             {
-                //PDFLibNet.xPDFParams.ErrorQuiet = false;
-                //PDFLibNet.xPDFParams.ErrorFile="C:\\errorstd.log";
+                PDFLibNet.xPDFParams.ErrorQuiet = false;
+                PDFLibNet.xPDFParams.ErrorFile="C:\\errorstd.log";
                 _pdfDoc.SearchCaseSensitive = e.Exact;
                 
                 if (e.FromBegin)
@@ -559,9 +559,9 @@ namespace PDFViewer
             Point loc = res.Position.Location; 
             Point dr = pageViewControl1.ScrollPosition;
             if (_pdfDoc.PageWidth > pageViewControl1.Width)
-                dr.X =(int)( loc.X * _pdfDoc.RenderDPI / 72) -pageViewControl1.Width - pageViewControl1.Margin.Size.Width;
+                dr.X =(int)( loc.X * _pdfDoc.RenderDPI / 72) -pageViewControl1.Width ;
             if (_pdfDoc.PageHeight > pageViewControl1.Height)
-                dr.Y =(int) ( loc.Y * _pdfDoc.RenderDPI / 72) -pageViewControl1.Height - pageViewControl1.Margin.Size.Height;
+                dr.Y =(int) ( loc.Y * _pdfDoc.RenderDPI / 72) -pageViewControl1.Height;
             pageViewControl1.ScrollPosition = dr;
 
         }

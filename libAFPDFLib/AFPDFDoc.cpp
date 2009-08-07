@@ -1724,7 +1724,7 @@
 		//Mientras haya que hacer
 		while(true) {
 			if(m_searchWholeWord){
-					//Buscar el texto
+				//Buscar el texto
 				rc = FindPage.findTextWholeWord(ucstring, length,
 					startAtTop, gTrue, startAtLast, gFalse,
 					m_bCaseSensitive,gTrue,
@@ -1832,6 +1832,11 @@
 			searchPage=1;
 		else
 			searchPage=m_CurrentPage;
+
+		if(searchPage>this->GetPageCount())
+			searchPage = this->GetPageCount();
+		if(searchPage<1)
+			searchPage=1;
 
 		/* use fixed DPI and rotation, this would lead to somehwere
 		 * wrong positioning displaying more than 300 DPI document

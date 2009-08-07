@@ -72,7 +72,7 @@ namespace PDFViewer
                 if (MessageBox.Show("No se encontraron resultados. Desea iniciar la búsqueda desde el principio?", Text, MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     _fromBegin = true;
-                    btnSearchNext.PerformClick();
+                    btnSearch.PerformClick();
                 }
             }
         }

@@ -2928,6 +2928,15 @@ void TextPage::coalesce(GBool physLayout, GBool doHTML) {
   }
 }
 
+char *unicodeToChar(Unicode *txt, int len){
+	char *buffer =new char[len+1];
+	int k;
+	for(k=0;k<len;k++)
+		buffer[k]=txt[k];
+	buffer[k]='\0';
+	return buffer;
+}
+
 GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool stopAtBottom,	 GBool startAtLast, GBool stopAtLast, GBool caseSensitive, GBool backward, double *xMin, double *yMin, double *xMax, double *yMax) {
 	TextBlock *blk;
 	TextLine *line;
@@ -2948,7 +2957,7 @@ GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool s
 
 	// convert the search string to uppercase
 	if (!caseSensitive) {
-		fprintf(stderr,"Convert to upper case s2\n");
+		//fprintf(stderr,"Convert search string to uppercase\n");
 		s2 = (Unicode *)gmallocn(len, sizeof(Unicode));
 		for (i = 0; i < len; ++i) {
 			s2[i] = unicodeToUpper(s[i]);
@@ -2981,10 +2990,10 @@ GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool s
 	found = gFalse;
 	xMin0 = xMax0 = yMin0 = yMax0 = 0; // make gcc happy
 	xMin1 = xMax1 = yMin1 = yMax1 = 0; // make gcc happy
-
+	//fprintf(stderr,"Starting Search %s\n",backward?"backward":"forward");
 	for (i = backward ? nBlocks - 1 : 0;backward ? i >= 0 : i < nBlocks;i += backward ? -1 : 1) {
+			//fprintf(stderr,"Search in block %d of %d\n",i,nBlocks);	
 			blk = blocks[i];
-
 			// check: is the block above the top limit?
 			if (!startAtTop && (backward ? blk->yMin > yStart : blk->yMax < yStart))
 				continue;
@@ -2992,11 +3001,11 @@ GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool s
 			if (!stopAtBottom && (backward ? blk->yMax < yStop : blk->yMin > yStop))
 				break;
 			int lc=0;
-			for (line = blk->lines; line; line = line->next) {
-				lc++;
+			for (line = blk->lines, lc=0; line; line = line->next, ++lc) {
+				
 				// check: is the line above the top limit?
 				if (!startAtTop && (backward ? line->yMin > yStart : line->yMin < yStart)) 
-						continue;
+					continue;
 				// check: is the line below the bottom limit?
 				if (!stopAtBottom && (backward ? line->yMin < yStop : line->yMin > yStop)) 
 					continue;
@@ -3004,17 +3013,20 @@ GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool s
 				//Count the words
 				for(word = line->words; word; word = word->next)
 					cWords++;
+				//fprintf(stderr,"Search in line %d of %d\n",lc,cWords);
 				//search each word in this line
 				j=backward ? cWords - 1: 0;
 				word = line->words;
-				int ej=0;
-				while(backward ? j >=0:j<cWords && word){
+				
+				while(word){
+					//fprintf(stderr,"Check word %d(%d characters/%d) of %d\n",j,word->len,len,cWords);
 					// convert the word to uppercase
 					m = word->len;
 					if(m==len){
 						bFound=gFalse;
+						//Convert to Upper if not match case
 						if (!caseSensitive) {
-							fprintf(stderr,"Convert to upper case s1\n");
+							//fprintf(stderr,"Convert to upper case s1\n");
 							if (m > txtSize) {
 								txt = (Unicode *)greallocn(txt, m, sizeof(Unicode));
 								txtSize = m;
@@ -3025,7 +3037,8 @@ GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool s
 						} else {
 							txt = word->text;
 						}
-						
+						//fprintf(stderr,"Compare strings %s==%s\n",unicodeToChar(txt,m),unicodeToChar(s2,m));
+						//Compare string
 						bFound=gTrue;	
 						for(int k=0; k<len; ++k){
 							if(txt[k] != s2[k]){
@@ -3036,12 +3049,14 @@ GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool s
 						
 						//We found it!
 						if(bFound){
+							//fprintf(stderr,"String found. Checing position!!\n");
 							xMin1 = word->xMin;
 							xMax1 = word->xMax;
 							yMin1 = word->yMin;
 							yMax1 = word->yMax;
-						
+							
 							if (backward) {
+								//Check if the result are before of the current 
 								if ((startAtTop ||	 yMin1 < yStart || (yMin1 == yStart && xMin1 < xStart)) &&
 									(stopAtBottom || yMin1 > yStop || (yMin1 == yStop && xMin1 > xStop))) 
 								{
@@ -3069,25 +3084,23 @@ GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool s
 								}
 							}
 						}
-						break;
+						if(found)
+							break;
 					}
-
 					//Go next word
-					if (backward) {
-						--j;
-					} else {
-						++j;
-					}
-					word=word->next;
+					j+= (backward?-1:1);
+					word=word->getNext(); //Next word
 				}
 			}
 		}
-
+		//fprintf(stderr,"Leaving search blocks\n");
 		if (!caseSensitive) {
+			//fprintf(stderr,"Free s2, txt!!\n");
 			gfree(s2);
 			gfree(txt);
 		}
 		if (found) {
+			//fprintf(stderr,"String found!!\n");
 			*xMin = xMin0;
 			*xMax = xMax0;
 			*yMin = yMin0;
@@ -3098,7 +3111,7 @@ GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool s
 			haveLastFind = gTrue;
 			return gTrue;
 		}
-
+		//fprintf(stderr,"String NOT found!!\n");
 		return gFalse;
 }
 

@@ -27,6 +27,9 @@ public:
 		bottom = b;
 	}
 	
+	bool NotEmpty(){
+		return (width>0 || height>0 || left>0 || top>0);
+	}
 	void OffsetRect(int dx, int dy){
 		::OffsetRect(this,dx,dy);
 	}
@@ -93,6 +96,7 @@ private:
 	CString m_OwnerPassword;
 	CString m_UserPassword;
 	CRect m_bbox;
+	CRect m_sliceBox;
 	double __x0;
 	double __y0;
 
@@ -127,7 +131,7 @@ public:
 	long LoadFromFile(char *sFileName);
 	void SetUserPassword(char *user_password);
 	void SetOwnerPassword(char *owner_password);
-	
+	void SetSliceBox(int x, int y, int w, int h);
 	long RenderPage(long lhWnd);
 	long RenderPage(long lhWnd, bool bForce);
 	long RenderPage(long lhWnd, bool bForce, bool enableThread);

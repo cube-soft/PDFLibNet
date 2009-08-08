@@ -188,6 +188,7 @@ namespace PDFLibNet
 		}
 		return col;
 	}
+	
 	System::Drawing::PointF PDFWrapper::PointUserToDev(System::Drawing::PointF point){
 		int x;
 		int y;

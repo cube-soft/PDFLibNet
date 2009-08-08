@@ -73,6 +73,12 @@ namespace PDFViewer
         }
         #endregion
 
+        public Point ClientToPage(Point p)
+        {
+            Point pp = new Point(p.X + Margin.Left + ScrollPosition.X, p.Y + Margin.Top + ScrollPosition.Y);
+            return pp;
+        }
+        
         public Point PointUserToPage(Point p)
         {
             int offsetX=0;

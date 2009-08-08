@@ -136,7 +136,7 @@ namespace PDFViewer
                     //Transform location
                     Point loc = Point.Ceiling(_pdfDoc.PointUserToDev(pl.Bounds.Location));
                     //Adjust size, 72dpi
-                    Size siz = Size.Round(new SizeF(pl.Bounds.Size.Width * (float)_pdfDoc.RenderDPI / 72f, pl.Bounds.Size.Height * (float)_pdfDoc.RenderDPI / 72f));
+                    Size siz = new Size(pl.Bounds.Size.Width * (int)(_pdfDoc.RenderDPI / 72f), pl.Bounds.Size.Height * (int)(_pdfDoc.RenderDPI / 72f));
                     //Translate
                     loc = pageViewControl1.PointUserToPage(loc);
                     Rectangle linkLoc = new Rectangle(loc, siz);
@@ -433,6 +433,7 @@ namespace PDFViewer
                             {
                                 p.Width = pageViewControl1.ClientSize.Width;
                                 _pdfDoc.FitToWidth(p.Handle);
+                                _originalDPI = _pdfDoc.RenderDPI;
                             }
                             _pdfDoc.RenderPage(pageViewControl1.Handle);
                             Render();
@@ -448,7 +449,7 @@ namespace PDFViewer
                 MessageBox.Show(ex.ToString());
             }
         }
-
+        double _originalDPI;
         private bool LoadFile(string filename)
         {
             try
@@ -803,21 +804,21 @@ namespace PDFViewer
                 _pdfDoc.CurrentY = view.Y;
                 _pdfDoc.DrawPageHDC(g.GetHdc());
                 g.ReleaseHdc();
-/*
+
                 if (_pdfDoc.RenderDPI >= g.DpiX)
                 {
                     foreach (PageLink pl in _pdfDoc.GetLinks(_pdfDoc.CurrentPage))
                     {
                         Point loc = Point.Round(_pdfDoc.PointUserToDev(pl.Bounds.Location));
                         //Adjust size, 72dpi
-                        Size siz = new Size((int)(1.5 * pl.Bounds.Size.Width * _pdfDoc.RenderDPI / g.DpiX),(int)( 1.5 * pl.Bounds.Size.Height *_pdfDoc.RenderDPI / g.DpiY));
+                        Size siz = new Size(pl.Bounds.Size.Width * (int)(_pdfDoc.RenderDPI / _originalDPI), pl.Bounds.Size.Height * (int)(_pdfDoc.RenderDPI / _originalDPI));
                         //Translate
                         loc = pageViewControl1.PointUserToPage(loc);
                         Rectangle linkLoc = new Rectangle(loc, siz);
                         g.DrawRectangle(Pens.Blue, linkLoc);
                     }
                 }
- */
+ 
             }
         }
 

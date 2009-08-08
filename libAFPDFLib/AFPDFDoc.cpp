@@ -470,7 +470,9 @@
 	, m_RenderFinishHandle(0)
 	, m_PageRenderedByThread(0)
 	, m_splashOutThread(0)
+	, m_sliceBox(0,0,0,0)
 	{
+		
 		for(int i=0;i<MAX_BITMAP_CACHE;i++){
 			_bitmapCache[i]=0;
 			_pageCached[i]=0;
@@ -990,14 +992,32 @@
 			page=1;
 		pdfDoc->m_LastPageRenderedByThread=page;
 
-		if(pdfDoc->m_PageRenderedByThread && pdfDoc->m_splashOutThread!=NULL)
-			pdfDoc->m_PDFDoc->displayPage(pdfDoc->m_splashOutThread,page, 
+		if(pdfDoc->m_PageRenderedByThread && pdfDoc->m_splashOutThread!=NULL){
+			if(pdfDoc->m_sliceBox.NotEmpty()){
+				pdfDoc->m_PDFDoc->displayPageSlice(pdfDoc->m_splashOutThread,page,
+											renderDPI,renderDPI, pdfDoc->m_Rotation,
+											gFalse,gTrue,gFalse,
+											pdfDoc->m_sliceBox.left ,pdfDoc->m_sliceBox.top,
+											pdfDoc->m_sliceBox.width,pdfDoc->m_sliceBox.height);	
+			}else{
+				pdfDoc->m_PDFDoc->displayPage(pdfDoc->m_splashOutThread,page, 
+											renderDPI, renderDPI, pdfDoc->m_Rotation, 
+											gFalse, gTrue, gFalse,0,0);
+			}
+		}
+		else{
+			if(pdfDoc->m_sliceBox.NotEmpty()){
+				pdfDoc->m_PDFDoc->displayPageSlice(pdfDoc->m_splashOutThread,page,
+											renderDPI,renderDPI, pdfDoc->m_Rotation,
+											gFalse,gTrue,gFalse,
+											pdfDoc->m_sliceBox.left ,pdfDoc->m_sliceBox.top,
+											pdfDoc->m_sliceBox.width,pdfDoc->m_sliceBox.height);					
+			}else{
+				pdfDoc->m_PDFDoc->displayPage(pdfDoc->m_splashOut,page, 
 										renderDPI, renderDPI, pdfDoc->m_Rotation, 
 										gFalse, gTrue, gFalse,0,0);
-		else
-			pdfDoc->m_PDFDoc->displayPage(pdfDoc->m_splashOut,page, 
-										renderDPI, renderDPI, pdfDoc->m_Rotation, 
-										gFalse, gTrue, gFalse,0,0);
+			}
+		}
 		pdfDoc->RenderThreadFinished();
 		return TRUE;
 	}
@@ -2464,4 +2484,13 @@
 			}
 		}
 		return false;
+	}
+
+	void AFPDFDoc::SetSliceBox(int x, int y, int w, int h){
+		m_sliceBox.left=x;
+		m_sliceBox.right = x+w;
+		m_sliceBox.bottom = y+h;
+		m_sliceBox.top=x;
+		m_sliceBox.width=w;
+		m_sliceBox.height=h;
 	}

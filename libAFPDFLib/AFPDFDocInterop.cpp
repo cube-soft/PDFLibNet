@@ -261,3 +261,7 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	bool AFPDFDocInterop::IsBusy(){
 		return ((AFPDFDoc *)_ptr)->IsBusy();
 	}
+
+	void AFPDFDocInterop::SetSliceBox(int x, int y, int w, int h){
+		((AFPDFDoc *)_ptr)->SetSliceBox(x,y,w,h);
+	}

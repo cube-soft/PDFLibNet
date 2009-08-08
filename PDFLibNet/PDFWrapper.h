@@ -166,6 +166,14 @@ namespace PDFLibNet {
 		PointF PointUserToDev(PointF point);
 		PointF PointDevToUser(PointF point);
 
+		property System::Drawing::Rectangle SliceBox{
+			System::Drawing::Rectangle get(){
+				return System::Drawing::Rectangle(0,0,0,0);
+			}
+			void set(System::Drawing::Rectangle  value){
+				_pdfDoc->SetSliceBox(value.Left,value.Top,value.Width,value.Height);
+			}
+		}
 		property bool SearchCaseSensitive{
 			bool get(){
 				return _pdfDoc->GetSearchCaseSensitive();

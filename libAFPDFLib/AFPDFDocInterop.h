@@ -21,6 +21,7 @@ public:
 	long RenderPageThread(long lhWnd, bool bForce);
 	void SetUserPassword(char *pass);
 	void SetOwnerPassword(char *pass);
+	void SetSliceBox(int x, int y, int w, int h);
 	//long SavePDF(char *fileName);
 	long SaveJpg(char *fileName,int firstPage, int lastPage,float renderDPI, int quality, int waitProc);
 	long SaveTxt(char *fileName,int firstPage, int lastPage,bool physLayout, bool rawOrder,bool htmlMeta);

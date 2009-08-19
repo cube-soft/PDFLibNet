@@ -463,6 +463,8 @@ public:
 		 GBool caseSensitive, GBool backward,
 		 double *xMin, double *yMin,
 		 double *xMax, double *yMax);
+  //Returns true if the point is over some text
+  GBool hasText(double x, double y);
 
   // Get the text which is inside the specified rectangle.
   GString *getText(double xMin, double yMin,

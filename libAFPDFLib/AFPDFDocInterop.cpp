@@ -246,7 +246,9 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	void AFPDFDocInterop::SetRenderFinishedHandler(void *handler){
 		((AFPDFDoc *)_ptr)->m_RenderFinishHandle = static_cast<NOTIFYHANDLE>(handler);
 	}
-
+	void AFPDFDocInterop::SetRenderNotifyFinishedHandler(void *handler){
+		((AFPDFDoc *)_ptr)->m_RenderNotifyFinishHandle = static_cast<PAGERENDERNOTIFY>(handler);
+	}
 	
 
 	void AFPDFDocInterop::CancelJpgExport(){
@@ -264,4 +266,11 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 
 	void AFPDFDocInterop::SetSliceBox(int x, int y, int w, int h){
 		((AFPDFDoc *)_ptr)->SetSliceBox(x,y,w,h);
+	}
+	PDFPageInterop *AFPDFDocInterop::getPage(int page){
+		AFPDFDoc *doc =((AFPDFDoc *)_ptr);
+		Page * p = doc->getDoc()->getCatalog()->getPage(page);
+		if(p)
+			return new PDFPageInterop(page,(void *)p,(void *)_ptr);
+		return 0;
 	}

@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 #include "gmem.h"
 #include "GlobalParams.h"
 #include "CharTypes.h"
@@ -578,6 +579,10 @@ void Gfx::go(GBool topLevel) {
 	printf("\n");
 	fflush(stdout);
       }
+	 
+	  args[numArgs].abortCheckCbk=abortCheckCbk;
+	  args[numArgs].abortCheckCbkData=abortCheckCbkData;
+
       execOp(&obj, args, numArgs);
       obj.free();
       for (i = 0; i < numArgs; ++i)
@@ -3327,7 +3332,11 @@ void Gfx::opXObject(Object args[], int numArgs) {
   if (obj2.isName("Image")) {
     if (out->needNonText()) {
       res->lookupXObjectNF(name, &refObj);
+	  refObj.abortCheckCbk=args[numArgs].abortCheckCbk;
+	  refObj.abortCheckCbkData = args[numArgs].abortCheckCbkData;
+	  clock_t cs= ::clock();
       doImage(&refObj, obj1.getStream(), gFalse);
+	  clock_t timetaked  =::clock()- cs;
       refObj.free();
     }
   } else if (obj2.isName("Form")) {

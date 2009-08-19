@@ -16,42 +16,58 @@ namespace PDFLibNet
 	public:
 		property System::Double Left{
 			System::Double get(){
-				return _ptr->getLeft();
+				if(_ptr)
+					return _ptr->getLeft();
+				return 0;
 			}
 		}
 		property System::Double Right{
 			System::Double get(){
-				return _ptr->getRight();
+				if(_ptr)
+					return _ptr->getRight();
+				return 0;
 			}
 		}
 		property System::Double Top{
 			System::Double get(){
-				return _ptr->getTop();
+				if(_ptr)
+					return _ptr->getTop();
+				return 0;
 			}
 		}
 		property System::Double Bottom{
 			System::Double get(){
-				return _ptr->getBottom();
+				if(_ptr)
+					return _ptr->getBottom();
+				return 0;
 			}
 		}
 		property System::Double Zoom{
 			System::Double get(){
-				return _ptr->getZoom();
+				if(_ptr)
+					return _ptr->getZoom();
+				return 0;
 			}
 		}
 		property System::Boolean ChangeLeft{
 			System::Boolean get(){
-				return _ptr->getChangeLeft();
+				if(_ptr)
+					return _ptr->getChangeLeft();
+				return false;
 			}
 		}
 		property System::Boolean ChangeTop{
 			System::Boolean get(){
-				return _ptr->getChangeTop();
+				if(_ptr)
+					return _ptr->getChangeTop();
+				return false;
 			}
 		}
 		property System::Boolean ChangeZoom{
 			System::Boolean get(){
-				return _ptr->getChangeZoom();
+				if(_ptr)
+					return _ptr->getChangeZoom();
+				return false;
 			}
 		}
 		property System::Int32 Page{

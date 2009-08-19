@@ -9,7 +9,9 @@
 #define _WIN32_WINNT 0x0501	// Change this to the appropriate value to target other versions of Windows.
 #endif			
 
-#include <afxwin.h>         // MFC core and standard components
+//#include <afxwin.h>         // MFC core and standard components
+#include <shlobj.h>
+#include <atlstr.h>         // MFC core and standard components
 #include <aconf.h>
 #include <stdio.h>
 #include <tchar.h>

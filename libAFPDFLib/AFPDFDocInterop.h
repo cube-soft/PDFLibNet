@@ -2,6 +2,7 @@
 #include "OutlineItemInterop.h"
 #include "SearchResultInterop.h"
 #include "PageLinksInterop.h"
+#include "PDFPageInterop.h"
 
 typedef int (__stdcall *NOTIFYHANDLE)();
 typedef int (__stdcall *PROGRESSHANDLE)(int, int);
@@ -31,6 +32,7 @@ public:
 	void SetExportProgressHandler(void *);
 	void SetExportFinishedHandler(void *);
 	void SetRenderFinishedHandler(void *);
+	void SetRenderNotifyFinishedHandler(void *);
 
 	//Returns true if there is a process running
 	bool IsJpgBusy();
@@ -69,6 +71,7 @@ public:
 	long ProcessLinkAction(long lPtrLinkAction);
 	PageLinksInterop *getPageLinksInterop(long iPage);
 	LinkDestInterop *findDest(char *destName);
+	PDFPageInterop *getPage(int page);
 	void Dispose();
 
 	float GetRenderDPI(void);

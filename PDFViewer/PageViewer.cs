@@ -81,27 +81,35 @@ namespace PDFViewer
         
         public Point PointUserToPage(Point p)
         {
+            /*
             int offsetX=0;
             int offsetY=0;
 
             if(PageBounds.Y>=0)
                 offsetY = -(2*Margin.Top-PageBounds.Y);
             else 
-                offsetY = -2*(Margin.Top - PageBounds.Y);
+                offsetY = 0;
             if (PageBounds.X >= 0)
                 offsetX = -(2 * Margin.Left - PageBounds.X);
             else
-                offsetX = -2 * (Margin.Left - PageBounds.X);
+                offsetX = 0;
 
             if (PageBounds.Height <= ViewSize.Height)
                 offsetY = PageBounds.Y-Margin.Top;
             if (PageBounds.Width <= ViewSize.Width)
-                offsetX = PageBounds.X;
-
+                offsetX = PageBounds.X-Margin.Left;
+            */
             Point copy = p;
-            copy.Offset(offsetX, offsetY);
+            
+            copy.Offset(-PageBounds.X, -PageBounds.Y);
+            copy.Offset(CurrentView.X, CurrentView.Y);
+            /*if(PageBounds.Left>Margin.Left)
+                copy.Offset(-Margin.Left,0);
+            if (PageBounds.Top > Margin.Top)
+                copy.Offset(0, -Margin.Top);*/
             return copy;
         }
+
         public bool DrawShadow {
             get
             {

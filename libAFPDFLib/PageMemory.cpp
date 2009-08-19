@@ -1,5 +1,5 @@
 #include "PageMemory.h"
-#include "smoothbitmap.h"
+
 PageMemory::PageMemory(void)
 : _bitmap(0)
 , _bits(0)
@@ -16,12 +16,16 @@ PageMemory::~PageMemory(void)
 	Dispose();
 }
 
-int PageMemory::Create(HDC clientDC, int width, int height, double renderDPI)
+int PageMemory::Create(HDC clientDC, int width, int height, double renderDPI, double *defcmt, double *deficmt)
 {
 	//Delete object
 	Dispose();
 	Width=width;
 	Height=height;
+	for(int i=0; i<6; ++i){
+		defCTM[i] = defcmt[i];
+		defICTM[i] =deficmt[i];
+	}
 	_renderDPI = renderDPI;
 	BITMAPINFO bmi=GetBitmapInfo();
 	bmi.bmiHeader.biHeight=-bmi.bmiHeader.biHeight;
@@ -180,4 +184,13 @@ void PageMemory::Dispose()
 	}
 	_bitmap=NULL;
 	_bits=NULL;
+}
+
+void PageMemory::cvtUserToDev(double ux, double uy, int *dx, int *dy){
+  *dx = (int)(defCTM[0] * ux + defCTM[2] * uy + defCTM[4] + 0.5);
+  *dy = (int)(defCTM[1] * ux + defCTM[3] * uy + defCTM[5] + 0.5);
+}
+void PageMemory::cvtDevTouser(double dx, double dy, double *ux, double *uy){
+  *ux = defICTM[0] * dx + defICTM[2] * dy + defICTM[4];
+  *uy = defICTM[1] * dx + defICTM[3] * dy + defICTM[5];
 }

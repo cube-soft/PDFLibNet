@@ -2045,14 +2045,13 @@ void SplashOutputDev::drawImage(GfxState *state, Object *ref, Stream *str,
   }
   src = maskColors ? &alphaImageSrc : &imageSrc;
   splash->drawImage(src, &imgData, srcMode, maskColors ? gTrue : gFalse,
-		    width, height, mat);
+		    width, height, mat, ref->abortCheckCbk,ref->abortCheckCbkData);
   if (inlineImg) {
     while (imgData.y < height) {
       imgData.imgStr->getLine();
       ++imgData.y;
     }
   }
-
   gfree(imgData.lookup);
   delete imgData.imgStr;
   str->close();
@@ -2287,7 +2286,7 @@ void SplashOutputDev::drawMaskedImage(GfxState *state, Object *ref,
       srcMode = colorMode;
     }
     splash->drawImage(&maskedImageSrc, &imgData, srcMode, gTrue,
-		      width, height, mat);
+		      width, height, mat, ref->abortCheckCbk,ref->abortCheckCbkData);
 
     delete maskBitmap;
     gfree(imgData.lookup);
@@ -2351,7 +2350,7 @@ void SplashOutputDev::drawSoftMaskedImage(GfxState *state, Object *ref,
   maskColor[0] = 0;
   maskSplash->clear(maskColor);
   maskSplash->drawImage(&imageSrc, &imgMaskData, splashModeMono8, gFalse,
-			maskWidth, maskHeight, mat);
+			maskWidth, maskHeight, mat,ref->abortCheckCbk,ref->abortCheckCbkData);
   delete imgMaskData.imgStr;
   maskStr->close();
   gfree(imgMaskData.lookup);
@@ -2418,7 +2417,7 @@ void SplashOutputDev::drawSoftMaskedImage(GfxState *state, Object *ref,
   } else {
     srcMode = colorMode;
   }
-  splash->drawImage(&imageSrc, &imgData, srcMode, gFalse, width, height, mat);
+  splash->drawImage(&imageSrc, &imgData, srcMode, gFalse, width, height, mat,ref->abortCheckCbk,ref->abortCheckCbkData);
 
   splash->setSoftMask(NULL);
   gfree(imgData.lookup);

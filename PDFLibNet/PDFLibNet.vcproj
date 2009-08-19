@@ -246,16 +246,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\PDFPage.h"
-				FileType="4"
-				>
-				<File
-					RelativePath=".\PDFPage.resx"
-					SubType="Designer"
-					>
-				</File>
-			</File>
-			<File
 				RelativePath=".\PDFSearchResult.cpp"
 				>
 			</File>
@@ -295,6 +285,10 @@
 			</File>
 			<File
 				RelativePath=".\PageLinkCollection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PDFPage.h"
 				>
 			</File>
 			<File

@@ -3,12 +3,17 @@
 
 using namespace System::Runtime::InteropServices;
 
-namespace PDFLibNet
-{
+namespace PDFLibNet{
 	#pragma managed
+	
 
 	bool PDFWrapper::RenderPage(IntPtr handler, System::Boolean bForce){
 		long hwnd=(long)handler.ToPointer();
+		if(this->_internalRenderNotifyFinished==nullptr){		
+			_internalRenderNotifyFinished=gcnew RenderNotifyFinishedHandler(this,&PDFWrapper::_RenderNotifyFinished);
+			_gchRenderNotifyFinished = GCHandle::Alloc(_internalRenderNotifyFinished);
+		}
+		_pdfDoc->SetRenderNotifyFinishedHandler(Marshal::GetFunctionPointerForDelegate(_internalRenderNotifyFinished).ToPointer());
 		long ret =_pdfDoc->RenderPage(hwnd,bForce);
 		if(ret==10001)
 			throw gcnew System::OutOfMemoryException(ret.ToString());
@@ -19,6 +24,12 @@ namespace PDFLibNet
 
 	bool PDFWrapper::RenderPage(IntPtr handler)
 	{
+		if(this->_internalRenderNotifyFinished==nullptr){		
+			_internalRenderNotifyFinished=gcnew RenderNotifyFinishedHandler(this,&PDFWrapper::_RenderNotifyFinished);
+			_gchRenderNotifyFinished = GCHandle::Alloc(_internalRenderNotifyFinished);
+		}
+		_pdfDoc->SetRenderNotifyFinishedHandler(Marshal::GetFunctionPointerForDelegate(_internalRenderNotifyFinished).ToPointer());
+
 		long hwnd=(long)handler.ToPointer();
 		long ret =_pdfDoc->RenderPage(hwnd);
 		if(ret==10001)
@@ -75,6 +86,11 @@ namespace PDFLibNet
 				throw gcnew System::Security::SecurityException();
 			_pdfDoc->SetCurrentPage(1);	
 			_bLoading=false;
+			_pages.Clear();
+			//Add Pages
+			for(int i=1; i<=this->PageCount; ++i)
+				_pages.Add(i,gcnew PDFPage(_pdfDoc,i));
+
 			PDFLoadCompeted();
 		}catch(System::AccessViolationException ^e){
 			throw gcnew System::AccessViolationException("Something is wrong with the file");
@@ -328,6 +344,14 @@ namespace PDFLibNet
 		}
 	}
 
-	
-}
+	void PDFWrapper::_RenderNotifyFinished(int p, bool b)
+	{
+		unsigned int i=0;
+		if(_evRenderNotifyFinished!=nullptr){
+			for each(RenderNotifyFinishedHandler^ dd in _evRenderNotifyFinished->GetInvocationList()){
+				dd->Invoke(p,b);
+			}
+		}
+	}
 
+}

@@ -75,10 +75,17 @@ enum ObjType {
 
 class Object {
 public:
-
+  // callback to check for an abort
+  GBool	(*abortCheckCbk)(void *data);
+  void *abortCheckCbkData;
   // Default constructor.
   Object():
-    type(objNone) {}
+  abortCheckCbk(0)
+  ,	abortCheckCbkData(0)
+  , type(objNone)
+	
+    {
+	}
 
   // Initialize an object.
   Object *initBool(GBool boolnA)

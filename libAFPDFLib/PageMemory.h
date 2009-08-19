@@ -15,12 +15,15 @@ private:
 	double _renderDPI;
 	int _newWidth;
 	int _newHeight;
-
+	double defCTM[6];
+	double defICTM[6];
 public:
 	PageMemory(void);
 	~PageMemory(void);
 
-	int Create(HDC clientDC, int width, int height, double renderDPI);
+	void cvtUserToDev(double ux, double uy, int *dx, int *dy);
+	void cvtDevTouser(double dx, double dy, double *ux, double *uy);
+	int Create(HDC clientDC, int width, int height, double renderDPI, double *defcmt, double *deficmt);
 	int SetDIBits(HDC clientDC,const void *lpBits);
 	void SetDimensions(int width, int height, double renderDPI);
 

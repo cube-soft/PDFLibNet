@@ -4,13 +4,19 @@
 #include "stdafx.h"
 #include "OutlineItemA.h"
 #include "PageMemory.h"
-
+#include "GMutex.h"
 void InitGlobalParams(char *configFile);
 
 
 
 typedef int (__stdcall *NOTIFYHANDLE)();
+typedef int (__stdcall *PAGERENDERNOTIFY)(int,bool);
 typedef int (__stdcall *PROGRESSHANDLE)(int, int);
+typedef void (__stdcall *OUTPUTFUNCTIONB)(unsigned char *,int);
+typedef void (__stdcall *OUTPUTFUNCTION)(wchar_t *,int);
+
+
+void OutputToDelegate(void *stream, char *str, int len);
 
 class CRect 
 	: public tagRECT
@@ -67,30 +73,36 @@ private:
 	void InvalidateBitmapCache();
 	void RemoveFromCache(int page);
 	void AddBitmapCache(PageMemory *bmp, int page);
-	int RenderThreadFinished();
+	int RenderThreadFinished(SplashOutputDev *out,int page, bool enablePreRender);
 protected:
 	long m_PageToRenderByThread;
 	long m_LastPageRenderedByThread;
+	volatile LONG g_lLocker;
 	static UINT RenderingThread( LPVOID param );
+	static GBool callbackAbortDisplay(void *data);
 	static UINT ExportingJpgThread( LPVOID param );
 	bool m_PageRenderedByThread;
 	HANDLE hExportJpgCancel;
+	HANDLE hRenderFinished;
 	HANDLE hExportJpgCancelled;
 	HANDLE hExportJpgFinished;
-
+	CRITICAL_SECTION hgMutex;
 	PDFDoc *createDoc(char *FileName);
 public:
 	PROGRESSHANDLE m_ExportProgressHandle;
 	NOTIFYHANDLE m_ExportFinishHandle;
 	NOTIFYHANDLE m_RenderFinishHandle;
+	PAGERENDERNOTIFY m_RenderNotifyFinishHandle;
 private:
 	GString m_LastOpenedFile;
 	HANDLE m_renderingThread;
 	HANDLE m_exportJpgThread;
 	DynArray<CPDFSearchResult> m_Selection;
 	PDFDoc *m_PDFDoc;
+	Links *_pageLinks;
+
 	SplashOutputDev	*m_splashOut;
-	SplashOutputDev	*m_splashOutThread;
+	//SplashOutputDev	*m_splashOutThread;
 	Outline *m_Outline;
 	PageMemory *m_Bitmap;
 	CString m_OwnerPassword;
@@ -121,11 +133,12 @@ private:
 	bool m_bCaseSensitive;
 	bool m_SearchStarted;
 
-	void *m_bitmapBytes;
-	
 public:
 	AFPDFDoc(char *configFile);
 	virtual ~AFPDFDoc();
+	PDFDoc *getDoc(){
+		return m_PDFDoc;
+	}
 	long LoadFromFile(char *FileName, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password);
 	long LoadFromFile(char *sFileName);
@@ -164,6 +177,7 @@ public:
 	//Returns true if a background thread is rendering next page
 	bool IsBusy();
 
+	//void WaitForFinish();
 	bool IsEncrypted(){
 		return m_PDFDoc->isEncrypted()?true:false;
 	}

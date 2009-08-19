@@ -2937,6 +2937,85 @@ char *unicodeToChar(Unicode *txt, int len){
 	return buffer;
 }
 
+GBool TextPage::hasText(double x0, double y0)
+{
+	TextBlock *blk;
+		TextLine *line;
+		TextWord *word;
+		double xMin0, xMax0, yMin0, yMax0;
+		double xMin1, xMax1, yMin1, yMax1;
+		GBool first;
+		int i, j0, j1;	
+	
+		
+		
+		//~ this doesn't correctly handle:
+		//~ - ranges split across multiple lines (the highlighted region
+		//~   is the bounding box of all the parts of the range)
+		//~ - cases where characters don't convert one-to-one into Unicode
+		first = gTrue;
+		xMin0 = xMax0 = yMin0 = yMax0 = 0; // make gcc happy
+		xMin1 = xMax1 = yMin1 = yMax1 = 0; // make gcc happy
+		
+		for (i = 0; i < nBlocks; ++i) 
+		{
+			blk = blocks[i];
+			if(x0>=blk->xMin && y0>=blk->yMin && x0<=blk->xMax && y0<=blk->yMax)
+			{
+				for (line = blk->getLines(); line; line = line->getNext()) 
+				{
+					if(!(x0>=line->xMin && y0>=line->yMin && x0<=line->xMax && y0<=line->yMax)) 
+						continue;
+					return gTrue;
+					/*
+					for (word = line->getWords(); word; word = word->getNext()) {
+						//for(int j0=0; j0<word->edge
+						switch (line->rot) {
+						  case 0:
+							xMin1 = word->edge[j0];
+							xMax1 = word->edge[j1 + 1];
+							yMin1 = word->yMin;
+							yMax1 = word->yMax;
+							break;
+						  case 1:
+							xMin1 = word->xMin;
+							xMax1 = word->xMax;
+							yMin1 = word->edge[j0];
+							yMax1 = word->edge[j1 + 1];
+							break;
+						  case 2:
+							xMin1 = word->edge[j1 + 1];
+							xMax1 = word->edge[j0];
+							yMin1 = word->yMin;
+							yMax1 = word->yMax;
+							break;
+						  case 3:
+							xMin1 = word->xMin;
+							xMax1 = word->xMax;
+							yMin1 = word->edge[j1 + 1];
+							yMax1 = word->edge[j0];
+							break;
+						  }
+						  if (first || xMin1 < xMin0) {
+							xMin0 = xMin1;
+						  }
+						  if (first || xMax1 > xMax0) {
+							xMax0 = xMax1;
+						  }
+						  if (first || yMin1 < yMin0) {
+							yMin0 = yMin1;
+						  }
+						  if (first || yMax1 > yMax0) {
+							yMax0 = yMax1;
+						  }
+						  first = gFalse;
+					}*/
+				}
+			}
+		}
+	return gFalse;
+}
+
 GBool TextPage::findTextWholeWord(Unicode *s, int len, GBool startAtTop, GBool stopAtBottom,	 GBool startAtLast, GBool stopAtLast, GBool caseSensitive, GBool backward, double *xMin, double *yMin, double *xMax, double *yMax) {
 	TextBlock *blk;
 	TextLine *line;

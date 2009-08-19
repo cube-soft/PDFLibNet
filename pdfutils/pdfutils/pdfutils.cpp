@@ -4,10 +4,20 @@
 #include "stdafx.h"
 #include "..\..\libAFPDFLib\jpeg.h"
 #include "outline.h"
+
+volatile LONG interlock=0;
+#pragma data_seg(".USRMUTEX_SHARED")
+volatile DWORD g_dwDSMutexOwner = 0;
+volatile LONG  g_lLocker = 0;
+#pragma data_seg()
+
+#pragma comment(linker, "/section:.USRMUTEX_SHARED,rws")
+
 int pdfinfo(PDFDoc *doc, UnicodeMap *uMap);
 int pdftotext(PDFDoc *doc, UnicodeMap *uMap);
 int pdftojpg(PDFDoc *doc,UnicodeMap *uMap);
 
+GBool abortCallback(void *data);
 static void printInfoString(Dict *infoDict, char *key, char *text,   UnicodeMap *uMap);
 static void printInfoDate(Dict *infoDict, char *key, char *text);
 static void printBox(char *text, PDFRectangle *box);
@@ -230,8 +240,10 @@ int _tmain(int argc, char *argv[])
 }
 
 #include "GList.h"
+::HANDLE hRenderFinished;
 int pdftojpg(PDFDoc *doc,UnicodeMap *uMap)
 {
+	hRenderFinished = CreateEvent(NULL,TRUE,FALSE,TEXT("CancellEvent"));
 	SplashOutputDev *splashOut;
 	char ppmFile[512];
 	int pg;
@@ -252,13 +264,17 @@ int pdftojpg(PDFDoc *doc,UnicodeMap *uMap)
 	bmi.bmiColors[0].rgbGreen = 0;
 	bmi.bmiColors[0].rgbRed = 0;
 	bmi.bmiColors[0].rgbReserved = 0;
-
+	
+	
 	//Note: the alignment is given by GDI requirements: bitmaps have to be 16-bit aligned.
 	splashOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor);
 	splashOut->startDoc(doc->getXRef());
 	CString errmsg;
+	::InterlockedExchange(&g_lLocker, 0);
 	for (pg = firstPage; pg <= lastPage; ++pg) {
-		doc->displayPage(splashOut, pg, resolution, resolution, 0,gFalse, gTrue, gFalse);
+		GBool (*fp)(void *);
+		fp=abortCallback;
+		doc->displayPage(splashOut, pg, resolution, resolution, 0,gFalse, gTrue, gFalse,fp,(void *)&interlock);
 
 		SplashBitmap * bitmap = splashOut->getBitmap();
 		int bmWidth = bitmap->getWidth();
@@ -276,6 +292,8 @@ int pdftojpg(PDFDoc *doc,UnicodeMap *uMap)
 	delete splashOut;
 	return 0;
 }
+
+
 
 int pdfinfo(PDFDoc *doc, UnicodeMap *uMap){
 Object info;	
@@ -672,4 +690,30 @@ static void printInfoDate(FILE *f, Dict *infoDict, char *key, char *fmt) {
     fprintf(f, fmt, s);
   }
   obj.free();
+}
+
+__inline static void InterlockedSet(LONG *val, LONG newval)
+{
+ *((volatile LONG *)val) = newval;
+}
+
+__inline static LONG InterlockedGet(LONG *val)
+{
+ return *((volatile LONG *)val);
+}
+
+GBool abortCallback(void *data)
+{
+	//Very fast and safe, but must be global
+	if(::InterlockedExchange(&g_lLocker,0)!=0){
+		return gTrue;
+	}
+	//Very fast but not safe
+	/*if(InterlockedGet((LONG *)data)==1)
+		return gTrue;*/
+	//Extremelly slow!
+//	DWORD result=WaitForSingleObject(hRenderFinished,0);
+//	if(result==WAIT_OBJECT_0)
+		//return gTrue;
+	return gFalse;
 }

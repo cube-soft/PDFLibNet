@@ -7,6 +7,7 @@
 #include "PageLink.h"
 #include "PageLinkCollection.h"
 #include "LinkDest.h"
+#include "PDFPage.h"
 
 using namespace System;
 using namespace System::Drawing;
@@ -21,12 +22,14 @@ namespace PDFLibNet {
 	public delegate bool ExportJpgProgressHandler(int pageCount, int currentPage);
 	public delegate void ExportJpgFinishedHandler();
 	public delegate	void RenderFinishedHandler();
+	public delegate	void RenderNotifyFinishedHandler(int page, bool isCurrent);
 
 	public enum class PDFSearchOrder
 	{
 		PDFSearchFromdBegin = 0,
 		PDFSearchFromCurrent = 1,
 	};
+
 
 	/// <summary>
 	///
@@ -38,6 +41,7 @@ namespace PDFLibNet {
 	private:
 		OutlineItemCollection<OutlineItem^> ^_childrens;
 		System::Collections::Generic::List<PDFSearchResult^> ^_searchResults;
+		System::Collections::Generic::Dictionary<int,PDFPage ^> _pages;
 		System::Collections::Generic::Dictionary<int,PageLinkCollection<PageLink ^> ^> _linksCache;
 		String ^_title;
 		String ^_author;
@@ -51,6 +55,7 @@ namespace PDFLibNet {
 		bool _ExportJpgProgress(int pageCount, int currentPage);
 		void _ExportJpgFinished();
 		void _RenderFinished();
+		void _RenderNotifyFinished(int, bool);
 
 		ExportJpgProgressHandler ^_internalExportJpgProgress;
 		ExportJpgProgressHandler ^_evExportJpgProgress;
@@ -59,9 +64,13 @@ namespace PDFLibNet {
 		RenderFinishedHandler ^_internalRenderFinished;
 		RenderFinishedHandler ^_evRenderFinished;
 
+		RenderNotifyFinishedHandler ^_internalRenderNotifyFinished;
+		RenderNotifyFinishedHandler ^_evRenderNotifyFinished;
+
 		GCHandle _gchProgress;
 		GCHandle _gchFinished;
 		GCHandle _gchRenderFinished;
+		GCHandle _gchRenderNotifyFinished;
 	public:
 		PDFWrapper()
 			: _pdfDoc(0)
@@ -116,6 +125,14 @@ namespace PDFLibNet {
 		void CancelJpgExport(){
 			_pdfDoc->CancelJpgExport();
 		}
+
+		property System::Collections::Generic::Dictionary<int,PDFPage ^> ^Pages{
+			System::Collections::Generic::Dictionary<int,PDFPage ^> ^get(){
+				return %_pages;
+			}
+
+		}
+
 		///<sumary>
 		/// Returns true if exist a background process exporting to jpeg
 		///</sumary>
@@ -422,7 +439,7 @@ namespace PDFLibNet {
 
 		event PDFLoadCompletedHandler ^PDFLoadCompeted;
 		event PDFLoadBeginHandler ^PDFLoadBegin;
-
+		
 		
 		event RenderFinishedHandler ^RenderFinished{
 			void add(RenderFinishedHandler ^ ev){
@@ -435,6 +452,22 @@ namespace PDFLibNet {
 				 RenderFinishedHandler^ tmp = _evRenderFinished;
 				 if (tmp) {
 					return tmp->Invoke();
+				 }
+			  }
+
+		}
+
+		event RenderNotifyFinishedHandler ^RenderNotifyFinished{
+			void add(RenderNotifyFinishedHandler ^ ev){
+				this->_evRenderNotifyFinished += ev;
+			}
+			void remove(RenderNotifyFinishedHandler ^ev){
+				this->_evRenderNotifyFinished -= ev;
+			}
+			 void raise(int p, bool b) {
+				 RenderNotifyFinishedHandler^ tmp = _evRenderNotifyFinished;
+				 if (tmp) {
+					return tmp->Invoke(p,b);
 				 }
 			  }
 
@@ -476,30 +509,23 @@ namespace PDFLibNet {
 	protected:	
 
 		!PDFWrapper()
-		{
-			try{
-				if(_gchProgress.IsAllocated)
-					_gchProgress.Free();
-				if(_gchFinished.IsAllocated)
-					_gchFinished.Free();
-				if(_pdfDoc!=0){
-					_pdfDoc->Dispose();
-					delete _pdfDoc;
-				}
-				_pdfDoc=0;
-			}
-			catch(Exception ^){}
-
-			//_pdfDoc.Reset();
+	{
+			if(_gchProgress.IsAllocated)
+				_gchProgress.Free();
+			if(_gchFinished.IsAllocated)
+				_gchFinished.Free();
+			/*if(_pdfDoc!=0){
+				_pdfDoc->Dispose();
+			//	delete _pdfDoc;
+			}*/
 		}
 
 		~PDFWrapper()
 		{
-			if(_pdfDoc!=0)
+			if(_pdfDoc!=0){
 				_pdfDoc->Dispose();
-			delete _pdfDoc;
-			_pdfDoc=0;
-			//_pdfDoc.Reset();
+			//	delete _pdfDoc;
+			}
 		}
 
 	};

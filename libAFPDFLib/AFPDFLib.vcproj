@@ -24,7 +24,7 @@
 			IntermediateDirectory="Debug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			UseOfATL="0"
 			CharacterSet="2"
 			ManagedExtensions="0"
@@ -66,6 +66,8 @@
 				RuntimeLibrary="3"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="0"
+				ExpandAttributedSource="true"
+				AssemblerOutput="4"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="0"
@@ -145,15 +147,20 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
 				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
+				EnableIntrinsicFunctions="false"
 				FavorSizeOrSpeed="1"
-				WholeProgramOptimization="true"
+				OmitFramePointers="false"
+				EnableFiberSafeOptimizations="false"
+				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="&quot;..\xpdfWin\xpdf&quot;;&quot;..\xpdfWin\goo&quot;;&quot;..\xpdfWin\fofi&quot;;&quot;..\xpdfWin\splash&quot;;&quot;..\freetype-2.3.1\include\freetype&quot;;&quot;..\jpg&quot;;&quot;..\xpdfWin\pdf2html&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS"
-				RuntimeLibrary="2"
+				RuntimeLibrary="0"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="0"
+				AssemblerOutput="4"
+				ProgramDataBaseFileName="$(IntDir)\AFPDFLib.pdb"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
@@ -173,7 +180,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				LinkLibraryDependencies="true"
+				LinkLibraryDependencies="false"
 				AdditionalDependencies="..\bin\xpdf.lib"
 				OutputFile="..\bin\$(ProjectName).lib"
 				IgnoreDefaultLibraryNames="libc.lib;libcmt.lib;nafxcw.lib"
@@ -246,6 +253,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PDFPageInterop.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\SearchResultInterop.cpp"
 				>
 			</File>
@@ -300,11 +311,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SearchResultInterop.h"
+				RelativePath=".\PDFPageInterop.h"
 				>
 			</File>
 			<File
-				RelativePath=".\smoothbitmap.h"
+				RelativePath=".\SearchResultInterop.h"
 				>
 			</File>
 			<File

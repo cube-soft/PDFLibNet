@@ -171,31 +171,142 @@
   <data name="&gt;&gt;splitContainer1.Panel1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <data name="tabView.Appearance" type="System.Windows.Forms.TabAppearance, System.Windows.Forms">
+    <value>FlatButtons</value>
+  </data>
   <data name="pageViewControl1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
   <data name="pageViewControl1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 5</value>
+    <value>3, 3</value>
   </data>
   <data name="pageViewControl1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>10, 10, 10, 10</value>
   </data>
   <data name="pageViewControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>477, 456</value>
+    <value>463, 421</value>
   </data>
   <data name="pageViewControl1.TabIndex" type="System.Int32, mscorlib">
-    <value>9</value>
+    <value>10</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Name" xml:space="preserve">
     <value>pageViewControl1</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Type" xml:space="preserve">
-    <value>PDFViewer.PageViewer, PDFViewer, Version=1.0.6.1, Culture=neutral, PublicKeyToken=null</value>
+    <value>PDFViewer.PageViewer, PDFViewer, Version=1.0.6.2, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Parent" xml:space="preserve">
-    <value>splitContainer1.Panel2</value>
+    <value>tpvPDF</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tpvPDF.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 25</value>
+  </data>
+  <data name="tpvPDF.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tpvPDF.Size" type="System.Drawing.Size, System.Drawing">
+    <value>469, 427</value>
+  </data>
+  <data name="tpvPDF.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="tpvPDF.Text" xml:space="preserve">
+    <value>PDF View</value>
+  </data>
+  <data name="&gt;&gt;tpvPDF.Name" xml:space="preserve">
+    <value>tpvPDF</value>
+  </data>
+  <data name="&gt;&gt;tpvPDF.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tpvPDF.Parent" xml:space="preserve">
+    <value>tabView</value>
+  </data>
+  <data name="&gt;&gt;tpvPDF.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="txtTextView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="txtTextView.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 3</value>
+  </data>
+  <data name="txtTextView.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="txtTextView.ScrollBars" type="System.Windows.Forms.ScrollBars, System.Windows.Forms">
+    <value>Both</value>
+  </data>
+  <data name="txtTextView.Size" type="System.Drawing.Size, System.Drawing">
+    <value>463, 421</value>
+  </data>
+  <data name="txtTextView.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;txtTextView.Name" xml:space="preserve">
+    <value>txtTextView</value>
+  </data>
+  <data name="&gt;&gt;txtTextView.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;txtTextView.Parent" xml:space="preserve">
+    <value>tpvText</value>
+  </data>
+  <data name="&gt;&gt;txtTextView.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tpvText.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 25</value>
+  </data>
+  <data name="tpvText.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tpvText.Size" type="System.Drawing.Size, System.Drawing">
+    <value>469, 427</value>
+  </data>
+  <data name="tpvText.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="tpvText.Text" xml:space="preserve">
+    <value>Text View</value>
+  </data>
+  <data name="&gt;&gt;tpvText.Name" xml:space="preserve">
+    <value>tpvText</value>
+  </data>
+  <data name="&gt;&gt;tpvText.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tpvText.Parent" xml:space="preserve">
+    <value>tabView</value>
+  </data>
+  <data name="&gt;&gt;tpvText.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tabView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tabView.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 5</value>
+  </data>
+  <data name="tabView.Size" type="System.Drawing.Size, System.Drawing">
+    <value>477, 456</value>
+  </data>
+  <data name="tabView.TabIndex" type="System.Int32, mscorlib">
+    <value>10</value>
+  </data>
+  <data name="&gt;&gt;tabView.Name" xml:space="preserve">
+    <value>tabView</value>
+  </data>
+  <data name="&gt;&gt;tabView.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabView.Parent" xml:space="preserve">
+    <value>splitContainer1.Panel2</value>
+  </data>
+  <data name="&gt;&gt;tabView.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="splitContainer1.Panel2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">

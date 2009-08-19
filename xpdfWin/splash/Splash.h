@@ -186,9 +186,10 @@ public:
   //    BGR8         BGR8
   //    CMYK8        CMYK8
   // The matrix behaves as for fillImageMask.
+  //Allow to abort process??????
   SplashError drawImage(SplashImageSource src, void *srcData,
 			SplashColorMode srcMode, GBool srcAlpha,
-			int w, int h, SplashCoord *mat);
+			int w, int h, SplashCoord *mat,GBool (*abortCheckCbkA)(void *data) = 0, void *abortCheckCbkDataA = 0);
 
   // Composite a rectangular region from <src> onto this Splash
   // object.

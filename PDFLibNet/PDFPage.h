@@ -23,6 +23,7 @@ namespace PDFLibNet
 		xPDFStream(System::IO::Stream ^stream);
 		xPDFStream(String ^fileName);
 		!xPDFStream();
+		~xPDFStream();
 	};
 
 	public ref class PDFPage
@@ -34,13 +35,20 @@ namespace PDFLibNet
 		bool _loaded;
 		int _pageNumber;
 		void loadPage();
+		void extractImages();
 	internal:
 		PDFPage(AFPDFDocInterop *pdfDoc, PDFPageInterop *page);
 		PDFPage(AFPDFDocInterop *pdfDoc, int page);
 		
 	public:
 		~PDFPage(void);
-
+		property int ImagesCount{
+			int get(){
+				extractImages();
+				return _page->getImagesCount();
+			}
+		}
+		System::Drawing::Image ^GetImage(int index);
 		String ^ExtractText(System::Drawing::Rectangle rect);
 		//String ^ExtractWord(System::Drawing::Point p);
 		//String ^ExtractWord(System::Drawing::Point p, int iWord, int iCount);

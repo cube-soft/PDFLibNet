@@ -3332,11 +3332,9 @@ void Gfx::opXObject(Object args[], int numArgs) {
   if (obj2.isName("Image")) {
     if (out->needNonText()) {
       res->lookupXObjectNF(name, &refObj);
-	  refObj.abortCheckCbk=args[numArgs].abortCheckCbk;
+	  refObj.abortCheckCbk= args[numArgs].abortCheckCbk;
 	  refObj.abortCheckCbkData = args[numArgs].abortCheckCbkData;
-	  clock_t cs= ::clock();
       doImage(&refObj, obj1.getStream(), gFalse);
-	  clock_t timetaked  =::clock()- cs;
       refObj.free();
     }
   } else if (obj2.isName("Form")) {

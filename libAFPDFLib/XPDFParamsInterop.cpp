@@ -50,6 +50,7 @@ bool XPDFParamsInterop::getPrintError(){
 }
 void  XPDFParamsInterop::setPrintErrorFile(char *fileName){
 	freopen( fileName, "w", stderr );
+	freopen( fileName, "w", stdout );
 }
 
 void  XPDFParamsInterop::setEncoding(char *encoding){

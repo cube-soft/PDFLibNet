@@ -566,10 +566,10 @@
 
 	AFPDFDoc::~AFPDFDoc()
 	{
-		::gDestroyMutex(&this->hgMutex);
-		CloseHandle(hRenderFinished);
 		
 		this->Dispose();
+		gDestroyMutex(&this->hgMutex);
+		CloseHandle(hRenderFinished);
 	}
 	
 	void AFPDFDoc::Dispose(){
@@ -580,32 +580,34 @@
 			//globalParams=0;
 		}
 		if(m_renderingThread){
-			logInfo("Delete m_renderingThread\n");
 			DWORD exitcode=0;
 			GetExitCodeThread(m_renderingThread,&exitcode);
-			if(exitcode==STILL_ACTIVE)
-				TerminateThread(m_renderingThread,exitcode);
+			if(exitcode==STILL_ACTIVE){
+				::InterlockedExchange(&g_lLocker,1);
+				::WaitForSingleObject(hRenderFinished,INFINITE);
+				//TerminateThread(m_renderingThread,exitcode);
+			}
 			CloseHandle(m_renderingThread);
 			m_renderingThread=0;
 		}
 		if(m_exportJpgThread){
-			logInfo("Delete m_exportJpgThread\n");
 			DWORD exitcode=0;
 			GetExitCodeThread(m_renderingThread,&exitcode);
-			if(exitcode==STILL_ACTIVE)
-				TerminateThread(m_exportJpgThread,exitcode);
+			if(exitcode==STILL_ACTIVE){
+				::SetEvent(hExportJpgCancel);
+				::WaitForSingleObject(hExportJpgFinished,INFINITE);
+				//TerminateThread(m_exportJpgThread,exitcode);
+			}
 			CloseHandle(m_exportJpgThread);
 			m_exportJpgThread=0;
 		}
 		
-		logInfo("Invalidate Bitmap Cache\n");
 		InvalidateBitmapCache();
 		m_Bitmap=0;
 
 
 		if (m_splashOut!=NULL)
 		{
-			logInfo("Delete m_splashOut\n");
 			delete m_splashOut;
 			m_splashOut=0;
 		}
@@ -618,7 +620,6 @@
 
 		if (m_PDFDoc!=NULL)
 		{
-			logInfo("Delete m_PDFDoc\n");
 			delete m_PDFDoc;
 			m_PDFDoc=0;
 		}	
@@ -1050,6 +1051,7 @@
 					tp->enablePreRender=false;
 					m_splashOut=tp->out;
 
+					InterlockedExchange(&this->g_lLocker,0);
 					//Render the page syncronized
 					AFPDFDoc::RenderingThread((LPVOID)tp);
 					//At this point the m_Bitmap now contains the full page
@@ -1109,8 +1111,11 @@
 					*/
 				} 
 				//Update Size
-				m_PageWidth = m_Bitmap->Width;
-				m_PageHeight = m_Bitmap->Height;
+				if(m_Bitmap){
+					m_PageWidth = m_Bitmap->Width;
+					m_PageHeight = m_Bitmap->Height;
+				}
+
 				
 				//prerender next page
 				logInfo("prerender next page\n");
@@ -1176,9 +1181,10 @@
 				//Verificar los valores de variables
 				renderDPI=IFZERO(renderDPI,72);
 				page=MAX(1,page);
-					
+				globalParams->setPrintCommands(gTrue);
 				pdfDoc->m_LastPageRenderedByThread=page;
 				if(pdfDoc->m_sliceBox.NotEmpty()){
+					logInfo("displayPageSlice");
 					pdfDoc->m_PDFDoc->displayPageSlice(param->out,page,
 												renderDPI,renderDPI, pdfDoc->m_Rotation,
 												gFalse,gTrue,gFalse,
@@ -1188,6 +1194,9 @@
 					if(pdfDoc->m_PDFDoc->getCatalog() && pdfDoc->m_PDFDoc->getCatalog()->isOk()){
 						Page *p = pdfDoc->m_PDFDoc->getCatalog()->getPage(page);
 						if(p && p->isOk()){
+							logInfo("displayPage");
+							fprintf(stderr,"IS OK %d,%d,%d",pdfDoc->m_PDFDoc?1:0,param->out?1:0,page);
+							fflush(stderr);
 							pdfDoc->m_PDFDoc->displayPage(param->out,page,
 												renderDPI, renderDPI, pdfDoc->m_Rotation, 
 												gFalse, gTrue, gFalse,callbackAbortDisplay,pdfDoc);

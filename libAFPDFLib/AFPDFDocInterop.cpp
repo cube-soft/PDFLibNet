@@ -23,6 +23,10 @@ long AFPDFDocInterop::RenderPage(long lhWnd, bool bForce){
 	return ((AFPDFDoc *)_ptr)->RenderPage(lhWnd,bForce);
 }
 
+long AFPDFDocInterop::RenderPage(long lhWnd, bool bForce, bool enableThread){
+	return ((AFPDFDoc *)_ptr)->RenderPage(lhWnd,bForce,enableThread);
+}
+
 long AFPDFDocInterop::RenderPageThread(long lhWnd, bool bForce){
 	return ((AFPDFDoc *)_ptr)->RenderPageThread(lhWnd,bForce);
 }

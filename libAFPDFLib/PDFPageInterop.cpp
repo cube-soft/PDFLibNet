@@ -1,6 +1,7 @@
 #include "PDFPageInterop.h"
 #include "AFPDFDoc.h"
 #include "DynArray.h"
+#include "ImagesMemoryOutputDev.h"
 static wchar_t		EmptyChar[1]						={'\0'};
 
 
@@ -42,13 +43,55 @@ PDFPageInterop::PDFPageInterop(int page, void *lptr,void *pdfDoc)
 , _selectionArray(new DynArray<pdfPageSelection>())
 , _text(0)
 , dpi(0)
+, _images(0)
 {
 }
 PDFPageInterop::~PDFPageInterop(void)
 {
 	if(_text)
 		delete _text;
+	if(_images)
+		delete _images;
 }
+
+int PDFPageInterop::getImagesCount(){
+	if(_images)
+		return ((ImagesMemoryOutputDev *)_images)->getImageCount();
+	return 0;
+}
+unsigned char *PDFPageInterop::getImageBytes(int index){
+	if(_images)
+		return ((ImagesMemoryOutputDev *)_images)->getImageBytes(index);
+	return 0;
+}
+int PDFPageInterop::getImageSize(int index){
+	if(_images)
+		return ((ImagesMemoryOutputDev *)_images)->getImageSize(index);
+	return 0;
+}
+int PDFPageInterop::getImageType(int index){
+	if(_images)
+		return ((ImagesMemoryOutputDev *)_images)->getImageType(index);
+	return 0;
+}
+int PDFPageInterop::getImageWidth(int index){
+	if(_images)
+		return ((ImagesMemoryOutputDev *)_images)->getImageWidth(index);
+	return 0;
+}
+
+int PDFPageInterop::getImageNumComps(int index){
+	if(_images)
+		return ((ImagesMemoryOutputDev *)_images)->getImageNumComps(index);
+	return 0;
+}
+
+int PDFPageInterop::getImageHeight(int index){
+	if(_images)
+		return ((ImagesMemoryOutputDev *)_images)->getImageHeight(index);
+	return 0;
+}
+
 
 PageLinksInterop *PDFPageInterop::getLinks()
 {
@@ -155,7 +198,20 @@ bool PDFPageInterop::hasText(int x, int y)	//Return true if the point is in text
 	return false;
 }
 
-bool PDFPageInterop::hasImage(int x, int y) //Return true if the point is in image bounds
+void PDFPageInterop::extractImages()
+{
+	if(_images==0)
+	{
+		AFPDFDoc *doc = (AFPDFDoc *)_pdfDoc;
+		_images =(void *)new ImagesMemoryOutputDev();
+		ImagesMemoryOutputDev *img=(ImagesMemoryOutputDev *)_images;
+		if(doc->IsBusy())
+			while(doc->IsBusy()) Sleep(50);
+		doc->getDoc()->displayPage(img,this->_page,72,72,0,gTrue,gFalse,gFalse,0,0);
+	}
+}
+
+/*bool PDFPageInterop::hasImage(int x, int y) //Return true if the point is in image bounds
 {
 	return false;
 }
@@ -164,7 +220,8 @@ void PDFPageInterop::getImageBox(int x, int y, int *x1,int *y1, int *x2, int *y2
 }
 void PDFPageInterop::exportImage(wchar_t *fileName,int quality,int x1, int y1, int x2, int y2)
 {
-}
+}*/
+
 void PDFPageInterop::getTextCharBox(int x, int y, int *x1,int *y1, int *x2, int *y2)
 {
 }

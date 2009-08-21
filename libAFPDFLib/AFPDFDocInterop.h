@@ -19,6 +19,7 @@ public:
 	long LoadFromFile(char * sFileName);
 	long RenderPage(long lhWnd);
 	long RenderPage(long lhWnd, bool bForce);
+	long RenderPage(long lhWnd, bool bForce, bool enableThread);
 	long RenderPageThread(long lhWnd, bool bForce);
 	void SetUserPassword(char *pass);
 	void SetOwnerPassword(char *pass);

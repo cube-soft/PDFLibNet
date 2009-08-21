@@ -2044,8 +2044,13 @@ void SplashOutputDev::drawImage(GfxState *state, Object *ref, Stream *str,
     srcMode = colorMode;
   }
   src = maskColors ? &alphaImageSrc : &imageSrc;
-  splash->drawImage(src, &imgData, srcMode, maskColors ? gTrue : gFalse,
-		    width, height, mat, ref->abortCheckCbk,ref->abortCheckCbkData);
+  if(ref){
+	  splash->drawImage(src, &imgData, srcMode, maskColors ? gTrue : gFalse,
+				width, height, mat, ref->abortCheckCbk,ref->abortCheckCbkData);
+  }else{
+	  splash->drawImage(src, &imgData, srcMode, maskColors ? gTrue : gFalse,
+				width, height, mat);
+  }
   if (inlineImg) {
     while (imgData.y < height) {
       imgData.imgStr->getLine();

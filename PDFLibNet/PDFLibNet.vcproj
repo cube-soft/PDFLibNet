@@ -20,7 +20,7 @@
 			OutputDirectory="..\bin"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			UseOfATL="0"
 			CharacterSet="1"
 			ManagedExtensions="1"

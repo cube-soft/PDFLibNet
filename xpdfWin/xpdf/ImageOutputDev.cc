@@ -181,11 +181,11 @@ void ImageOutputDev::drawImage(GfxState *state, Object *ref, Stream *str,
       // write the line
       p = imgStr->getLine();
       for (x = 0; x < width; ++x) {
-	colorMap->getRGB(p, &rgb);
-	fputc(colToByte(rgb.r), f);
-	fputc(colToByte(rgb.g), f);
-	fputc(colToByte(rgb.b), f);
-	p += colorMap->getNumPixelComps();
+			colorMap->getRGB(p, &rgb);
+			fputc(colToByte(rgb.r), f);
+			fputc(colToByte(rgb.g), f);
+			fputc(colToByte(rgb.b), f);
+			p += colorMap->getNumPixelComps();
       }
     }
     delete imgStr;

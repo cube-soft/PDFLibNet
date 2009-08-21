@@ -111,10 +111,11 @@
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="&quot;xpdf&quot;;&quot;splash&quot;;&quot;goo&quot;;&quot;fofi&quot;;&quot;..\freetype-2.3.1\include&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32"
-				RuntimeLibrary="0"
+				RuntimeLibrary="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				CallingConvention="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

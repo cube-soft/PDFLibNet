@@ -155,6 +155,7 @@ namespace PDFLibNet {
 		bool RenderPageThread(IntPtr hwndHandle, bool bForce);
 		bool RenderPage(IntPtr handler);
 		bool RenderPage(IntPtr handler, System::Boolean bForce);
+		bool RenderPage(IntPtr handler, System::Boolean bForce, System::Boolean bEnableThread);
 		
 		bool DrawPageHDC(IntPtr hdc);
 

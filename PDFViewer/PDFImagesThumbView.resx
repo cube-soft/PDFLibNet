@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,56 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="netshell_1607_9_16x16x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\netshell_1607_9_16x16x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="netshell_21611_1_16x16x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\netshell_21611_1_16x16x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="netshell_1611_1_16x16x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\netshell_1611_1_16x16x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="SearchFolder_323_3_16x16x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SearchFolder_323_3_16x16x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ZoomOut" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ZoomOut.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="PrintBrmUi_102_6_16x16x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PrintBrmUi_102_6_16x16x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="tshadowdownright" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\tshadowdownright.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="tshadowright" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\tshadowright.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="tshadowdownleft" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\tshadowdownleft.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ZoomIn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ZoomIn.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="tshadowdown" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\tshadowdown.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="FeedbackTool_109_12_16x16x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\FeedbackTool_109_12_16x16x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="psr_206_4_16x16x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\psr_206_4_16x16x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="tshadowtopright" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\tshadowtopright.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Save" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Save.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="dmdskres_373_9_16x16x32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\dmdskres_373_9_16x16x32.png;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="RefreshDocView" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\RefreshDocView.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
+  <metadata name="$this.TrayLargeIcon" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>False</value>
+  </metadata>
 </root>

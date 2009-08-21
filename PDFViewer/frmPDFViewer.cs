@@ -119,10 +119,20 @@ namespace PDFViewer
                         else
                         {
                             pos = pageViewControl1.PointUserToPage(pos);
-                            if (!_pdfDoc.IsBusy && 
+                            if (!_pdfDoc.IsBusy && _pdfDoc.Pages.Count>0 && 
                                 _pdfDoc.Pages[_pdfDoc.CurrentPage].HasText(pos.X, pos.Y))
                             {
-                                //String txt = _pdfDoc.Pages[_pdfDoc.CurrentPage].Text;
+                                /*if (_pdfDoc.Pages[_pdfDoc.CurrentPage].ImagesCount > 0)
+                                {
+                                    Image img = _pdfDoc.Pages[_pdfDoc.CurrentPage].GetImage(0);
+                                    img.Save("C:\\image_extracted_0.jpg");
+                                }*/
+
+                                /*img = _pdfDoc.Pages[_pdfDoc.CurrentPage].GetImage(1);
+                                img.Save("C:\\image_extracted_1.jpg");
+                                img = _pdfDoc.Pages[_pdfDoc.CurrentPage].GetImage(2);
+                                img.Save("C:\\image_extracted_2.jpg");*/
+                                
                                 pageViewControl1.Cursor = Cursors.IBeam;
                             }
                             else
@@ -423,19 +433,24 @@ namespace PDFViewer
 
         private void tsbOpen_Click(object sender, EventArgs e)
         {
-            try
+            //try
             {
                 OpenFileDialog dlg = new OpenFileDialog();
                 dlg.Filter = "Portable Document Format (*.pdf)|*.pdf";
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    if (_pdfDoc == null)
+                    if (_pdfDoc != null)
                     {
-                        _pdfDoc = new PDFWrapper();
-                        _pdfDoc.RenderNotifyFinished += new RenderNotifyFinishedHandler(_pdfDoc_RenderNotifyFinished);
-                        _pdfDoc.PDFLoadCompeted += new PDFLoadCompletedHandler(_pdfDoc_PDFLoadCompeted);
-                        _pdfDoc.PDFLoadBegin += new PDFLoadBeginHandler(_pdfDoc_PDFLoadBegin);
+                        _pdfDoc.Dispose();
+                        _pdfDoc = null;
                     }
+                    //if (_pdfDoc == null)
+                    //{
+                    _pdfDoc = new PDFWrapper();
+                    _pdfDoc.RenderNotifyFinished += new RenderNotifyFinishedHandler(_pdfDoc_RenderNotifyFinished);
+                    _pdfDoc.PDFLoadCompeted += new PDFLoadCompletedHandler(_pdfDoc_PDFLoadCompeted);
+                    _pdfDoc.PDFLoadBegin += new PDFLoadBeginHandler(_pdfDoc_PDFLoadBegin);
+                    //}
                     xPDFParams.ErrorQuiet = false;
                     xPDFParams.ErrorFile = "C:\\stderr.log";
                     //}
@@ -457,10 +472,10 @@ namespace PDFViewer
                     }
                 }
             }
-            catch (Exception ex)
+            /*catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
-            }
+            }*/
         }
 
         void RenderNotifyFinished(int page, bool isCurrent)
@@ -950,6 +965,18 @@ namespace PDFViewer
             if (tabView.SelectedTab.Equals(this.tpvText) && _pdfDoc != null && !_pdfDoc.IsBusy)
             {
                 txtTextView.Text = _pdfDoc.Pages[_pdfDoc.CurrentPage].Text;
+            }
+        }
+
+        private void tsImagesUpdate_Click(object sender, EventArgs e)
+        {
+            if (_pdfDoc!=null && !_pdfDoc.IsBusy)
+            {
+                pdfImagesThumbView1.LoadImageList(_pdfDoc, _pdfDoc.CurrentPage);
+            }
+            else if (_pdfDoc != null && _pdfDoc.IsBusy)
+            {
+                MessageBox.Show("The document is busy in a background thread, try again in a moment", "PDFLibNet", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
     }

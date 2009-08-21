@@ -193,7 +193,7 @@
     <value>pageViewControl1</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Type" xml:space="preserve">
-    <value>PDFViewer.PageViewer, PDFViewer, Version=1.0.6.2, Culture=neutral, PublicKeyToken=null</value>
+    <value>PDFViewer.PageViewer, PDFViewer, Version=1.0.6.3, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Parent" xml:space="preserve">
     <value>tpvPDF</value>
@@ -284,6 +284,102 @@
   </data>
   <data name="&gt;&gt;tpvText.ZOrder" xml:space="preserve">
     <value>1</value>
+  </data>
+  <metadata name="tsImages.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>116, 58</value>
+  </metadata>
+  <data name="tsImagesUpdate.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Magenta</value>
+  </data>
+  <data name="tsImagesUpdate.Size" type="System.Drawing.Size, System.Drawing">
+    <value>86, 22</value>
+  </data>
+  <data name="tsImagesUpdate.Text" xml:space="preserve">
+    <value>Update List</value>
+  </data>
+  <data name="tsImagesSave.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
+    <value>Magenta</value>
+  </data>
+  <data name="tsImagesSave.Size" type="System.Drawing.Size, System.Drawing">
+    <value>87, 22</value>
+  </data>
+  <data name="tsImagesSave.Text" xml:space="preserve">
+    <value>Save image</value>
+  </data>
+  <data name="tsImages.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 3</value>
+  </data>
+  <data name="tsImages.Size" type="System.Drawing.Size, System.Drawing">
+    <value>463, 25</value>
+  </data>
+  <data name="tsImages.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="tsImages.Text" xml:space="preserve">
+    <value>toolStrip2</value>
+  </data>
+  <data name="&gt;&gt;tsImages.Name" xml:space="preserve">
+    <value>tsImages</value>
+  </data>
+  <data name="&gt;&gt;tsImages.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStrip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tsImages.Parent" xml:space="preserve">
+    <value>tpvImages</value>
+  </data>
+  <data name="&gt;&gt;tsImages.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="pdfImagesThumbView1.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Top, Bottom, Left, Right</value>
+  </data>
+  <data name="pdfImagesThumbView1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>0, 31</value>
+  </data>
+  <data name="pdfImagesThumbView1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>466, 393</value>
+  </data>
+  <data name="pdfImagesThumbView1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;pdfImagesThumbView1.Name" xml:space="preserve">
+    <value>pdfImagesThumbView1</value>
+  </data>
+  <data name="&gt;&gt;pdfImagesThumbView1.Type" xml:space="preserve">
+    <value>PDFViewer.PDFImagesThumbView, PDFViewer, Version=1.0.6.3, Culture=neutral, PublicKeyToken=null</value>
+  </data>
+  <data name="&gt;&gt;pdfImagesThumbView1.Parent" xml:space="preserve">
+    <value>tpvImages</value>
+  </data>
+  <data name="&gt;&gt;pdfImagesThumbView1.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tpvImages.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 25</value>
+  </data>
+  <data name="tpvImages.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tpvImages.Size" type="System.Drawing.Size, System.Drawing">
+    <value>469, 427</value>
+  </data>
+  <data name="tpvImages.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="tpvImages.Text" xml:space="preserve">
+    <value>Images</value>
+  </data>
+  <data name="&gt;&gt;tpvImages.Name" xml:space="preserve">
+    <value>tpvImages</value>
+  </data>
+  <data name="&gt;&gt;tpvImages.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tpvImages.Parent" xml:space="preserve">
+    <value>tabView</value>
+  </data>
+  <data name="&gt;&gt;tpvImages.ZOrder" xml:space="preserve">
+    <value>2</value>
   </data>
   <data name="tabView.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -564,8 +660,59 @@
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>737, 513</value>
   </data>
+  <data name="$this.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>xPDF Viewer</value>
+  </data>
+  <data name="&gt;&gt;txtPage.Name" xml:space="preserve">
+    <value>txtPage</value>
+  </data>
+  <data name="&gt;&gt;txtPage.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripTextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;printDialog1.Name" xml:space="preserve">
+    <value>printDialog1</value>
+  </data>
+  <data name="&gt;&gt;printDialog1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PrintDialog, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;printDocument1.Name" xml:space="preserve">
+    <value>printDocument1</value>
+  </data>
+  <data name="&gt;&gt;printDocument1.Type" xml:space="preserve">
+    <value>System.Drawing.Printing.PrintDocument, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;saveFileDialog1.Name" xml:space="preserve">
+    <value>saveFileDialog1</value>
+  </data>
+  <data name="&gt;&gt;saveFileDialog1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.SaveFileDialog, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ttpLink.Name" xml:space="preserve">
+    <value>ttpLink</value>
+  </data>
+  <data name="&gt;&gt;ttpLink.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;StatusLabel.Name" xml:space="preserve">
+    <value>StatusLabel</value>
+  </data>
+  <data name="&gt;&gt;StatusLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tsImagesUpdate.Name" xml:space="preserve">
+    <value>tsImagesUpdate</value>
+  </data>
+  <data name="&gt;&gt;tsImagesUpdate.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tsImagesSave.Name" xml:space="preserve">
+    <value>tsImagesSave</value>
+  </data>
+  <data name="&gt;&gt;tsImagesSave.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;tsbOpen.Name" xml:space="preserve">
     <value>tsbOpen</value>
@@ -584,12 +731,6 @@
   </data>
   <data name="&gt;&gt;tsbPrev.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;txtPage.Name" xml:space="preserve">
-    <value>txtPage</value>
-  </data>
-  <data name="&gt;&gt;txtPage.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripTextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;tsbNext.Name" xml:space="preserve">
     <value>tsbNext</value>
@@ -638,36 +779,6 @@
   </data>
   <data name="&gt;&gt;tsbVectorAntialias.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;printDialog1.Name" xml:space="preserve">
-    <value>printDialog1</value>
-  </data>
-  <data name="&gt;&gt;printDialog1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PrintDialog, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;printDocument1.Name" xml:space="preserve">
-    <value>printDocument1</value>
-  </data>
-  <data name="&gt;&gt;printDocument1.Type" xml:space="preserve">
-    <value>System.Drawing.Printing.PrintDocument, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="&gt;&gt;saveFileDialog1.Name" xml:space="preserve">
-    <value>saveFileDialog1</value>
-  </data>
-  <data name="&gt;&gt;saveFileDialog1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.SaveFileDialog, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ttpLink.Name" xml:space="preserve">
-    <value>ttpLink</value>
-  </data>
-  <data name="&gt;&gt;ttpLink.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;StatusLabel.Name" xml:space="preserve">
-    <value>StatusLabel</value>
-  </data>
-  <data name="&gt;&gt;StatusLabel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>frmPDFViewer</value>

@@ -82,6 +82,12 @@
     </Compile>
     <Compile Include="GDI.cs" />
     <Compile Include="HexEncoding.cs" />
+    <Compile Include="PDFImagesThumbView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="PDFImagesThumbView.Designer.cs">
+      <DependentUpon>PDFImagesThumbView.cs</DependentUpon>
+    </Compile>
     <Compile Include="PDFViewerCtrl.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -121,6 +127,10 @@
     <EmbeddedResource Include="frmSearch.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmSearch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PDFImagesThumbView.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>PDFImagesThumbView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PDFViewerCtrl.resx">
       <SubType>Designer</SubType>
@@ -230,6 +240,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Resources\tshadowtopright.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Save.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\RefreshDocView.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

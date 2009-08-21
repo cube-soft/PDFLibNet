@@ -7,36 +7,29 @@ namespace PDFLibNet{
 	#pragma managed
 	
 
-	bool PDFWrapper::RenderPage(IntPtr handler, System::Boolean bForce){
+	bool PDFWrapper::RenderPage(IntPtr handler, System::Boolean bForce, System::Boolean bEnableThread){
 		long hwnd=(long)handler.ToPointer();
 		if(this->_internalRenderNotifyFinished==nullptr){		
 			_internalRenderNotifyFinished=gcnew RenderNotifyFinishedHandler(this,&PDFWrapper::_RenderNotifyFinished);
 			_gchRenderNotifyFinished = GCHandle::Alloc(_internalRenderNotifyFinished);
 		}
 		_pdfDoc->SetRenderNotifyFinishedHandler(Marshal::GetFunctionPointerForDelegate(_internalRenderNotifyFinished).ToPointer());
-		long ret =_pdfDoc->RenderPage(hwnd,bForce);
+		long ret =_pdfDoc->RenderPage(hwnd,bForce,bEnableThread);
 		if(ret==10001)
 			throw gcnew System::OutOfMemoryException(ret.ToString());
 		
 		return true;
 	}
-	
+
+	bool PDFWrapper::RenderPage(IntPtr handler, System::Boolean bForce){
+		return RenderPage(handler,bForce,true);
+	}
 
 	bool PDFWrapper::RenderPage(IntPtr handler)
 	{
-		if(this->_internalRenderNotifyFinished==nullptr){		
-			_internalRenderNotifyFinished=gcnew RenderNotifyFinishedHandler(this,&PDFWrapper::_RenderNotifyFinished);
-			_gchRenderNotifyFinished = GCHandle::Alloc(_internalRenderNotifyFinished);
-		}
-		_pdfDoc->SetRenderNotifyFinishedHandler(Marshal::GetFunctionPointerForDelegate(_internalRenderNotifyFinished).ToPointer());
-
-		long hwnd=(long)handler.ToPointer();
-		long ret =_pdfDoc->RenderPage(hwnd);
-		if(ret==10001)
-			throw gcnew System::OutOfMemoryException(ret.ToString());
-		
-		return true;
+		return RenderPage(handler,false,true);
 	}
+
 	long PDFWrapper::PerfomLinkAction(System::Int32 linkPtr)
 	{
 		return _pdfDoc->ProcessLinkAction((long)linkPtr);

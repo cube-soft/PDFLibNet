@@ -109,6 +109,20 @@ namespace PDFViewer.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap RefreshDocView {
+            get {
+                object obj = ResourceManager.GetObject("RefreshDocView", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Save {
+            get {
+                object obj = ResourceManager.GetObject("Save", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap SearchFolder_323_3_16x16x32 {
             get {
                 object obj = ResourceManager.GetObject("SearchFolder_323_3_16x16x32", resourceCulture);

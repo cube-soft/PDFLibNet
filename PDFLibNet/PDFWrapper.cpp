@@ -59,6 +59,37 @@ namespace PDFLibNet{
 		_pdfDoc->FitScreenHeight(hwnd);
 	}
 
+	bool PDFWrapper::LoadPDF(System::IO::Stream ^stream){
+		PDFLoadBegin();
+		try{
+			PDFLibNet::xPDFBinaryReader ^st =gcnew PDFLibNet::xPDFBinaryReader(stream);
+			void *ptr = st->GetReadPointer();
+			_bLoading=true;
+			_childrens=nullptr;
+			_title=nullptr;
+			_author=nullptr;
+			_linksCache.Clear();
+			if(_searchResults!=nullptr)
+				_searchResults->Clear();
+
+			if(_pdfDoc->LoadFromStream(ptr,st->BaseStream->Length)==4) //errorEncrypted
+				throw gcnew System::Security::SecurityException();
+			_pdfDoc->SetCurrentPage(1);	
+			_bLoading=false;
+			_pages.Clear();
+			//Add Pages
+			for(int i=1; i<=this->PageCount; ++i)
+				_pages.Add(i,gcnew PDFPage(_pdfDoc,i));
+
+			PDFLoadCompeted();
+			PDFLoadCompeted();
+		}catch(System::AccessViolationException ^e){
+			throw gcnew System::AccessViolationException("Something is wrong with the file");
+		}finally{
+			
+		}
+		return true;
+	}
 	bool PDFWrapper::LoadPDF(System::String ^fileName){
 		
 		

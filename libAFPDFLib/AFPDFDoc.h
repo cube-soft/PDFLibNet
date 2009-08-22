@@ -139,6 +139,7 @@ public:
 	PDFDoc *getDoc(){
 		return m_PDFDoc;
 	}
+	long LoadFromStream(void *callback,long fullLenght, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password);
 	long LoadFromFile(char *sFileName);

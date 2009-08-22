@@ -202,7 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\ZoomOut.png" />
-    <None Include="xpdfrc">
+    <None Include="0xpdfrc">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

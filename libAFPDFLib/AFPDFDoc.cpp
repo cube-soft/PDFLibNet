@@ -3,6 +3,8 @@
 #include "jpeg.h"
 #include "error.h"
 #include "GMutex.h"
+#include "StreamCallback.h"
+
 	//------DECLARATIONS	
 	#define			FIND_DPI			72
 	#define			PRINT_DPI			150
@@ -690,6 +692,107 @@
 		return pdfDoc;
 	}
 
+	long AFPDFDoc::LoadFromStream(void *callback,long fullLenght, char *user_password, char *owner_password)
+	{
+		
+		//Wait for previous threads and delete them
+		if (m_renderingThread!=0)
+		{					
+			DWORD exitcode=0;
+			GetExitCodeThread(m_renderingThread,&exitcode);
+			if(exitcode==STILL_ACTIVE){
+				Sleep(100);
+				TerminateThread(m_renderingThread,exitcode);
+			}
+			CloseHandle(m_renderingThread);
+			m_renderingThread=NULL;
+		}
+
+		logInfo("InvalidateBitmapCache");
+		InvalidateBitmapCache();
+
+		if(user_password!=NULL)
+			m_UserPassword = user_password;
+		if(owner_password!=NULL)
+			m_OwnerPassword = owner_password;
+		//Si la existia lo eliminamos
+		if (m_splashOut!=NULL){
+			delete m_splashOut;
+			m_splashOut=0;
+		}
+		//Si ya existia la eliminamos
+		if (m_PDFDoc!=0){
+			delete m_PDFDoc;
+			m_PDFDoc=0;
+		}
+		
+		//Establecemos el color del papel
+		/*SplashColor paperColor;
+		paperColor[0] = 0xff;
+		paperColor[1] = 0xff;
+		paperColor[2] = 0xff;*/
+		
+		//logInfo("Create SplashOutputDev");
+		//Note: the alignment is given by GDI requirements: bitmaps have to be 16-bit aligned.
+		//m_splashOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+		//m_splashOut->setVectorAntialias(globalParams->getVectorAntialias());
+		
+		logInfo("Create PDFDoc");
+		//Intentamos abrir el documento sin clave		
+		Object obj;
+		obj.initNull();
+		StreamCallback *str = new StreamCallback((READFROMSTREAM)callback,fullLenght,0,gFalse,0,&obj);
+		m_PDFDoc = new PDFDoc(str); //,new GString(user_password),new GString(owner_password));
+
+		//Esperamos a que se carge correctamente, o que ocurra un error
+		while (!m_PDFDoc->isOk()) 
+		{
+			logInfo("m_PDFDoc->isOk");
+			//En caso de que este encriptado con clave
+			if (m_PDFDoc->getErrorCode() == errEncrypted)
+			{
+				//Si no se especifico clave salimos
+				if(m_OwnerPassword.GetLength()<=0 && m_UserPassword.GetLength()<=0) {
+					delete m_PDFDoc;
+					m_PDFDoc=NULL;
+					return errEncrypted;
+				}else{
+					//Si no se especifico una de las claves, usamos la misma para ambos
+					if(m_UserPassword.GetLength()<=0){
+						m_UserPassword=m_OwnerPassword;
+					}else if(m_OwnerPassword.GetLength()<=0){
+						m_OwnerPassword = m_UserPassword;
+					}				
+					//Intentamos abrir con clave
+					m_PDFDoc = new PDFDoc(str, 
+							new GString(m_OwnerPassword.GetBuffer()), 
+							new GString(m_UserPassword.GetBuffer()));
+					m_OwnerPassword.ReleaseBuffer();
+					m_UserPassword.ReleaseBuffer();
+				}
+			} 
+			if (!m_PDFDoc->isOk())
+			{
+				//En caso de error, regresamos el codigo de error
+				int errCode = m_PDFDoc->getErrorCode();
+				fprintf(stderr,"Error File (%d)",errCode);
+				delete m_PDFDoc;
+				m_PDFDoc=NULL;
+				return errCode;
+			}
+			
+		}
+		m_LastOpenedFile.clear();
+//		m_LastOpenedFile.insert((int)0,FileName,strlen(FileName));
+		//El archivo se cargo correctamente
+		m_Outline = m_PDFDoc->getOutline();
+
+		m_LastPageRendered = -1;
+		m_CurrentPage = 0;
+		m_SearchPage = 0;
+		
+		return S_OK;
+	}
 	long AFPDFDoc::LoadFromFile(char *FileName, char *user_password, char *owner_password)
 	{		
 		
@@ -737,6 +840,10 @@
 		
 		logInfo("Create PDFDoc");
 		//Intentamos abrir el documento sin clave
+//		Object obj;
+//		obj.initNull();
+//		StreamCallback *str = new StreamCallback(fopen(FileName,"rb"),0,gFalse,0,&obj);
+//		m_PDFDoc = new PDFDoc(str);
 		m_PDFDoc = new PDFDoc(new GString(FileName), NULL,NULL);		
 		//Esperamos a que se carge correctamente, o que ocurra un error
 		while (!m_PDFDoc->isOk()) 

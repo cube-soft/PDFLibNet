@@ -9,6 +9,7 @@ using namespace System::Runtime::InteropServices;
 namespace PDFLibNet
 {
 	public delegate void WriteToStreamHandler(wchar_t *text, int len);
+	public delegate void ReadFromStreamHandler(unsigned char *buffer,int dir,  int pos, int len);
 	
 	public ref class xPDFStream
 		: public System::IO::StreamWriter {
@@ -26,6 +27,21 @@ namespace PDFLibNet
 		~xPDFStream();
 	};
 
+	public ref class xPDFBinaryReader
+		: public System::IO::BinaryReader
+	{
+	private:
+		GCHandle _gchReadFromStream;
+		void *_ptrReadFromStream;
+		ReadFromStreamHandler ^_readFromStream;
+		void _ReadFromStreamFunc(unsigned char *buffer,int dir,  int pos, int len);
+	internal:
+		void *GetReadPointer();
+	public:
+		xPDFBinaryReader(System::IO::Stream ^stream);
+		!xPDFBinaryReader();
+		~xPDFBinaryReader();
+	};
 	public ref class PDFPage
 	{
 	private:

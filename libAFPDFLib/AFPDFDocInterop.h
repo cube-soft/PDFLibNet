@@ -17,6 +17,7 @@ public:
 	AFPDFDocInterop(char *configFile);
 	virtual ~AFPDFDocInterop();
 	long LoadFromFile(char * sFileName);
+	long LoadFromStream(void *callback,int lenght);
 	long RenderPage(long lhWnd);
 	long RenderPage(long lhWnd, bool bForce);
 	long RenderPage(long lhWnd, bool bForce, bool enableThread);

@@ -120,7 +120,7 @@ namespace PDFLibNet
 		this->AutoFlush=true;
 		if(this->_writeToStream==nullptr){		
 			_writeToStream=gcnew  WriteToStreamHandler(this,&xPDFStream::_WriteToStreamFunc);
-			_gchwriteToStream = GCHandle::Alloc(_gchwriteToStream);
+			_gchwriteToStream = GCHandle::Alloc(_writeToStream);
 		}
 	}
 	xPDFStream::xPDFStream(System::IO::Stream ^stream,System::Text::Encoding ^enc)
@@ -130,7 +130,7 @@ namespace PDFLibNet
 		this->AutoFlush=true;
 		if(this->_writeToStream==nullptr){		
 			_writeToStream=gcnew  WriteToStreamHandler(this,&xPDFStream::_WriteToStreamFunc);
-			_gchwriteToStream = GCHandle::Alloc(_gchwriteToStream);
+			_gchwriteToStream = GCHandle::Alloc(_writeToStream);
 		}
 	}
 	xPDFStream::xPDFStream(String ^fileName)
@@ -139,28 +139,77 @@ namespace PDFLibNet
 		this->AutoFlush=true;
 		if(this->_writeToStream==nullptr){		
 			_writeToStream=gcnew  WriteToStreamHandler(this,&xPDFStream::_WriteToStreamFunc);
-			_gchwriteToStream = GCHandle::Alloc(_gchwriteToStream);
+			_gchwriteToStream = GCHandle::Alloc(_writeToStream);
 		}
 	}
 
 	void xPDFStream::_WriteToStreamFunc(wchar_t *str, int len)
 	{
-		Write(gcnew String(str));	
-		
+		Write(gcnew String(str));		
 	}
 	
 	xPDFStream::!xPDFStream(){
+		GC::Collect();
 		if(this->_gchwriteToStream.IsAllocated){		
 			this->_gchwriteToStream.Free();
 		}
 	}
-	xPDFStream::~xPDFStream(){
-	
-	}
+	xPDFStream::~xPDFStream(){}
 
 	void *xPDFStream::GetWritePointer()
 	{
 		return Marshal::GetFunctionPointerForDelegate(this->_writeToStream).ToPointer();
 	}
-	
+
+	xPDFBinaryReader::xPDFBinaryReader(System::IO::Stream ^stream)
+		: BinaryReader(stream)
+		, _readFromStream(nullptr)
+	{
+		if(this->_readFromStream==nullptr){		
+			_readFromStream=gcnew ReadFromStreamHandler(this,&xPDFBinaryReader::_ReadFromStreamFunc);
+			_gchReadFromStream = GCHandle::Alloc(_readFromStream);
+			_ptrReadFromStream = Marshal::GetFunctionPointerForDelegate(this->_readFromStream).ToPointer();
+		}
+	}
+	xPDFBinaryReader::!xPDFBinaryReader(){
+		GC::Collect();
+		if(this->_gchReadFromStream.IsAllocated){		
+			this->_gchReadFromStream.Free();
+		}
+	}
+	xPDFBinaryReader::~xPDFBinaryReader(){}
+
+	void xPDFBinaryReader::_ReadFromStreamFunc(unsigned char *buffer,int dir, int pos, int len)
+	{
+		if(this->BaseStream->Position != pos)
+		{
+			if(this->BaseStream->CanSeek){
+				if(dir==1)
+					this->BaseStream->Seek(pos,System::IO::SeekOrigin::Begin);
+				else if(dir==-1)
+					this->BaseStream->Seek(pos,System::IO::SeekOrigin::End);
+				else if(dir==0)
+					this->BaseStream->Seek(pos,System::IO::SeekOrigin::Current);
+			}else{
+				throw gcnew System::InvalidOperationException();
+			}
+		}
+		System::Runtime::InteropServices::Marshal::Copy(this->ReadBytes(len),0,IntPtr(buffer),len);
+	}
+
+	void *xPDFBinaryReader::GetReadPointer()
+	{
+		return _ptrReadFromStream;
+	}
+		
+	/*
+	GCHandle _gchReadFromStream;
+		ReadFromStreamHandler ^_readFromStream;
+		void _ReadFromStreamFunc(unsigned char *buffer, int pos, int len);
+	internal:
+		void *GetReadPointer();
+	public:
+		
+		!xPDFBinaryReader();
+		~xPDFBinaryReader();*/
 }

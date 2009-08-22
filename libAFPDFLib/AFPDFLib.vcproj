@@ -148,12 +148,12 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="2"
-				InlineFunctionExpansion="1"
-				EnableIntrinsicFunctions="false"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="false"
-				WholeProgramOptimization="false"
+				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="&quot;..\xpdfWin\xpdf&quot;;&quot;..\xpdfWin\goo&quot;;&quot;..\xpdfWin\fofi&quot;;&quot;..\xpdfWin\splash&quot;;&quot;..\freetype-2.3.1\include\freetype&quot;;&quot;..\jpg&quot;;&quot;..\xpdfWin\pdf2html&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS"
 				RuntimeLibrary="2"
@@ -265,6 +265,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StreamCallback.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\XPDFParamsInterop.cpp"
 				>
 			</File>
@@ -328,6 +332,10 @@
 			</File>
 			<File
 				RelativePath=".\stdafx.h"
+				>
+			</File>
+			<File
+				RelativePath=".\StreamCallback.h"
 				>
 			</File>
 			<File

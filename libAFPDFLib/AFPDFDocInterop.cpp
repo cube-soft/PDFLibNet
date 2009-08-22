@@ -19,6 +19,9 @@ long AFPDFDocInterop::LoadFromFile(char * sFileName){
 	return ((AFPDFDoc *)_ptr)->LoadFromFile(sFileName);
 }
 
+long AFPDFDocInterop::LoadFromStream(void *callback,int lenght){
+	return ((AFPDFDoc *)_ptr)->LoadFromStream(callback,lenght,0,0);
+}
 long AFPDFDocInterop::RenderPage(long lhWnd, bool bForce){
 	return ((AFPDFDoc *)_ptr)->RenderPage(lhWnd,bForce);
 }

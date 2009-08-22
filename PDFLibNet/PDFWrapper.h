@@ -151,6 +151,7 @@ namespace PDFLibNet {
 		long ExportHtml(System::String ^fileName, System::Int32 firstPage, System::Int32 lastPage,System::Boolean noFrames,System::Boolean noMerge, System::Boolean complexMode);
 		long PerfomLinkAction(System::Int32 linkPtr);
 		bool LoadPDF(System::String ^fileName);
+		bool LoadPDF(System::IO::Stream ^stream);
 		
 		bool RenderPageThread(IntPtr hwndHandle, bool bForce);
 		bool RenderPage(IntPtr handler);

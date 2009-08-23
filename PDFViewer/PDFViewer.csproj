@@ -202,9 +202,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\ZoomOut.png" />
-    <None Include="0xpdfrc">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PDFLibNet\PDFLibNet.vcproj">

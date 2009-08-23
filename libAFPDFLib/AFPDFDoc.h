@@ -95,6 +95,7 @@ public:
 	PAGERENDERNOTIFY m_RenderNotifyFinishHandle;
 private:
 	GString m_LastOpenedFile;
+	BaseStream *m_LastOpenedStream;
 	HANDLE m_renderingThread;
 	HANDLE m_exportJpgThread;
 	DynArray<CPDFSearchResult> m_Selection;

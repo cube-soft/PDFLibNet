@@ -488,14 +488,20 @@ namespace PDFViewer
          
             Invoke(new RenderNotifyInvoker(RenderNotifyFinished),page, isCurrent);
         }
-        
+        System.IO.FileStream fs = null;
         private bool LoadFile(string filename, PDFLibNet.PDFWrapper pdfDoc)
         {
             try
             {
-                System.IO.FileStream fs = new System.IO.FileStream(filename, System.IO.FileMode.Open);
+                if (fs != null)
+                {
+                    fs.Close();
+                    fs = null;
+                }
+                fs = new System.IO.FileStream(filename, System.IO.FileMode.Open);
                 //return pdfDoc.LoadPDF(filename);
                 return pdfDoc.LoadPDF(fs);
+                
             }
             catch (System.Security.SecurityException)
             {

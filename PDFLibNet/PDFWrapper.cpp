@@ -62,8 +62,13 @@ namespace PDFLibNet{
 	bool PDFWrapper::LoadPDF(System::IO::Stream ^stream){
 		PDFLoadBegin();
 		try{
-			PDFLibNet::xPDFBinaryReader ^st =gcnew PDFLibNet::xPDFBinaryReader(stream);
-			void *ptr = st->GetReadPointer();
+			if (_binaryReader != nullptr)
+            {
+				_binaryReader->Close();
+				_binaryReader =nullptr;
+            }
+			_binaryReader =gcnew PDFLibNet::xPDFBinaryReader(stream);
+			void *ptr = _binaryReader->GetReadPointer();
 			_bLoading=true;
 			_childrens=nullptr;
 			_title=nullptr;
@@ -72,7 +77,7 @@ namespace PDFLibNet{
 			if(_searchResults!=nullptr)
 				_searchResults->Clear();
 
-			if(_pdfDoc->LoadFromStream(ptr,st->BaseStream->Length)==4) //errorEncrypted
+			if(_pdfDoc->LoadFromStream(ptr,_binaryReader->BaseStream->Length)==4) //errorEncrypted
 				throw gcnew System::Security::SecurityException();
 			_pdfDoc->SetCurrentPage(1);	
 			_bLoading=false;
@@ -81,7 +86,6 @@ namespace PDFLibNet{
 			for(int i=1; i<=this->PageCount; ++i)
 				_pages.Add(i,gcnew PDFPage(_pdfDoc,i));
 
-			PDFLoadCompeted();
 			PDFLoadCompeted();
 		}catch(System::AccessViolationException ^e){
 			throw gcnew System::AccessViolationException("Something is wrong with the file");

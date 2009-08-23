@@ -541,6 +541,7 @@
 	, m_RenderFinishHandle(0)
 	, m_PageRenderedByThread(0)
 	, m_sliceBox(0,0,0,0)
+	, m_LastOpenedStream(0)
 	{
 		
 		// GMutex m;
@@ -576,11 +577,7 @@
 	
 	void AFPDFDoc::Dispose(){
 
-		if(globalParams!=NULL){
-			//logInfo("Delete globalParams\n");
-			//delete globalParams;
-			//globalParams=0;
-		}
+		
 		if(m_renderingThread){
 			DWORD exitcode=0;
 			GetExitCodeThread(m_renderingThread,&exitcode);
@@ -603,22 +600,22 @@
 			CloseHandle(m_exportJpgThread);
 			m_exportJpgThread=0;
 		}
+
+		if(m_LastOpenedStream)
+		{
+			m_LastOpenedStream->close();
+			delete m_LastOpenedStream;
+			m_LastOpenedStream=0;
+		}
 		
 		InvalidateBitmapCache();
 		m_Bitmap=0;
-
 
 		if (m_splashOut!=NULL)
 		{
 			delete m_splashOut;
 			m_splashOut=0;
 		}
-		/*if(m_splashOutThread)
-		{
-			logInfo("Delete m_splashOutThread\n");
-			delete m_splashOutThread;
-			m_splashOutThread=0;
-		}*/
 
 		if (m_PDFDoc!=NULL)
 		{
@@ -644,14 +641,16 @@
 
 	
 	PDFDoc *AFPDFDoc::createDoc(char *FileName){
-		if(FileName==NULL){
+		PDFDoc *pdfDoc;
+		if(FileName==NULL)
 			FileName=m_LastOpenedFile.getCString();
-		}
-		error(-1,"File to Open:");
-		error(-1,FileName);
-		error(-1,m_LastOpenedFile.getCString());
+		if(m_LastOpenedFile.getLength()==0 && this->m_LastOpenedStream!=0)
+			pdfDoc = new PDFDoc(m_LastOpenedStream);
+		else
+			pdfDoc = new PDFDoc(new GString(FileName), NULL,NULL);
 		//Intentamos abrir el documento sin clave
-		PDFDoc *pdfDoc = new PDFDoc(new GString(FileName), NULL,NULL);
+		
+		
 		
 		//Esperamos a que se carge correctamente, o que ocurra un error
 		while (!pdfDoc->isOk()) 
@@ -701,8 +700,8 @@
 			DWORD exitcode=0;
 			GetExitCodeThread(m_renderingThread,&exitcode);
 			if(exitcode==STILL_ACTIVE){
-				Sleep(100);
-				TerminateThread(m_renderingThread,exitcode);
+				::InterlockedExchange(&this->g_lLocker,1);
+				WaitForSingleObject(this->hRenderFinished,INFINITE);
 			}
 			CloseHandle(m_renderingThread);
 			m_renderingThread=NULL;
@@ -725,29 +724,16 @@
 			delete m_PDFDoc;
 			m_PDFDoc=0;
 		}
-		
-		//Establecemos el color del papel
-		/*SplashColor paperColor;
-		paperColor[0] = 0xff;
-		paperColor[1] = 0xff;
-		paperColor[2] = 0xff;*/
-		
-		//logInfo("Create SplashOutputDev");
-		//Note: the alignment is given by GDI requirements: bitmaps have to be 16-bit aligned.
-		//m_splashOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
-		//m_splashOut->setVectorAntialias(globalParams->getVectorAntialias());
-		
-		logInfo("Create PDFDoc");
+
 		//Intentamos abrir el documento sin clave		
 		Object obj;
 		obj.initNull();
 		StreamCallback *str = new StreamCallback((READFROMSTREAM)callback,fullLenght,0,gFalse,0,&obj);
 		m_PDFDoc = new PDFDoc(str); //,new GString(user_password),new GString(owner_password));
-
+		m_LastOpenedStream=str;
 		//Esperamos a que se carge correctamente, o que ocurra un error
 		while (!m_PDFDoc->isOk()) 
 		{
-			logInfo("m_PDFDoc->isOk");
 			//En caso de que este encriptado con clave
 			if (m_PDFDoc->getErrorCode() == errEncrypted)
 			{
@@ -782,7 +768,7 @@
 			}
 			
 		}
-		m_LastOpenedFile.clear();
+		m_LastOpenedFile.clear(); //No se especifico nombre dearchivo, habra que usar el metodo MakeSubstream del stream para el momento de exportar jpgs
 //		m_LastOpenedFile.insert((int)0,FileName,strlen(FileName));
 		//El archivo se cargo correctamente
 		m_Outline = m_PDFDoc->getOutline();
@@ -802,8 +788,8 @@
 			DWORD exitcode=0;
 			GetExitCodeThread(m_renderingThread,&exitcode);
 			if(exitcode==STILL_ACTIVE){
-				Sleep(100);
-				TerminateThread(m_renderingThread,exitcode);
+				::InterlockedExchange(&this->g_lLocker,1);
+				WaitForSingleObject(this->hRenderFinished,INFINITE);
 			}
 			CloseHandle(m_renderingThread);
 			m_renderingThread=NULL;
@@ -840,10 +826,6 @@
 		
 		logInfo("Create PDFDoc");
 		//Intentamos abrir el documento sin clave
-//		Object obj;
-//		obj.initNull();
-//		StreamCallback *str = new StreamCallback(fopen(FileName,"rb"),0,gFalse,0,&obj);
-//		m_PDFDoc = new PDFDoc(str);
 		m_PDFDoc = new PDFDoc(new GString(FileName), NULL,NULL);		
 		//Esperamos a que se carge correctamente, o que ocurra un error
 		while (!m_PDFDoc->isOk()) 
@@ -882,6 +864,11 @@
 				return errCode;
 			}
 			
+		}
+		if(m_LastOpenedStream){
+			m_LastOpenedStream->close();
+			delete m_LastOpenedStream;
+			m_LastOpenedStream = 0;
 		}
 		m_LastOpenedFile.clear();
 		m_LastOpenedFile.insert((int)0,FileName,strlen(FileName));
@@ -2454,7 +2441,9 @@
 	UINT AFPDFDoc::ExportingJpgThread( LPVOID param )
 	{
 		ExportParams *exp = (ExportParams *)param;
-		PDFDoc *doc = exp->_this->createDoc(NULL);
+		PDFDoc *doc;
+		
+		doc = exp->_this->createDoc(NULL);
 		
 		SplashOutputDev	*splashOut=NULL;
 		int eError=0;

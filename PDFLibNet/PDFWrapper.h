@@ -51,6 +51,7 @@ namespace PDFLibNet {
 		String ^_producer;
 		DateTime _creationdate;
 		DateTime _lastmodifieddate;
+		PDFLibNet::xPDFBinaryReader ^_binaryReader;
 		bool _bLoading;
 		bool _ExportJpgProgress(int pageCount, int currentPage);
 		void _ExportJpgFinished();
@@ -84,6 +85,7 @@ namespace PDFLibNet {
 			, _producer(nullptr)
 			, _creationdate(DateTime::MinValue)
 			, _lastmodifieddate(DateTime::MinValue)
+			, _binaryReader(nullptr)
 		{
 			IntPtr ptr = Marshal::StringToCoTaskMemAnsi(System::Convert::ToString(System::Configuration::ConfigurationSettings::GetConfig("xpdfrc")));
 			char *singleByte= (char*)ptr.ToPointer();
@@ -107,6 +109,7 @@ namespace PDFLibNet {
 			, _producer(nullptr)
 			, _creationdate(DateTime::MinValue)
 			, _lastmodifieddate(DateTime::MinValue)
+			, _binaryReader(nullptr)
 		{
 			IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileConfig);
 			char *singleByte= (char*)ptr.ToPointer();
@@ -511,22 +514,26 @@ namespace PDFLibNet {
 	protected:	
 
 		!PDFWrapper()
-	{
+		{	
+			//Release managed resources
+			GC::Collect();
 			if(_gchProgress.IsAllocated)
 				_gchProgress.Free();
 			if(_gchFinished.IsAllocated)
 				_gchFinished.Free();
-			/*if(_pdfDoc!=0){
-				_pdfDoc->Dispose();
-			//	delete _pdfDoc;
-			}*/
+			if(_binaryReader!=nullptr)
+			{
+				_binaryReader->Close();
+				_binaryReader=nullptr;
+			}
 		}
 
 		~PDFWrapper()
 		{
+			//Release unmanaged Resources			
 			if(_pdfDoc!=0){
 				_pdfDoc->Dispose();
-			//	delete _pdfDoc;
+				delete _pdfDoc;
 			}
 		}
 

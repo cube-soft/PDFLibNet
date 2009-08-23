@@ -604,7 +604,8 @@
 		if(m_LastOpenedStream)
 		{
 			m_LastOpenedStream->close();
-			delete m_LastOpenedStream;
+			//Let PDFDoc to delete the stream
+			//delete m_LastOpenedStream;
 			m_LastOpenedStream=0;
 		}
 		
@@ -707,9 +708,7 @@
 			m_renderingThread=NULL;
 		}
 
-		logInfo("InvalidateBitmapCache");
 		InvalidateBitmapCache();
-
 		if(user_password!=NULL)
 			m_UserPassword = user_password;
 		if(owner_password!=NULL)
@@ -718,6 +717,12 @@
 		if (m_splashOut!=NULL){
 			delete m_splashOut;
 			m_splashOut=0;
+		}
+		//Close the stream
+		if(m_LastOpenedStream)
+		{
+			m_LastOpenedStream->close();
+			m_LastOpenedStream=0;
 		}
 		//Si ya existia la eliminamos
 		if (m_PDFDoc!=0){

@@ -16,6 +16,17 @@ namespace PDFViewer
   
     public partial class frmPDFViewer : Form
     {
+        private class loadPagesParam
+        {
+            public loadPagesParam(PDFWrapper pdf, ListView lv)
+            {
+                pdfDoc = pdf;
+                listView = lv;
+            }
+            public PDFWrapper pdfDoc;
+            public ListView listView;
+        }
+
         public delegate void RenderNotifyInvoker(int page, bool isCurrent);
 
         [DllImport("user32.dll")]
@@ -413,6 +424,8 @@ namespace PDFViewer
                     UpdateText();
                     _pdfDoc.RenderPage(pageViewControl1.Handle);
                     Render();
+                    
+
                 }
             }
         }
@@ -451,10 +464,10 @@ namespace PDFViewer
                     _pdfDoc.PDFLoadCompeted += new PDFLoadCompletedHandler(_pdfDoc_PDFLoadCompeted);
                     _pdfDoc.PDFLoadBegin += new PDFLoadBeginHandler(_pdfDoc_PDFLoadBegin);
                     //}
-                    xPDFParams.ErrorQuiet = false;
-                    xPDFParams.ErrorFile = "C:\\stderr.log";
+                    //xPDFParams.ErrorQuiet =true;
+                    //xPDFParams.ErrorFile = "C:\\stderr.log";
                     //}
-
+                    int ts = Environment.TickCount;
                     using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingFile))
                     {
                         if (LoadFile(dlg.FileName, _pdfDoc))
@@ -466,8 +479,21 @@ namespace PDFViewer
 
                             _pdfDoc.FitToWidth(pageViewControl1.Handle);
                             _pdfDoc.RenderPage(pageViewControl1.Handle);
-
+                            
                             Render();
+                          
+
+                            PDFPage pg = _pdfDoc.Pages[1];
+                            pg.RenderThumbnailFinished+=new RenderNotifyFinishedHandler(pg_RenderThumbnailFinished);
+
+                            listView2.TileSize = new Size(134, (int)(128 * pg.Height / pg.Width)+10);
+                            listView2.BeginUpdate();
+                            listView2.Clear();
+                            for (int i = 0; i < _pdfDoc.PageCount; ++i)
+                                listView2.Items.Add((i + 1).ToString());
+                            listView2.EndUpdate();
+                            
+                            //pg.LoadThumbnail(128, (int)(128 * pg.Height / pg.Width));
                         }
                     }
                 }
@@ -478,15 +504,27 @@ namespace PDFViewer
             }*/
         }
 
+        void pg_RenderThumbnailFinishedInvoke(int page, bool bSuccesss)
+        {
+            if (!bSuccesss)
+                listView2.Invalidate();
+            listView2.Invalidate(listView2.Items[page - 1].Bounds);
+            //PDFPage pg = _pdfDoc.Pages[page];
+            //Bitmap bmp = pg.LoadThumbnail(imageList1.ImageSize.Width, (int)(imageList1.ImageSize.Width * pg.Height / pg.Width));
+        }
+        void pg_RenderThumbnailFinished(int page, bool bSuccesss)
+        {
+            Invoke(new RenderNotifyFinishedHandler(pg_RenderThumbnailFinishedInvoke), page, bSuccesss);
+        }
+
         void RenderNotifyFinished(int page, bool isCurrent)
         {
             if (tabView.SelectedTab.Equals(this.tpvText) && !_pdfDoc.IsBusy)
                 txtTextView.Text = _pdfDoc.Pages[_pdfDoc.CurrentPage].Text;
         }
-        void _pdfDoc_RenderNotifyFinished(int page, bool isCurrent)
-        {    
-         
-            Invoke(new RenderNotifyInvoker(RenderNotifyFinished),page, isCurrent);
+        void _pdfDoc_RenderNotifyFinished(int page, bool bSuccesss)
+        {
+            Invoke(new RenderNotifyInvoker(RenderNotifyFinished), page, bSuccesss);
         }
         System.IO.FileStream fs = null;
         private bool LoadFile(string filename, PDFLibNet.PDFWrapper pdfDoc)
@@ -843,6 +881,7 @@ namespace PDFViewer
 
         private void doubleBufferControl1_PaintControl(object sender,Rectangle view, Point location, Graphics g)
         {
+            
             if (_pdfDoc != null)
             {
                 Size sF= new Size(view.Right,view.Bottom);
@@ -852,6 +891,7 @@ namespace PDFViewer
                 _pdfDoc.CurrentY = view.Y;
                 _pdfDoc.DrawPageHDC(g.GetHdc());
                 g.ReleaseHdc();
+
                 /*
                 if (_pdfDoc.RenderDPI >= g.DpiX)
                 {
@@ -987,9 +1027,53 @@ namespace PDFViewer
                 MessageBox.Show("The document is busy in a background thread, try again in a moment", "PDFLibNet", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
+
+       
+
+        private void listView2_DrawItem(object sender, DrawListViewItemEventArgs e)
+        {
+            if (_pdfDoc != null)
+            {
+                Rectangle bounds = e.Bounds;
+                bounds.Offset(-1, -5);
+
+                Rectangle shadowRect = new Rectangle(bounds.Location, bounds.Size);
+                Rectangle pageRect = new Rectangle(bounds.Location, bounds.Size);
+
+                int pgNum = e.ItemIndex + 1;
+                PDFPage pg;
+                if(!_pdfDoc.Pages.TryGetValue(pgNum,out pg))
+                    return;
+                pg.RenderThumbnailFinished -= new RenderNotifyFinishedHandler(pg_RenderThumbnailFinished);
+                pg.RenderThumbnailFinished+=new RenderNotifyFinishedHandler(pg_RenderThumbnailFinished);
+
+                shadowRect.Offset(3, 3);
+                shadowRect.Inflate(-6, -10);
+                pageRect.Inflate(-6, -10);
+
+                e.Graphics.FillRectangle(Brushes.LightGray, shadowRect);
+
+                Bitmap bmp = pg.LoadThumbnail(128, (int)(128 * pg.Height / pg.Width));
+                if(bmp!=null)
+                    e.Graphics.DrawImageUnscaledAndClipped(bmp, pageRect);
+
+
+                e.Graphics.DrawRectangle(Pens.LightGray, pageRect);
+
+                StringFormat stringFormat = new StringFormat();
+                stringFormat.Alignment = StringAlignment.Center;
+                stringFormat.LineAlignment = StringAlignment.Center;
+
+                e.Graphics.DrawString(e.Item.Text, listView2.Font, Brushes.Black, new RectangleF(e.Bounds.X, e.Bounds.Y + e.Bounds.Height - 10, e.Bounds.Width, 10), stringFormat);
+
+                e.DrawFocusRectangle();
+            }
+        }
     }
 
     
+
+
     public delegate int SearchPdfHandler(object sender, SearchArgs e);
 
     public class SearchArgs : EventArgs

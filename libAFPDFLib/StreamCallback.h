@@ -1,9 +1,10 @@
+#pragma once
+#include "stdafx.h"
 #include "Object.h"
+#include "globals.h"
 
-#define fileStreamBufSize 4096
+#define fileStreamBufSize 8192
 typedef void (__stdcall *READFROMSTREAM)(unsigned char *,int,int,int);
-
-
 class StreamCallback: 
 	public BaseStream {
 public:
@@ -24,7 +25,7 @@ public:
   virtual void setPos(Guint pos, int dir = 0);
   virtual Guint getStart() { return start; }
   virtual void moveStart(int delta);
-
+  virtual int getLength(){ return length; } 
 private:
 
   GBool fillBuf();

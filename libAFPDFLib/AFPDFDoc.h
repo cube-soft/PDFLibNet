@@ -1,14 +1,14 @@
 #pragma once
 #define			MAX_BITMAP_CACHE	16
 
+
 #include "stdafx.h"
+#include "globals.h"
 #include "OutlineItemA.h"
 #include "PageMemory.h"
-#include "GMutex.h"
+#include "queue.h"
+
 void InitGlobalParams(char *configFile);
-
-
-
 typedef int (__stdcall *NOTIFYHANDLE)();
 typedef int (__stdcall *PAGERENDERNOTIFY)(int,bool);
 typedef int (__stdcall *PROGRESSHANDLE)(int, int);
@@ -79,6 +79,7 @@ protected:
 	long m_LastPageRenderedByThread;
 	volatile LONG g_lLocker;
 	static UINT RenderingThread( LPVOID param );
+	static UINT RenderingThreadThumb( LPVOID param );
 	static GBool callbackAbortDisplay(void *data);
 	static UINT ExportingJpgThread( LPVOID param );
 	bool m_PageRenderedByThread;
@@ -98,8 +99,11 @@ private:
 	BaseStream *m_LastOpenedStream;
 	HANDLE m_renderingThread;
 	HANDLE m_exportJpgThread;
+	HANDLE m_renderThumbs;
+	Queue m_QueuedThumbs;
 	DynArray<CPDFSearchResult> m_Selection;
 	PDFDoc *m_PDFDoc;
+	SplashOutputDev *m_thumbOut;
 	Links *_pageLinks;
 
 	SplashOutputDev	*m_splashOut;
@@ -140,6 +144,8 @@ public:
 	PDFDoc *getDoc(){
 		return m_PDFDoc;
 	}
+	long DrawPage(int page,long hdc, int width, int height, double dpi,bool bThread, void *callback);
+	bool ThumbInQueue(int page);
 	long LoadFromStream(void *callback,long fullLenght, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password);

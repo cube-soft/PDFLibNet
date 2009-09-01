@@ -52,3 +52,5 @@
 #include "GlobalParams.h"
 #include "UnicodeMap.h"
 #include "PDFDocEncoding.h"
+#include "GMutex.h"
+

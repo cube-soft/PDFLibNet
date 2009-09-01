@@ -22,7 +22,7 @@ namespace PDFLibNet {
 	public delegate bool ExportJpgProgressHandler(int pageCount, int currentPage);
 	public delegate void ExportJpgFinishedHandler();
 	public delegate	void RenderFinishedHandler();
-	public delegate	void RenderNotifyFinishedHandler(int page, bool isCurrent);
+	
 
 	public enum class PDFSearchOrder
 	{

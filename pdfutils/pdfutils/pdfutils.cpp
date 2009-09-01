@@ -243,7 +243,7 @@ int _tmain(int argc, char *argv[])
 ::HANDLE hRenderFinished;
 int pdftojpg(PDFDoc *doc,UnicodeMap *uMap)
 {
-	hRenderFinished = CreateEvent(NULL,TRUE,FALSE,TEXT("CancellEvent"));
+	hRenderFinished = CreateEvent(NULL,TRUE,FALSE,TEXT("RenderFinishedEvent"));
 	SplashOutputDev *splashOut;
 	char ppmFile[512];
 	int pg;

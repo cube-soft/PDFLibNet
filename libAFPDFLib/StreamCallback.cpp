@@ -13,10 +13,11 @@ StreamCallback::StreamCallback(READFROMSTREAM callback,long fullLenght, Guint st
   bufPos = start;
   savePos = 0;
   saved = gFalse;
+
 }
 
 StreamCallback::~StreamCallback() {
-  close();
+  close();  
 }
 
 Stream *StreamCallback::makeSubStream(Guint startA, GBool limitedA, Guint lengthA, Object *dictA) {
@@ -44,30 +45,35 @@ void StreamCallback::close() {
 
 GBool StreamCallback::fillBuf() {
   int n;
+  gLockMutex(&gStreamMutex);
+  __try { 	  
+	  if(_callback==0)
+		  return gFalse;
+	  
+	  bufPos += bufEnd - buf;
+	  bufPtr = bufEnd = buf;
+	  if (limited && bufPos >= start + length) 
+		return gFalse;
 
-  if(_callback==0)
-	  return gFalse;
-
-  
-  bufPos += bufEnd - buf;
-  bufPtr = bufEnd = buf;
-  if (limited && bufPos >= start + length) {
-    return gFalse;
+	  if (limited && bufPos + fileStreamBufSize > start + length) {
+		n = start + length - bufPos;
+	  } else {
+		n = fileStreamBufSize;
+	  }
+	  if(bufPos + n > _fullLenght)
+		  n = _fullLenght - bufPos;
+	  _callback((unsigned char *)buf,1,bufPos,n);
+	  //n = fread(buf, 1, n, f);
+	  bufEnd = buf + n;
+	  if (bufPtr >= bufEnd) 
+		return gFalse;
+	  
+	  return gTrue;
   }
-  if (limited && bufPos + fileStreamBufSize > start + length) {
-    n = start + length - bufPos;
-  } else {
-    n = fileStreamBufSize;
+  __finally 
+  {
+	  gUnlockMutex(&gStreamMutex);
   }
-  if(bufPos + n > _fullLenght)
-	  n = _fullLenght - bufPos;
-  _callback((unsigned char *)buf,1,bufPos,n);
-  //n = fread(buf, 1, n, f);
-  bufEnd = buf + n;
-  if (bufPtr >= bufEnd) {
-    return gFalse;
-  }
-  return gTrue;
 }
 
 

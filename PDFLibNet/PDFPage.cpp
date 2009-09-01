@@ -1,4 +1,6 @@
 #include "PDFPage.h"
+#include <msclr\lock.h>
+
 namespace PDFLibNet
 {
 	PDFPage::PDFPage(AFPDFDocInterop *pdfDoc,PDFPageInterop *page)
@@ -6,6 +8,10 @@ namespace PDFLibNet
 		, _loaded(true)
 		, _pdfDoc(pdfDoc)
 		, _pageNumber(page->getPage())
+		, _thumbNail(nullptr)
+		, _errorRender(gcnew Object())
+		, _thumbHdc(IntPtr::Zero)
+		, _isSuccesed(false)
 	{
 	}
 	PDFPage::PDFPage(AFPDFDocInterop *pdfDoc, int page)
@@ -13,6 +19,10 @@ namespace PDFLibNet
 		, _loaded(false)
 		, _pdfDoc(pdfDoc)
 		, _pageNumber(page)
+		, _thumbNail(nullptr)
+		, _errorRender(gcnew Object())
+		, _thumbHdc(IntPtr::Zero)
+		, _isSuccesed(false)
 	{
 	}
 
@@ -39,6 +49,62 @@ namespace PDFLibNet
 		_page->extractImages();
 	}
 
+	void PDFPage::_RenderNotifyFinished(int page, bool bSuccess){
+		try{
+			//msclr::lock l(_errorRender);
+			if(bSuccess){
+				if(_thumbG!=nullptr && _thumbNail != nullptr){
+					_isSuccesed = true;
+					if(!_thumbHdc.Equals(IntPtr::Zero))
+						_thumbG->ReleaseHdc(_thumbHdc);
+					_thumbHdc = IntPtr::Zero;
+				}
+			}else{
+				//Invalidate!
+				_thumbNail=nullptr;
+			}
+			if(_evRenderNotifyFinished!=nullptr){
+				for each(RenderNotifyFinishedHandler^ dd in _evRenderNotifyFinished->GetInvocationList()){
+					dd->Invoke(page,bSuccess);
+				}
+			}
+		}
+		catch(System::ArgumentException ^){
+			//Invalidate!
+			_thumbNail=nullptr;
+		}
+		finally
+		{
+			_thumbG=nullptr;
+		}
+	}
+	System::Drawing::Bitmap ^PDFPage::LoadThumbnail(int width,int height){
+//		msclr::lock l(_errorRender);
+		if( (_thumbNail == nullptr || _thumbNail->Width!=width || _thumbNail->Height!=height))
+		{
+
+			if(_internalRenderNotifyFinished==nullptr){		
+				_internalRenderNotifyFinished=gcnew RenderNotifyFinishedHandler(this,&PDFPage::_RenderNotifyFinished);
+				_gchRenderNotifyFinished = GCHandle::Alloc(_internalRenderNotifyFinished);
+			}
+			void *ptrCallBack = Marshal::GetFunctionPointerForDelegate(_internalRenderNotifyFinished).ToPointer();
+
+			_thumbNail = gcnew System::Drawing::Bitmap(width,height);
+			
+			loadPage();
+			_thumbG = System::Drawing::Graphics::FromImage(_thumbNail);
+			_thumbG->Clear(System::Drawing::Color::White);
+			_thumbHdc = _thumbG->GetHdc();
+			if(_pdfDoc->DrawPage(_pageNumber,_thumbHdc.ToInt32(),width,height,0,false,ptrCallBack)!=0)
+			{
+				_thumbHdc=IntPtr::Zero;
+				_thumbG=nullptr;
+				_thumbNail=nullptr;
+			}
+		}
+	
+		return _thumbNail;
+	}
 	System::Drawing::Image ^PDFPage::GetImage(int index)
 	{
 		extractImages();
@@ -164,6 +230,7 @@ namespace PDFLibNet
 	xPDFBinaryReader::xPDFBinaryReader(System::IO::Stream ^stream)
 		: BinaryReader(stream)
 		, _readFromStream(nullptr)
+		, _readLock(gcnew System::Object())
 	{
 		if(this->_readFromStream==nullptr){		
 			_readFromStream=gcnew ReadFromStreamHandler(this,&xPDFBinaryReader::_ReadFromStreamFunc);
@@ -181,6 +248,7 @@ namespace PDFLibNet
 
 	void xPDFBinaryReader::_ReadFromStreamFunc(unsigned char *buffer,int dir, int pos, int len)
 	{
+		msclr::lock l(_readLock);
 		if(this->BaseStream->Position != pos)
 		{
 			if(this->BaseStream->CanSeek){

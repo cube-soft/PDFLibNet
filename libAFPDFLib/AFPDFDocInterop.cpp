@@ -281,3 +281,14 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 			return new PDFPageInterop(page,(void *)p,(void *)_ptr);
 		return 0;
 	}
+
+	long AFPDFDocInterop::DrawPage(int page, long hdc, int width, int height, double pdi, bool bThread, void *callback)
+	{
+		AFPDFDoc *doc =((AFPDFDoc *)_ptr);
+		return doc->DrawPage(page,hdc,width,height,pdi,bThread,callback);
+	}
+
+	bool AFPDFDocInterop::ThumbInQueue(int page){
+		AFPDFDoc *doc =((AFPDFDoc *)_ptr);
+		return doc->ThumbInQueue(page);
+	}

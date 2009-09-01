@@ -132,10 +132,10 @@
     <value>Courier New, 9.75pt</value>
   </data>
   <data name="tvwOutline.Location" type="System.Drawing.Point, System.Drawing">
-    <value>5, 5</value>
+    <value>3, 3</value>
   </data>
   <data name="tvwOutline.Size" type="System.Drawing.Size, System.Drawing">
-    <value>236, 456</value>
+    <value>172, 424</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="tvwOutline.TabIndex" type="System.Int32, mscorlib">
@@ -148,9 +148,114 @@
     <value>System.Windows.Forms.TreeView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;tvwOutline.Parent" xml:space="preserve">
-    <value>splitContainer1.Panel1</value>
+    <value>tabPage1</value>
   </data>
   <data name="&gt;&gt;tvwOutline.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabPage1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 22</value>
+  </data>
+  <data name="tabPage1.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>178, 430</value>
+  </data>
+  <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="tabPage1.Text" xml:space="preserve">
+    <value>Bookmarks</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Name" xml:space="preserve">
+    <value>tabPage1</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabPage1.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="listView2.Alignment" type="System.Windows.Forms.ListViewAlignment, System.Windows.Forms">
+    <value>Default</value>
+  </data>
+  <data name="listView2.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="listView2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>3, 3</value>
+  </data>
+  <data name="listView2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>172, 424</value>
+  </data>
+  <data name="listView2.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;listView2.Name" xml:space="preserve">
+    <value>listView2</value>
+  </data>
+  <data name="&gt;&gt;listView2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ListView, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;listView2.Parent" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;listView2.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="tabPage2.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 22</value>
+  </data>
+  <data name="tabPage2.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>3, 3, 3, 3</value>
+  </data>
+  <data name="tabPage2.Size" type="System.Drawing.Size, System.Drawing">
+    <value>178, 430</value>
+  </data>
+  <data name="tabPage2.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
+  </data>
+  <data name="tabPage2.Text" xml:space="preserve">
+    <value>Thumbnails</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Name" xml:space="preserve">
+    <value>tabPage2</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabPage, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.Parent" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabPage2.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="tabControl1.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
+    <value>Fill</value>
+  </data>
+  <data name="tabControl1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>5, 5</value>
+  </data>
+  <data name="tabControl1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>186, 456</value>
+  </data>
+  <data name="tabControl1.TabIndex" type="System.Int32, mscorlib">
+    <value>8</value>
+  </data>
+  <data name="&gt;&gt;tabControl1.Name" xml:space="preserve">
+    <value>tabControl1</value>
+  </data>
+  <data name="&gt;&gt;tabControl1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TabControl, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tabControl1.Parent" xml:space="preserve">
+    <value>splitContainer1.Panel1</value>
+  </data>
+  <data name="&gt;&gt;tabControl1.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <data name="splitContainer1.Panel1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
@@ -184,7 +289,7 @@
     <value>10, 10, 10, 10</value>
   </data>
   <data name="pageViewControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>463, 421</value>
+    <value>513, 421</value>
   </data>
   <data name="pageViewControl1.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -193,7 +298,7 @@
     <value>pageViewControl1</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Type" xml:space="preserve">
-    <value>PDFViewer.PageViewer, PDFViewer, Version=1.0.6.3, Culture=neutral, PublicKeyToken=null</value>
+    <value>PDFViewer.PageViewer, PDFViewer, Version=1.0.6.4, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;pageViewControl1.Parent" xml:space="preserve">
     <value>tpvPDF</value>
@@ -208,7 +313,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tpvPDF.Size" type="System.Drawing.Size, System.Drawing">
-    <value>469, 427</value>
+    <value>519, 427</value>
   </data>
   <data name="tpvPDF.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -241,7 +346,7 @@
     <value>Both</value>
   </data>
   <data name="txtTextView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>463, 421</value>
+    <value>513, 421</value>
   </data>
   <data name="txtTextView.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -265,7 +370,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tpvText.Size" type="System.Drawing.Size, System.Drawing">
-    <value>469, 427</value>
+    <value>519, 427</value>
   </data>
   <data name="tpvText.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -286,7 +391,7 @@
     <value>1</value>
   </data>
   <metadata name="tsImages.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>116, 58</value>
+    <value>3, 3</value>
   </metadata>
   <data name="tsImagesUpdate.ImageTransparentColor" type="System.Drawing.Color, System.Drawing">
     <value>Magenta</value>
@@ -310,7 +415,7 @@
     <value>3, 3</value>
   </data>
   <data name="tsImages.Size" type="System.Drawing.Size, System.Drawing">
-    <value>463, 25</value>
+    <value>513, 25</value>
   </data>
   <data name="tsImages.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -337,7 +442,7 @@
     <value>0, 31</value>
   </data>
   <data name="pdfImagesThumbView1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>466, 393</value>
+    <value>516, 393</value>
   </data>
   <data name="pdfImagesThumbView1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -346,7 +451,7 @@
     <value>pdfImagesThumbView1</value>
   </data>
   <data name="&gt;&gt;pdfImagesThumbView1.Type" xml:space="preserve">
-    <value>PDFViewer.PDFImagesThumbView, PDFViewer, Version=1.0.6.3, Culture=neutral, PublicKeyToken=null</value>
+    <value>PDFViewer.PDFImagesThumbView, PDFViewer, Version=1.0.6.4, Culture=neutral, PublicKeyToken=null</value>
   </data>
   <data name="&gt;&gt;pdfImagesThumbView1.Parent" xml:space="preserve">
     <value>tpvImages</value>
@@ -361,7 +466,7 @@
     <value>3, 3, 3, 3</value>
   </data>
   <data name="tpvImages.Size" type="System.Drawing.Size, System.Drawing">
-    <value>469, 427</value>
+    <value>519, 427</value>
   </data>
   <data name="tpvImages.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -388,7 +493,7 @@
     <value>5, 5</value>
   </data>
   <data name="tabView.Size" type="System.Drawing.Size, System.Drawing">
-    <value>477, 456</value>
+    <value>527, 456</value>
   </data>
   <data name="tabView.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -424,7 +529,7 @@
     <value>737, 466</value>
   </data>
   <data name="splitContainer1.SplitterDistance" type="System.Int32, mscorlib">
-    <value>246</value>
+    <value>196</value>
   </data>
   <data name="splitContainer1.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -651,6 +756,9 @@
   <data name="&gt;&gt;statusStrip1.ZOrder" xml:space="preserve">
     <value>2</value>
   </data>
+  <metadata name="bgLoadPages.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>116, 58</value>
+  </metadata>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
@@ -660,47 +768,8 @@
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
     <value>737, 513</value>
   </data>
-  <data name="$this.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
-    <value>NoControl</value>
-  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>xPDF Viewer</value>
-  </data>
-  <data name="&gt;&gt;txtPage.Name" xml:space="preserve">
-    <value>txtPage</value>
-  </data>
-  <data name="&gt;&gt;txtPage.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripTextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;printDialog1.Name" xml:space="preserve">
-    <value>printDialog1</value>
-  </data>
-  <data name="&gt;&gt;printDialog1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.PrintDialog, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;printDocument1.Name" xml:space="preserve">
-    <value>printDocument1</value>
-  </data>
-  <data name="&gt;&gt;printDocument1.Type" xml:space="preserve">
-    <value>System.Drawing.Printing.PrintDocument, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="&gt;&gt;saveFileDialog1.Name" xml:space="preserve">
-    <value>saveFileDialog1</value>
-  </data>
-  <data name="&gt;&gt;saveFileDialog1.Type" xml:space="preserve">
-    <value>System.Windows.Forms.SaveFileDialog, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;ttpLink.Name" xml:space="preserve">
-    <value>ttpLink</value>
-  </data>
-  <data name="&gt;&gt;ttpLink.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;StatusLabel.Name" xml:space="preserve">
-    <value>StatusLabel</value>
-  </data>
-  <data name="&gt;&gt;StatusLabel.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;tsImagesUpdate.Name" xml:space="preserve">
     <value>tsImagesUpdate</value>
@@ -731,6 +800,12 @@
   </data>
   <data name="&gt;&gt;tsbPrev.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;txtPage.Name" xml:space="preserve">
+    <value>txtPage</value>
+  </data>
+  <data name="&gt;&gt;txtPage.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripTextBox, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;tsbNext.Name" xml:space="preserve">
     <value>tsbNext</value>
@@ -779,6 +854,42 @@
   </data>
   <data name="&gt;&gt;tsbVectorAntialias.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripButton, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;printDialog1.Name" xml:space="preserve">
+    <value>printDialog1</value>
+  </data>
+  <data name="&gt;&gt;printDialog1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.PrintDialog, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;printDocument1.Name" xml:space="preserve">
+    <value>printDocument1</value>
+  </data>
+  <data name="&gt;&gt;printDocument1.Type" xml:space="preserve">
+    <value>System.Drawing.Printing.PrintDocument, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="&gt;&gt;saveFileDialog1.Name" xml:space="preserve">
+    <value>saveFileDialog1</value>
+  </data>
+  <data name="&gt;&gt;saveFileDialog1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.SaveFileDialog, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;ttpLink.Name" xml:space="preserve">
+    <value>ttpLink</value>
+  </data>
+  <data name="&gt;&gt;ttpLink.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolTip, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;StatusLabel.Name" xml:space="preserve">
+    <value>StatusLabel</value>
+  </data>
+  <data name="&gt;&gt;StatusLabel.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripStatusLabel, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;bgLoadPages.Name" xml:space="preserve">
+    <value>bgLoadPages</value>
+  </data>
+  <data name="&gt;&gt;bgLoadPages.Type" xml:space="preserve">
+    <value>System.ComponentModel.BackgroundWorker, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>frmPDFViewer</value>

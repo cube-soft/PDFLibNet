@@ -2,7 +2,6 @@
 #include "AFPDFDoc.h"
 #include "jpeg.h"
 #include "error.h"
-#include "GMutex.h"
 #include "StreamCallback.h"
 
 	//------DECLARATIONS	
@@ -25,6 +24,30 @@
 		AFPDFDoc *doc;	
 		SplashOutputDev *out;
 		bool enablePreRender;
+		int pageToRender;
+	};
+
+
+	struct threadParamThumb {
+
+		threadParamThumb(HDC hdc,SplashOutputDev *outDev,PDFDoc *pdfdoc,int page,Queue *queued, void *finishCallback){
+			pageToRender=page;
+			doc =pdfdoc;
+			out = outDev;
+			hgMutex=0;
+			finishNotify=(PAGERENDERNOTIFY)finishCallback;
+			que = queued;
+			hDC = hdc;
+		}
+		double renderDPI;
+		int width;
+		int height;
+		PDFDoc *doc;
+		LPCRITICAL_SECTION hgMutex;
+		PAGERENDERNOTIFY finishNotify;
+		SplashOutputDev *out;
+		Queue *que;
+		HDC hDC;
 		int pageToRender;
 	};
 
@@ -66,22 +89,7 @@
 		delete ret;
 	}
 
-	void logInfo(char *string){
-		//if(globalParams->getErrQuiet()) return;
-
-		time_t ltime;
-		 char tmpbuf[128], timebuf[26], ampm[] = "AM";
-
-		time( &ltime );
-		//printf( "Time in seconds since UTC 1/1/70:\t%ld\n", ltime );
-		int err = ctime_s(timebuf, 26, &ltime);
-		
-//		printf( "UNIX time and date:\t\t\t%s", timebuf );
-
-
-		fprintf(stderr,"%s\tINFO: %s\n",timebuf,string);
-		fflush(stderr);
-	}
+	
 	//------PRINT INFORMATION
 	void InitGlobalParams(char *configFile){
 		if(globalParams==0){
@@ -110,6 +118,8 @@
 			globalParams->setAntialias("yes");
 			globalParams->setVectorAntialias("yes");
 			globalParams->setTextEncoding("UTF-8");
+
+			InitGlobals();
 			delete baseDir;
 		}
 	}
@@ -542,13 +552,16 @@
 	, m_PageRenderedByThread(0)
 	, m_sliceBox(0,0,0,0)
 	, m_LastOpenedStream(0)
+	, m_QueuedThumbs(15)
+	, m_renderThumbs(0)
+	, m_thumbOut(0)
 	{
 		
 		// GMutex m;
 		gInitMutex(&hgMutex);
 
 		//hgMutex = CreateMutex(NULL,FALSE,NULL);
-		hRenderFinished = CreateEvent(NULL,TRUE,FALSE,TEXT("CancellEvent"));
+		hRenderFinished = CreateEvent(NULL,TRUE,FALSE,TEXT("RenderFinishedEvent"));
 
 		for(int i=0;i<MAX_BITMAP_CACHE;i++){
 			_bitmapCache[i]=0;
@@ -578,6 +591,7 @@
 	void AFPDFDoc::Dispose(){
 
 		
+		m_QueuedThumbs.shutdown();
 		if(m_renderingThread){
 			DWORD exitcode=0;
 			GetExitCodeThread(m_renderingThread,&exitcode);
@@ -645,14 +659,15 @@
 		PDFDoc *pdfDoc;
 		if(FileName==NULL)
 			FileName=m_LastOpenedFile.getCString();
-		if(m_LastOpenedFile.getLength()==0 && this->m_LastOpenedStream!=0)
-			pdfDoc = new PDFDoc(m_LastOpenedStream);
+		//Intentamos abrir el documento sin clave
+		if(m_LastOpenedFile.getLength()==0 && this->m_LastOpenedStream!=0){
+			Object obj;
+			obj.initNull();
+			pdfDoc = new PDFDoc((BaseStream *)m_LastOpenedStream->makeSubStream(0,0,((StreamCallback *)m_LastOpenedStream)->getLength(),&obj));
+		}
 		else
 			pdfDoc = new PDFDoc(new GString(FileName), NULL,NULL);
-		//Intentamos abrir el documento sin clave
-		
-		
-		
+
 		//Esperamos a que se carge correctamente, o que ocurra un error
 		while (!pdfDoc->isOk()) 
 		{
@@ -800,7 +815,6 @@
 			m_renderingThread=NULL;
 		}
 
-		logInfo("InvalidateBitmapCache");
 		InvalidateBitmapCache();
 
 		if(user_password!=NULL)
@@ -829,13 +843,11 @@
 		//m_splashOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
 		//m_splashOut->setVectorAntialias(globalParams->getVectorAntialias());
 		
-		logInfo("Create PDFDoc");
 		//Intentamos abrir el documento sin clave
 		m_PDFDoc = new PDFDoc(new GString(FileName), NULL,NULL);		
 		//Esperamos a que se carge correctamente, o que ocurra un error
 		while (!m_PDFDoc->isOk()) 
 		{
-			logInfo("m_PDFDoc->isOk");
 			//En caso de que este encriptado con clave
 			if (m_PDFDoc->getErrorCode() == errEncrypted)
 			{
@@ -979,20 +991,6 @@
 		int bmWidth = bitmap->getWidth();
 		int bmHeight = bitmap->getHeight();
 		
-		BITMAPINFO bmi;
-		ZeroMemory(&bmi,sizeof(bmi));
-		bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-		bmi.bmiHeader.biWidth=bmWidth;
-		//By default bitmaps are bottom up images which means 1st scanline is bottom when and last is top one.
-		bmi.bmiHeader.biHeight=-bmHeight;
-		bmi.bmiHeader.biPlanes=1;
-		bmi.bmiHeader.biBitCount=24;
-		bmi.bmiHeader.biCompression=BI_RGB;
-
-		bmi.bmiColors[0].rgbBlue = 0;
-		bmi.bmiColors[0].rgbGreen = 0;
-		bmi.bmiColors[0].rgbRed = 0;
-		bmi.bmiColors[0].rgbReserved = 0;
 
 		HDC clientDC;
 		clientDC = GetWindowDC(NULL);
@@ -1027,7 +1025,8 @@
 		}
 		bool newThreadRunned=false;
 		//prerender next page
-		if (page+1 <= m_PDFDoc->getNumPages() && enablePreRender && byThread && 0)
+		PageMemory *nextBmp = this->GetBitmapCache(page+1);
+		if (0 && nextBmp==0 && (page+1 <= m_PDFDoc->getNumPages() && enablePreRender && byThread))
 		{   
 			m_PageToRenderByThread = page+1;
 			
@@ -1056,7 +1055,7 @@
 			
 			InterlockedExchange(&this->g_lLocker,0);
 			m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID)tp,CREATE_SUSPENDED,0);
-			SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
+			//SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
 			ResumeThread(m_renderingThread);	
 		}else{
 			m_renderingThread=0;
@@ -1115,18 +1114,22 @@
 				if (m_renderingThread!=0)
 				{					
 					DWORD exitcode=0;
-					logInfo("Running out last thread");
 					GetExitCodeThread(m_renderingThread,&exitcode);
-					if(exitcode==STILL_ACTIVE) //hurry up!
-						SetThreadPriority(m_renderingThread,THREAD_PRIORITY_ABOVE_NORMAL);
+					
+					//Cancel if the next page will not be valid
+					if(exitcode==STILL_ACTIVE){
+						if(m_CurrentPage!=m_PageToRenderByThread ){
+							InterlockedExchange(&this->g_lLocker,1);
+						}else{
+							 //hurry up!
+							SetThreadPriority(m_renderingThread,THREAD_PRIORITY_ABOVE_NORMAL);
+						}
+					}
 					//Wait to finish
-					logInfo("Wait to signaled procedure");
 					WaitForSingleObject(this->hRenderFinished,INFINITE);
-					logInfo("Closing Handler");
 					CloseHandle(m_renderingThread);
 					m_renderingThread=NULL;
 				}
-				logInfo("GetBitmapCache");
 				//Read from cache
 				m_Bitmap = GetBitmapCache(m_CurrentPage);
 				//Check if the last bitmap is valid
@@ -1135,7 +1138,6 @@
 				}	
 
 				if(m_Bitmap==0){	
-					logInfo("Run thread");
 					m_PageToRenderByThread = m_CurrentPage;
 
 					if(m_splashOut>0){
@@ -1156,69 +1158,18 @@
 					//At this point the m_Bitmap now contains the full page
 					delete tp;
 					m_Bitmap=GetBitmapCache(m_CurrentPage);
-					//Replaced by RenderThreadFinished
 					
-					/*
-					logInfo("getBitmap()");
-					//Rendered bitmap by xpdf
-					SplashBitmap * bitmap = m_splashOut->getBitmap();
-					bmWidth = bitmap->getWidth();
-					bmHeight = bitmap->getHeight();
-					m_PageHeight = bmHeight;
-					m_PageWidth  = bmWidth;
-
-
-					BITMAPINFO bmi;
-					ZeroMemory(&bmi,sizeof(bmi));
-					bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-					bmi.bmiHeader.biWidth=bmWidth;
-					//By default bitmaps are bottom up images which means 1st scanline is bottom when and last is top one.
-					bmi.bmiHeader.biHeight=-bmHeight;
-					bmi.bmiHeader.biPlanes=1;
-					bmi.bmiHeader.biBitCount=24;
-					bmi.bmiHeader.biCompression=BI_RGB;
-
-					bmi.bmiColors[0].rgbBlue = 0;
-					bmi.bmiColors[0].rgbGreen = 0;
-					bmi.bmiColors[0].rgbRed = 0;
-					bmi.bmiColors[0].rgbReserved = 0;
-
-					HDC clientDC;
-					//clientDC.Attach(::GetWindowDC((HWND)lhWnd));
-					clientDC = GetWindowDC((HWND)lhWnd);
-					//Bitmap Rebuild
-					logInfo("Bitmap Rebuild\n");
-					if(!m_Bitmap || (m_Bitmap && ( m_Bitmap->Width != bmWidth || m_Bitmap->Height != bmHeight)))
-					{
-						if(m_Bitmap==0){
-							logInfo("Add Bitmap cache\n");
-							m_Bitmap = new PageMemory();
-							AddBitmapCache(m_Bitmap,m_CurrentPage);
-						}
-						logInfo("Create Bitmap \n");
-						m_Bitmap->Create(clientDC,bmWidth,bmHeight,m_renderDPI);		
-					}
-					//********START DIB
-					logInfo("Set DIBits\n");
-					m_Bitmap->SetDIBits(clientDC,(void *)m_splashOut->getBitmap()->getDataPtr());
-					//********END DIB
-					//clientDC.Detach();
-
-					int box_left, box_top, box_right, box_bottom;
-					m_splashOut->getModRegion(&box_left, &box_top, &box_right, &box_bottom);
-					m_bbox = CRect(box_left, box_top, box_right, box_bottom);
-					*/
 				} 
 				//Update Size
 				if(m_Bitmap){
 					m_PageWidth = m_Bitmap->Width;
 					m_PageHeight = m_Bitmap->Height;
 				}
-
 				
 				//prerender next page
-				logInfo("prerender next page\n");
-				if (enableThread && m_CurrentPage+1 <= m_PDFDoc->getNumPages())
+				PageMemory *nextBmp =GetBitmapCache(m_CurrentPage+1);
+				if ((nextBmp==0 || (nextBmp && nextBmp->getRenderDPI() != m_renderDPI)) && 
+					(enableThread && m_CurrentPage+1 <= m_PDFDoc->getNumPages()))
 				{
 					m_PageToRenderByThread = m_CurrentPage+1;
 
@@ -1236,8 +1187,7 @@
 
 					InterlockedExchange(&this->g_lLocker,0);
 					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID)tp,CREATE_SUSPENDED,0);
-					SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
-					logInfo("resume prerender next page thread\n");
+					//SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
 					ResumeThread(m_renderingThread);
 					
 				}else
@@ -1258,56 +1208,184 @@
 		AFPDFDoc *doc =(AFPDFDoc *)data;
 		
 		if(::InterlockedExchange(&doc->g_lLocker,0)!=0){
-			fprintf(stderr,"======================ABORTED--------------------\n");	
 			::InterlockedExchange(&doc->g_lLocker,1);
 			return gTrue;
 		}
 		return gFalse;
 	}
+
+
+	bool AFPDFDoc::ThumbInQueue(int page)
+	{
+		m_QueuedThumbs.enterlock();
+		//Look waiting
+		for(int i=0;i<m_QueuedThumbs.queue.GetCount();++i)
+		{
+			if(((threadParamThumb *)m_QueuedThumbs.queue[i])->pageToRender == page)
+			{
+				m_QueuedThumbs.unlock();
+				return true;
+			}
+		}
+		//Look in process
+		for(int i=0;i<m_QueuedThumbs.delQueue.GetCount();++i)
+		{
+			if(((threadParamThumb *)m_QueuedThumbs.delQueue[i])->pageToRender == page)
+			{
+				m_QueuedThumbs.unlock();
+				return true;
+			}
+		}
+		m_QueuedThumbs.unlock();
+		return false;
+	}
+
+	long AFPDFDoc::DrawPage(int page, long hdc, int width, int height, double dpi,bool bThread, void *callback)
+	{
+		//Establecemos el color del papel
+		SplashColor paperColor;
+		paperColor[0] = 0xff;
+		paperColor[1] = 0xff;
+		paperColor[2] = 0xff;
+
+
+
+		PageMemory *bmp;
+		PDFDoc *doc = m_PDFDoc; //this->createDoc(NULL);
+		if(m_thumbOut==0){
+			m_thumbOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,0);
+			m_thumbOut->setVectorAntialias(gFalse);
+			m_thumbOut->startDoc(doc->getXRef());
+		}
+		SplashOutputDev *out=m_thumbOut;
+		out->clearModRegion();
+		
+
+		threadParamThumb *tp=new threadParamThumb((HDC)hdc,out,doc,page,&m_QueuedThumbs,callback);
+		//Calculate DPI
+		if(width >0 && height >0 && dpi==0){
+			double ow = doc->getPageCropWidth(page); //Original size at 72 dpi
+			//double oh = doc->getPageCropHeight(page);
+			dpi =  72.0*width/ow; //Same DPI for width and height
+		}
+		tp->renderDPI = IFZERO(dpi,18);
+		if(m_renderThumbs==0){
+			m_renderThumbs = ::CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThreadThumb,(LPVOID)&m_QueuedThumbs,CREATE_SUSPENDED,0);
+			::SetThreadPriority(m_renderThumbs,THREAD_PRIORITY_NORMAL);
+			::ResumeThread(m_renderThumbs);
+		}
+		
+		if(!m_QueuedThumbs.AddTail(tp))
+		{
+			/*m_QueuedThumbs.enterlock();
+			m_QueuedThumbs.clear();
+			if(!m_QueuedThumbs.AddTail(tp)){
+				m_QueuedThumbs.unlock();*/
+			return -1;
+			/*}
+			m_QueuedThumbs.unlock();*/
+		}
+	
+		return 0;
+	}
+
+	UINT AFPDFDoc::RenderingThreadThumb( LPVOID value )
+	{
+		Queue *q=(Queue *)value;
+		PDFDoc *doc;
+		threadParamThumb *param;
+		double renderDPI=18;
+		PageMemory *bmpMem=0;
+		int page=0;
+		bool bSuccess =false;
+
+		while(true){
+			param=0;
+			LPVOID lpParam =q->RemoveHead();
+			if(lpParam!=NULL){
+				param = (threadParamThumb *)lpParam;
+				doc=(PDFDoc *)param->doc;
+				renderDPI =param->renderDPI;
+				page = param->pageToRender;
+				renderDPI=IFZERO(renderDPI,18);
+				page=MAX(1,page);
+			
+				if(doc->getCatalog() && doc->getCatalog()->isOk()){
+					Page *p = doc->getCatalog()->getPage(page);
+					if(p && p->isOk()){
+						p->display(param->out,renderDPI, renderDPI, 0,
+										gFalse, gTrue, gFalse,doc->getCatalog() /*,
+											callbackAbortDisplay,pdfDoc*/);
+
+						SplashBitmap * bitmap = param->out->getBitmap();
+						int bmWidth = bitmap->getWidth();
+						int bmHeight = bitmap->getHeight();					
+
+						PageMemory *bmpMem = new PageMemory();
+						bmpMem->Create(param->hDC,bmWidth,bmHeight,renderDPI, param->out->getDefCTM(),param->out->getDefICTM());	
+
+						//********START DIB
+						bmpMem->SetDimensions(bmWidth,bmHeight,renderDPI);
+						bmpMem->SetDIBits(param->hDC,(void *)bitmap->getDataPtr());
+
+						bmpMem->Draw(param->hDC,0,0,bmWidth,bmHeight,0,0);
+						
+						bmpMem->Dispose();
+						delete bmpMem;
+						bmpMem=0;
+						bSuccess=true;
+					}
+				}				
+			}
+			if(param->finishNotify)
+				 param->finishNotify(page,bSuccess);
+			if(param){
+				param->que->delQueue.Delete(0);
+				delete param;
+				param=0;
+			}
+		}
+		
+	}
 	//Rendering thread
 	UINT AFPDFDoc::RenderingThread( LPVOID value )
 	{
-			threadParam *param =(threadParam *)value;
-			AFPDFDoc *pdfDoc =(AFPDFDoc *)param->doc;
+		threadParam *param =(threadParam *)value;
+		AFPDFDoc *pdfDoc =(AFPDFDoc *)param->doc;
 
-			//Add a mutex?
-			::gLockMutex(&pdfDoc->hgMutex);
-			
-			__try {
-				double renderDPI =pdfDoc->m_renderDPI;
-				int page = pdfDoc->m_PageToRenderByThread;
-			
-				//Verificar los valores de variables
-				renderDPI=IFZERO(renderDPI,72);
-				page=MAX(1,page);
-				globalParams->setPrintCommands(gTrue);
-				pdfDoc->m_LastPageRenderedByThread=page;
-				if(pdfDoc->m_sliceBox.NotEmpty()){
-					logInfo("displayPageSlice");
-					pdfDoc->m_PDFDoc->displayPageSlice(param->out,page,
-												renderDPI,renderDPI, pdfDoc->m_Rotation,
-												gFalse,gTrue,gFalse,
-												pdfDoc->m_sliceBox.left ,pdfDoc->m_sliceBox.top,
-												pdfDoc->m_sliceBox.width,pdfDoc->m_sliceBox.height,callbackAbortDisplay,pdfDoc);					
-				}else{
-					if(pdfDoc->m_PDFDoc->getCatalog() && pdfDoc->m_PDFDoc->getCatalog()->isOk()){
-						Page *p = pdfDoc->m_PDFDoc->getCatalog()->getPage(page);
-						if(p && p->isOk()){
-							logInfo("displayPage");
-							fprintf(stderr,"IS OK %d,%d,%d",pdfDoc->m_PDFDoc?1:0,param->out?1:0,page);
-							fflush(stderr);
-							pdfDoc->m_PDFDoc->displayPage(param->out,page,
-												renderDPI, renderDPI, pdfDoc->m_Rotation, 
-												gFalse, gTrue, gFalse,callbackAbortDisplay,pdfDoc);
-						}
+		//Add a mutex?
+		::gLockMutex(&pdfDoc->hgMutex);
+		__try {
+			double renderDPI =pdfDoc->m_renderDPI;
+			int page = pdfDoc->m_PageToRenderByThread;
+		
+			//Verificar los valores de variables
+			renderDPI=IFZERO(renderDPI,72);
+			page=MAX(1,page);
+			//globalParams->setPrintCommands(gTrue);
+			pdfDoc->m_LastPageRenderedByThread=page;
+			if(pdfDoc->m_sliceBox.NotEmpty()){
+				pdfDoc->m_PDFDoc->displayPageSlice(param->out,page,
+											renderDPI,renderDPI, pdfDoc->m_Rotation,
+											gFalse,gTrue,gFalse,
+											pdfDoc->m_sliceBox.left ,pdfDoc->m_sliceBox.top,
+											pdfDoc->m_sliceBox.width,pdfDoc->m_sliceBox.height,callbackAbortDisplay,pdfDoc);					
+			}else{
+				if(pdfDoc->m_PDFDoc->getCatalog() && pdfDoc->m_PDFDoc->getCatalog()->isOk()){
+					Page *p = pdfDoc->m_PDFDoc->getCatalog()->getPage(page);
+					if(p && p->isOk()){
+						p->display(param->out,renderDPI, renderDPI, pdfDoc->m_Rotation, 
+											gFalse, gTrue, gFalse,pdfDoc->m_PDFDoc->getCatalog(),
+											callbackAbortDisplay,pdfDoc);
 					}
 				}
-			
-			}__finally{
-				pdfDoc->RenderThreadFinished(param->out,param->pageToRender, param->enablePreRender);
-				::gUnlockMutex(&pdfDoc->hgMutex);
-				return true;
 			}
+		
+		}__finally{
+			pdfDoc->RenderThreadFinished(param->out,param->pageToRender, param->enablePreRender);
+			::gUnlockMutex(&pdfDoc->hgMutex);
+			return true;
+		}
 	}
 
 

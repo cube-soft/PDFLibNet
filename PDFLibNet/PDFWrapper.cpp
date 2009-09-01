@@ -7,7 +7,8 @@ namespace PDFLibNet{
 	#pragma managed
 	
 
-	bool PDFWrapper::RenderPage(IntPtr handler, System::Boolean bForce, System::Boolean bEnableThread){
+	bool PDFWrapper::RenderPage(IntPtr handler, System::Boolean bForce, System::Boolean bEnableThread)
+	{
 		long hwnd=(long)handler.ToPointer();
 		if(this->_internalRenderNotifyFinished==nullptr){		
 			_internalRenderNotifyFinished=gcnew RenderNotifyFinishedHandler(this,&PDFWrapper::_RenderNotifyFinished);

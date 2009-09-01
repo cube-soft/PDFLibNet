@@ -31,28 +31,26 @@ namespace PDFViewer
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmPDFViewer));
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tvwOutline = new System.Windows.Forms.TreeView();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.listView2 = new System.Windows.Forms.ListView();
             this.tabView = new System.Windows.Forms.TabControl();
             this.tpvPDF = new System.Windows.Forms.TabPage();
+            this.pageViewControl1 = new PDFViewer.PageViewer();
             this.tpvText = new System.Windows.Forms.TabPage();
             this.txtTextView = new System.Windows.Forms.TextBox();
-            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
-            this.txtPage = new System.Windows.Forms.ToolStripTextBox();
-            this.printDialog1 = new System.Windows.Forms.PrintDialog();
-            this.printDocument1 = new System.Drawing.Printing.PrintDocument();
-            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
-            this.ttpLink = new System.Windows.Forms.ToolTip(this.components);
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.tpvImages = new System.Windows.Forms.TabPage();
-            this.pageViewControl1 = new PDFViewer.PageViewer();
-            this.pdfImagesThumbView1 = new PDFViewer.PDFImagesThumbView();
             this.tsImages = new System.Windows.Forms.ToolStrip();
             this.tsImagesUpdate = new System.Windows.Forms.ToolStripButton();
             this.tsImagesSave = new System.Windows.Forms.ToolStripButton();
+            this.pdfImagesThumbView1 = new PDFViewer.PDFImagesThumbView();
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.tsbOpen = new System.Windows.Forms.ToolStripButton();
             this.tsbPrintAs = new System.Windows.Forms.ToolStripButton();
             this.tsbPrev = new System.Windows.Forms.ToolStripButton();
+            this.txtPage = new System.Windows.Forms.ToolStripTextBox();
             this.tsbNext = new System.Windows.Forms.ToolStripButton();
             this.tsbSearch = new System.Windows.Forms.ToolStripButton();
             this.tsbAbout = new System.Windows.Forms.ToolStripButton();
@@ -61,16 +59,26 @@ namespace PDFViewer
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.tsbAntialias = new System.Windows.Forms.ToolStripButton();
             this.tsbVectorAntialias = new System.Windows.Forms.ToolStripButton();
+            this.printDialog1 = new System.Windows.Forms.PrintDialog();
+            this.printDocument1 = new System.Drawing.Printing.PrintDocument();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.ttpLink = new System.Windows.Forms.ToolTip(this.components);
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.bgLoadPages = new System.ComponentModel.BackgroundWorker();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.tabView.SuspendLayout();
             this.tpvPDF.SuspendLayout();
             this.tpvText.SuspendLayout();
-            this.toolStrip1.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
             this.tpvImages.SuspendLayout();
             this.tsImages.SuspendLayout();
+            this.toolStrip1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -80,7 +88,7 @@ namespace PDFViewer
             // 
             // splitContainer1.Panel1
             // 
-            this.splitContainer1.Panel1.Controls.Add(this.tvwOutline);
+            this.splitContainer1.Panel1.Controls.Add(this.tabControl1);
             resources.ApplyResources(this.splitContainer1.Panel1, "splitContainer1.Panel1");
             // 
             // splitContainer1.Panel2
@@ -88,10 +96,44 @@ namespace PDFViewer
             this.splitContainer1.Panel2.Controls.Add(this.tabView);
             resources.ApplyResources(this.splitContainer1.Panel2, "splitContainer1.Panel2");
             // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            resources.ApplyResources(this.tabControl1, "tabControl1");
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.tvwOutline);
+            resources.ApplyResources(this.tabPage1, "tabPage1");
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
             // tvwOutline
             // 
             resources.ApplyResources(this.tvwOutline, "tvwOutline");
             this.tvwOutline.Name = "tvwOutline";
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.listView2);
+            resources.ApplyResources(this.tabPage2, "tabPage2");
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // listView2
+            // 
+            resources.ApplyResources(this.listView2, "listView2");
+            this.listView2.FullRowSelect = true;
+            this.listView2.GridLines = true;
+            this.listView2.MultiSelect = false;
+            this.listView2.Name = "listView2";
+            this.listView2.OwnerDraw = true;
+            this.listView2.UseCompatibleStateImageBehavior = false;
+            this.listView2.View = System.Windows.Forms.View.Tile;
+            this.listView2.DrawItem += new System.Windows.Forms.DrawListViewItemEventHandler(this.listView2_DrawItem);
             // 
             // tabView
             // 
@@ -110,67 +152,6 @@ namespace PDFViewer
             this.tpvPDF.Name = "tpvPDF";
             this.tpvPDF.UseVisualStyleBackColor = true;
             // 
-            // tpvText
-            // 
-            this.tpvText.Controls.Add(this.txtTextView);
-            resources.ApplyResources(this.tpvText, "tpvText");
-            this.tpvText.Name = "tpvText";
-            this.tpvText.UseVisualStyleBackColor = true;
-            // 
-            // txtTextView
-            // 
-            resources.ApplyResources(this.txtTextView, "txtTextView");
-            this.txtTextView.Name = "txtTextView";
-            this.txtTextView.TabStop = false;
-            // 
-            // toolStrip1
-            // 
-            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsbOpen,
-            this.tsbPrintAs,
-            this.tsbPrev,
-            this.txtPage,
-            this.tsbNext,
-            this.tsbSearch,
-            this.tsbAbout,
-            this.tsbPrint,
-            this.toolStripButton1,
-            this.toolStripButton2,
-            this.tsbAntialias,
-            this.tsbVectorAntialias});
-            resources.ApplyResources(this.toolStrip1, "toolStrip1");
-            this.toolStrip1.Name = "toolStrip1";
-            // 
-            // txtPage
-            // 
-            this.txtPage.Name = "txtPage";
-            resources.ApplyResources(this.txtPage, "txtPage");
-            this.txtPage.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtPage_KeyDown);
-            // 
-            // printDialog1
-            // 
-            this.printDialog1.UseEXDialog = true;
-            // 
-            // statusStrip1
-            // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.StatusLabel});
-            resources.ApplyResources(this.statusStrip1, "statusStrip1");
-            this.statusStrip1.Name = "statusStrip1";
-            // 
-            // StatusLabel
-            // 
-            this.StatusLabel.Name = "StatusLabel";
-            resources.ApplyResources(this.StatusLabel, "StatusLabel");
-            // 
-            // tpvImages
-            // 
-            this.tpvImages.Controls.Add(this.tsImages);
-            this.tpvImages.Controls.Add(this.pdfImagesThumbView1);
-            resources.ApplyResources(this.tpvImages, "tpvImages");
-            this.tpvImages.Name = "tpvImages";
-            this.tpvImages.UseVisualStyleBackColor = true;
-            // 
             // pageViewControl1
             // 
             this.pageViewControl1.BackColor = System.Drawing.SystemColors.AppWorkspace;
@@ -187,11 +168,26 @@ namespace PDFViewer
             this.pageViewControl1.NextPage += new PDFViewer.PageViewer.MovePageHandler(this.doubleBufferControl1_NextPage);
             this.pageViewControl1.PaintControl += new PDFViewer.PageViewer.PaintControlHandler(this.doubleBufferControl1_PaintControl);
             // 
-            // pdfImagesThumbView1
+            // tpvText
             // 
-            resources.ApplyResources(this.pdfImagesThumbView1, "pdfImagesThumbView1");
-            this.pdfImagesThumbView1.Name = "pdfImagesThumbView1";
-            this.pdfImagesThumbView1.UseCompatibleStateImageBehavior = false;
+            this.tpvText.Controls.Add(this.txtTextView);
+            resources.ApplyResources(this.tpvText, "tpvText");
+            this.tpvText.Name = "tpvText";
+            this.tpvText.UseVisualStyleBackColor = true;
+            // 
+            // txtTextView
+            // 
+            resources.ApplyResources(this.txtTextView, "txtTextView");
+            this.txtTextView.Name = "txtTextView";
+            this.txtTextView.TabStop = false;
+            // 
+            // tpvImages
+            // 
+            this.tpvImages.Controls.Add(this.tsImages);
+            this.tpvImages.Controls.Add(this.pdfImagesThumbView1);
+            resources.ApplyResources(this.tpvImages, "tpvImages");
+            this.tpvImages.Name = "tpvImages";
+            this.tpvImages.UseVisualStyleBackColor = true;
             // 
             // tsImages
             // 
@@ -213,6 +209,30 @@ namespace PDFViewer
             this.tsImagesSave.Image = global::PDFViewer.Properties.Resources.Save;
             resources.ApplyResources(this.tsImagesSave, "tsImagesSave");
             this.tsImagesSave.Name = "tsImagesSave";
+            // 
+            // pdfImagesThumbView1
+            // 
+            resources.ApplyResources(this.pdfImagesThumbView1, "pdfImagesThumbView1");
+            this.pdfImagesThumbView1.Name = "pdfImagesThumbView1";
+            this.pdfImagesThumbView1.UseCompatibleStateImageBehavior = false;
+            // 
+            // toolStrip1
+            // 
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.tsbOpen,
+            this.tsbPrintAs,
+            this.tsbPrev,
+            this.txtPage,
+            this.tsbNext,
+            this.tsbSearch,
+            this.tsbAbout,
+            this.tsbPrint,
+            this.toolStripButton1,
+            this.toolStripButton2,
+            this.tsbAntialias,
+            this.tsbVectorAntialias});
+            resources.ApplyResources(this.toolStrip1, "toolStrip1");
+            this.toolStrip1.Name = "toolStrip1";
             // 
             // tsbOpen
             // 
@@ -237,6 +257,12 @@ namespace PDFViewer
             resources.ApplyResources(this.tsbPrev, "tsbPrev");
             this.tsbPrev.Name = "tsbPrev";
             this.tsbPrev.Click += new System.EventHandler(this.tsbPrev_Click);
+            // 
+            // txtPage
+            // 
+            this.txtPage.Name = "txtPage";
+            resources.ApplyResources(this.txtPage, "txtPage");
+            this.txtPage.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtPage_KeyDown);
             // 
             // tsbNext
             // 
@@ -304,6 +330,27 @@ namespace PDFViewer
             this.tsbVectorAntialias.Name = "tsbVectorAntialias";
             this.tsbVectorAntialias.Click += new System.EventHandler(this.tsbVectorAntialias_Click);
             // 
+            // printDialog1
+            // 
+            this.printDialog1.UseEXDialog = true;
+            // 
+            // statusStrip1
+            // 
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.StatusLabel});
+            resources.ApplyResources(this.statusStrip1, "statusStrip1");
+            this.statusStrip1.Name = "statusStrip1";
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.Name = "StatusLabel";
+            resources.ApplyResources(this.StatusLabel, "StatusLabel");
+            // 
+            // bgLoadPages
+            // 
+            this.bgLoadPages.WorkerReportsProgress = true;
+            this.bgLoadPages.WorkerSupportsCancellation = true;
+            // 
             // frmPDFViewer
             // 
             resources.ApplyResources(this, "$this");
@@ -316,18 +363,21 @@ namespace PDFViewer
             this.splitContainer1.Panel1.ResumeLayout(false);
             this.splitContainer1.Panel2.ResumeLayout(false);
             this.splitContainer1.ResumeLayout(false);
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
             this.tabView.ResumeLayout(false);
             this.tpvPDF.ResumeLayout(false);
             this.tpvText.ResumeLayout(false);
             this.tpvText.PerformLayout();
-            this.toolStrip1.ResumeLayout(false);
-            this.toolStrip1.PerformLayout();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
             this.tpvImages.ResumeLayout(false);
             this.tpvImages.PerformLayout();
             this.tsImages.ResumeLayout(false);
             this.tsImages.PerformLayout();
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -366,6 +416,11 @@ namespace PDFViewer
         private System.Windows.Forms.ToolStripButton tsImagesUpdate;
         private System.Windows.Forms.ToolStripButton tsImagesSave;
         private PDFImagesThumbView pdfImagesThumbView1;
+        private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private System.ComponentModel.BackgroundWorker bgLoadPages;
+        private System.Windows.Forms.ListView listView2;
     }
 }
 

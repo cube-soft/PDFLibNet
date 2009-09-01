@@ -225,6 +225,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\globals.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ImagesMemoryOutputDev.cpp"
 				>
 			</File>
@@ -291,6 +295,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\globals.h"
+				>
+			</File>
+			<File
 				RelativePath=".\ImagesMemoryOutputDev.h"
 				>
 			</File>
@@ -324,6 +332,10 @@
 			</File>
 			<File
 				RelativePath=".\PDFPageInterop.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Queue.h"
 				>
 			</File>
 			<File

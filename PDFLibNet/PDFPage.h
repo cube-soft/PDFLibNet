@@ -10,7 +10,8 @@ namespace PDFLibNet
 {
 	public delegate void WriteToStreamHandler(wchar_t *text, int len);
 	public delegate void ReadFromStreamHandler(unsigned char *buffer,int dir,  int pos, int len);
-	
+	public delegate	void RenderNotifyFinishedHandler(int page, bool bSuccesss);
+
 	public ref class xPDFStream
 		: public System::IO::StreamWriter {
 	private:
@@ -31,6 +32,7 @@ namespace PDFLibNet
 		: public System::IO::BinaryReader
 	{
 	private:
+		System::Object ^_readLock;
 		GCHandle _gchReadFromStream;
 		void *_ptrReadFromStream;
 		ReadFromStreamHandler ^_readFromStream;
@@ -45,13 +47,22 @@ namespace PDFLibNet
 	public ref class PDFPage
 	{
 	private:
+		Object ^_errorRender;
+		RenderNotifyFinishedHandler ^_internalRenderNotifyFinished;
+		RenderNotifyFinishedHandler ^_evRenderNotifyFinished;
+		GCHandle _gchRenderNotifyFinished;
+		bool _isSuccesed;
+		System::IntPtr _thumbHdc;
 		PDFPageInterop *_page;
 		AFPDFDocInterop *_pdfDoc;
 		System::String ^_text;
+		System::Drawing::Bitmap ^_thumbNail;
+		System::Drawing::Graphics ^_thumbG;
 		bool _loaded;
 		int _pageNumber;
 		void loadPage();
 		void extractImages();
+		void _RenderNotifyFinished(int page, bool bSuccesss);
 	internal:
 		PDFPage(AFPDFDocInterop *pdfDoc, PDFPageInterop *page);
 		PDFPage(AFPDFDocInterop *pdfDoc, int page);
@@ -81,12 +92,14 @@ namespace PDFLibNet
 		property double Width
 		{
 			double get(){
+				loadPage();
 				return _page->getPageWidth();
 			}
 		}
 		property double Height
 		{
 			double get(){
+				loadPage();
 				return _page->getPageHeight();
 			}
 		}
@@ -124,5 +137,34 @@ namespace PDFLibNet
 			return false;
 		}
 
+		
+		///<summary>
+		///Get a bitmap asynchronous
+		///</summary>
+		System::Drawing::Bitmap ^LoadThumbnail(System::Int32 width, System::Int32 height);
+		/*///<summary>
+		///Calculate the proportional Height
+		///</summary>
+		System::Int32 CalcHeight(System::Int32 width);
+		System::Int32 CalcWidth(System::Int32 height);
+		System::Int32 CalcDPI(System::Int32 width,System::Int32 height);
+		*/
+
+		
+		event RenderNotifyFinishedHandler ^RenderThumbnailFinished{
+			void add(RenderNotifyFinishedHandler ^ ev){
+				this->_evRenderNotifyFinished += ev;
+			}
+			void remove(RenderNotifyFinishedHandler ^ev){
+				this->_evRenderNotifyFinished -= ev;
+			}
+			 void raise(int p, bool b) {
+				 RenderNotifyFinishedHandler^ tmp = _evRenderNotifyFinished;
+				 if (tmp) {
+					return tmp->Invoke(p,b);
+				 }
+			  }
+
+		}
 	};
 }

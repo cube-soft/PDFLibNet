@@ -320,35 +320,6 @@
 	  obj.free();
 	}
 
-	wchar_t * GetTitle(UnicodeMap *uMap, OutlineItem *item)
-	{
-		
-		wchar_t *ret;
-		int j;
-		//char buf[8];
-		//GString *title=new GString();
-//		char *s;
-		if(item /*&& uMap!=NULL*/){
-			ret =new wchar_t[item->getTitleLength()+1];
-
-			//12/July/2009 - Allow windows to map unicode characters, 
-			for (j = 0; j < item->getTitleLength(); ++j) {
-			  //n = uMap->mapUnicode(m_Item->getTitle()[j], buf, sizeof(buf));
-			  //title->append(buf, n);
-			  ret[j]=(wchar_t)item->getTitle()[j];
-			}
-			ret[j]='\0';
-			//s = title->getCString();
-			
-		}else{
-			return L"\0";
-		}
-		//USES_CONVERSION;
-		//ret =A2W(s);
-		return ret;
-	}
-
-	
 	
 	//------DICTIONARY STRING
 	Unicode			*	GetUnicodeString(const wchar_t*str, int length)
@@ -380,32 +351,33 @@
 		{
 			//fputs(text1, f);
 			s1 = obj.getString();
-			if ((s1->getChar(0) & 0xff) == 0xfe && (s1->getChar(1) & 0xff) == 0xff) {
-				isUnicode = gTrue;
-				i = 2;
-			} else {
-				isUnicode = gFalse;
-				i = 0;
-			}
-			
-			wchar_t *ret =new wchar_t[s1->getLength()];
-			int j=0;
-			i=0;
-			while (i < s1->getLength()) {
-				  if (isUnicode) {
-						u = ((s1->getChar(i) & 0xff) << 8) |  (s1->getChar(i+1) & 0xff);
-						i += 2;
-				  } else {
-						u = s1->getChar(i) & 0xff;
-						++i;
-				  }
-				  ret[j] = u;
-				  j++;
-			}
-			ret[j]='\0';
-			
-			if(s1->getLength()>0)
+			if(s1->getLength() > 0){
+				if ((s1->getChar(0) & 0xff) == 0xfe && (s1->getChar(1) & 0xff) == 0xff) {
+					isUnicode = gTrue;
+					i = 2;
+				} else {
+					isUnicode = gFalse;
+					i = 0;
+				}
+				
+				wchar_t *ret =new wchar_t[s1->getLength()+1];
+				int j=0;
+				i=0;
+				while (i < s1->getLength()) {
+					  if (isUnicode) {
+							u = ((s1->getChar(i) & 0xff) << 8) |  (s1->getChar(i+1) & 0xff);
+							i += 2;
+					  } else {
+							u = s1->getChar(i) & 0xff;
+							++i;
+					  }
+					  ret[j] = u;
+					  j++;
+				}
+				ret[j]='\0';
+				
 				return ret;
+			}
 
 		}
 		return EmptyChar;

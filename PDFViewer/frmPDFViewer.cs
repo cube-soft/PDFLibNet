@@ -482,10 +482,6 @@ namespace PDFViewer
                             
                             Render();
                           
-
-                            PDFPage pg = _pdfDoc.Pages[1];
-                            pg.RenderThumbnailFinished+=new RenderNotifyFinishedHandler(pg_RenderThumbnailFinished);
-
                             listView2.TileSize = new Size(134, (int)(128 * pg.Height / pg.Width)+10);
                             listView2.BeginUpdate();
                             listView2.Clear();

@@ -1,15 +1,15 @@
 #pragma once
 #include "LinkDestInterop.h"
 	class LinkActionInterop;
-
+	class AFPDFDocInterop;
 	class LinkInterop
 	{
 		private:
 			void *_link;
-			void *_pdfDoc;
+			AFPDFDocInterop *_pdfDoc;
 			LinkActionInterop *_action;
 		public:
-			LinkInterop(void *ptr,void *pdfdoc);
+			LinkInterop(void *ptr,AFPDFDocInterop *pdfdoc);
 			~LinkInterop(void);
 
 			double getx0();
@@ -24,10 +24,10 @@
 	private:
 		void *_link;
 		void *_action;
-		void *_pdfDoc;
+		AFPDFDocInterop *_pdfDoc;
 		LinkDestInterop *_dest;
 	public:
-		LinkActionInterop(void *link,void *action,void *pdfodc);
+		LinkActionInterop(void *link,void *action,AFPDFDocInterop *pdfodc);
 		~LinkActionInterop();
 		int getKind();
 		char *getDestName();

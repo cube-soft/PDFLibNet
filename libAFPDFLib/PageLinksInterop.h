@@ -1,14 +1,14 @@
 #pragma once
 class LinkInterop;
-
+class AFPDFDocInterop;
 class PageLinksInterop
 {
 private:
 	void *_links;
-	void *_pdfDoc;
+	AFPDFDocInterop *_pdfDoc;
 	void *_cache;
 public:
-	PageLinksInterop(void *lptr, void *pdfdoc);
+	PageLinksInterop(void *lptr, AFPDFDocInterop *pdfdoc);
 	~PageLinksInterop(void);
 
 	LinkInterop *getLink(int iLink);

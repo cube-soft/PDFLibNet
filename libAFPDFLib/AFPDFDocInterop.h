@@ -75,6 +75,7 @@ public:
 	long ProcessLinkAction(long lPtrLinkAction);
 	PageLinksInterop *getPageLinksInterop(long iPage);
 	LinkDestInterop *findDest(char *destName);
+	int findPage(int num, int gen);
 	PDFPageInterop *getPage(int page);
 	void Dispose();
 

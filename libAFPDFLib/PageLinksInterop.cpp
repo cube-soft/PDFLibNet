@@ -3,7 +3,7 @@
 #include "AFPDFDoc.h"
 
 
-PageLinksInterop::PageLinksInterop(void *lptr, void *pdfdoc)
+PageLinksInterop::PageLinksInterop(void *lptr, AFPDFDocInterop *pdfdoc)
 : _links(lptr)
 , _pdfDoc(pdfdoc)
 , _cache(0)
@@ -37,7 +37,7 @@ bool PageLinksInterop::onLink(double x, double y){
 }
 
 void PageLinksInterop::setPointers(int lptr,int pdfdoc){
-	_pdfDoc=(void *)pdfdoc;
+	_pdfDoc=(AFPDFDocInterop *)pdfdoc;
 	_links =(void *)lptr;
 	
 //	free(_cache);

@@ -1,8 +1,8 @@
 #include "OutlineItemInterop.h" 
 #include "OutlineItemA.h"
+#include "AFPDFDocInterop.h"
 
-
-OutlineItemInterop::OutlineItemInterop(void *lptr, void *pdfdoc)
+OutlineItemInterop::OutlineItemInterop(void *lptr, AFPDFDocInterop *pdfdoc)
 : m_Item(new OutlineItemA)
 , _pdfDoc(pdfdoc)
 {
@@ -34,10 +34,16 @@ long OutlineItemInterop::GetLinkAction(void){
 
 LinkDestInterop *OutlineItemInterop::getDest(){
 	if(((OutlineItemA *)m_Item)->GetKind()==LinkActionKind::actionGoTo){
-		if(((LinkGoTo *)((OutlineItemA *)m_Item)->GetLinkAction())->getDest()!=0){
-			LinkDestInterop *l=new LinkDestInterop(((LinkGoTo *)((OutlineItemA *)m_Item)->GetLinkAction())->getDest(),_pdfDoc);
-			return l;
+		LinkGoTo *lnk = (LinkGoTo *)((OutlineItemA *)m_Item)->GetLinkAction();
+		LinkDest * dest = lnk->getDest();
+		GString  * namedDest;
+		if(dest==NULL){
+			if ((namedDest = lnk->getNamedDest()) == NULL)
+				return 0;
+			return _pdfDoc->findDest(namedDest->getCString());
 		}
+
+		return new LinkDestInterop(dest,_pdfDoc);
 	}
 	return 0;
 }

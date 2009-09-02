@@ -1,13 +1,14 @@
 #pragma once
 #include "LinkDestInterop.h"
 
+class AFPDFDocInterop;
 class OutlineItemInterop
 {
 private:
 	void *m_Item;
-	void *_pdfDoc;
+	AFPDFDocInterop *_pdfDoc;
 public:
-	OutlineItemInterop(void *lPtr,void *pdfdoc);
+	OutlineItemInterop(void *lPtr, AFPDFDocInterop *pdfdoc);
 	virtual ~OutlineItemInterop();
 public:
 	wchar_t *GetTitle(void);

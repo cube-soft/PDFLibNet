@@ -335,6 +335,7 @@ namespace PDFViewer
                 if (ol != null)
                 {
                     ol.DoAction();
+                    Console.WriteLine(ol.Destination.Page);
                     switch (ol.GetKind())
                     {
                         case LinkActionKind.actionGoTo:
@@ -481,7 +482,8 @@ namespace PDFViewer
                             _pdfDoc.RenderPage(pageViewControl1.Handle);
                             
                             Render();
-                          
+
+                            PDFPage pg = _pdfDoc.Pages[1];
                             listView2.TileSize = new Size(134, (int)(128 * pg.Height / pg.Width)+10);
                             listView2.BeginUpdate();
                             listView2.Clear();

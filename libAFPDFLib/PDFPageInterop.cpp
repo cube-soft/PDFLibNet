@@ -1,5 +1,6 @@
 #include "PDFPageInterop.h"
 #include "AFPDFDoc.h"
+#include "AFPDFDocInterop.h"
 #include "DynArray.h"
 #include "ImagesMemoryOutputDev.h"
 static wchar_t		EmptyChar[1]						={'\0'};
@@ -95,9 +96,9 @@ int PDFPageInterop::getImageHeight(int index){
 
 PageLinksInterop *PDFPageInterop::getLinks()
 {
-	AFPDFDoc *doc = (AFPDFDoc *)_pdfDoc;
+	AFPDFDocInterop *doc = (AFPDFDocInterop *)_pdfDoc;
 	if(_page>=0 && _page<doc->GetPageCount()){
-		PageLinksInterop *pl =new PageLinksInterop(doc->GetLinksPage(_page),doc);
+		PageLinksInterop *pl = doc->getPageLinksInterop(_page);
 		return pl;
 	}
 	return 0;

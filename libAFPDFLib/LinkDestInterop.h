@@ -1,12 +1,13 @@
 #pragma once
 
+class AFPDFDocInterop;
 class LinkDestInterop
 {
 private:
 	void *_ptr;
-	void *_pdfDoc;
+	AFPDFDocInterop *_pdfDoc;
 public:
-	LinkDestInterop(void *ptr, void *pdfdoc);
+	LinkDestInterop(void *ptr, AFPDFDocInterop *pdfdoc);
 	~LinkDestInterop(void);
 
 	bool isPageRef();

@@ -224,9 +224,7 @@ public:
 	long PrintToFile(LPCTSTR fileName, int fromPage, int toPage);
 	CPDFSearchResult *GetSearchResults();
 	long GetSearchCount();
-	int findpage(int num, int gen){
-		return m_PDFDoc->findPage(num,gen);
-	}
+	int findpage(int num, int gen){ return m_PDFDoc->findPage(num,gen);	}
 	void Dispose();
 
 	wchar_t * getTitle();
@@ -237,8 +235,6 @@ public:
 	wchar_t * getProducer();
 	char * getCreationDate();
 	char * getLastModifiedDate();
-
-
 };
 
 struct ExportParams{

@@ -1,7 +1,8 @@
 #include "LinkInterop.h"
 #include "AFPDFDoc.h"
+#include "AFPDFDocInterop.h"
 
-LinkInterop::LinkInterop(void *ptr,void *pdfdoc)
+LinkInterop::LinkInterop(void *ptr,AFPDFDocInterop *pdfdoc)
 : _link(ptr)
 , _pdfDoc(pdfdoc)
 , _action(0)
@@ -98,7 +99,7 @@ char *LinkActionInterop::getURI(){
 	return '\0';
 }
 
-LinkActionInterop::LinkActionInterop(void *link,void *action,void *pdfdoc)
+LinkActionInterop::LinkActionInterop(void *link,void *action,AFPDFDocInterop *pdfdoc)
 : _link(link)
 , _action(action)
 , _dest(0)

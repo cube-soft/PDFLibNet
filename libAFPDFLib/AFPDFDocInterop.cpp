@@ -173,7 +173,7 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 
  PageLinksInterop *AFPDFDocInterop::getPageLinksInterop(long iPage){
 	 if(iPage>=0 && iPage<this->GetPageCount()){
-		PageLinksInterop *pl =new PageLinksInterop(((AFPDFDoc *)_ptr)->GetLinksPage(iPage),_ptr);
+		PageLinksInterop *pl =new PageLinksInterop(((AFPDFDoc *)_ptr)->GetLinksPage(iPage),this);
 		return pl;
 	 }
 	 return 0;
@@ -240,7 +240,12 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	}
 	LinkDestInterop *AFPDFDocInterop::findDest(char *destName)
 	{
-		return new LinkDestInterop( ((AFPDFDoc *)_ptr)->findDest(destName),_ptr);
+		return new LinkDestInterop( ((AFPDFDoc *)_ptr)->findDest(destName),this);
+	}
+
+	int AFPDFDocInterop::findPage(int num, int gen)
+	{
+		return ((AFPDFDoc *)_ptr)->findpage(num,gen);
 	}
 
 	void AFPDFDocInterop::SetExportProgressHandler(void *handler){

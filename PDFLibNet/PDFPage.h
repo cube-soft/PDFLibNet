@@ -44,6 +44,7 @@ namespace PDFLibNet
 		!xPDFBinaryReader();
 		~xPDFBinaryReader();
 	};
+	
 	public ref class PDFPage
 	{
 	private:
@@ -142,6 +143,7 @@ namespace PDFLibNet
 		///Get a bitmap asynchronous
 		///</summary>
 		System::Drawing::Bitmap ^LoadThumbnail(System::Int32 width, System::Int32 height);
+		System::Drawing::Bitmap ^GetBitmap(System::Int32 width, System::Int32 height);
 		/*///<summary>
 		///Calculate the proportional Height
 		///</summary>

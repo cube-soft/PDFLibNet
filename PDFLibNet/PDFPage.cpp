@@ -95,7 +95,7 @@ namespace PDFLibNet
 			_thumbG = System::Drawing::Graphics::FromImage(_thumbNail);
 			_thumbG->Clear(System::Drawing::Color::White);
 			_thumbHdc = _thumbG->GetHdc();
-			if(_pdfDoc->DrawPage(_pageNumber,_thumbHdc.ToInt32(),width,height,0,false,ptrCallBack)!=0)
+			if(_pdfDoc->DrawPage(_pageNumber,_thumbHdc.ToInt32(),width,height,0,true,ptrCallBack)!=0)
 			{
 				_thumbHdc=IntPtr::Zero;
 				_thumbG=nullptr;
@@ -105,6 +105,23 @@ namespace PDFLibNet
 	
 		return _thumbNail;
 	}
+
+	System::Drawing::Bitmap ^PDFPage::GetBitmap(System::Int32 width, System::Int32 height)
+	{
+		System::Drawing::Bitmap ^bmp=gcnew System::Drawing::Bitmap(width,height);
+		loadPage();
+		System::Drawing::Graphics ^g = System::Drawing::Graphics::FromImage(bmp);
+		g->Clear(System::Drawing::Color::White);
+		System::IntPtr hdc = g->GetHdc();
+		if(_pdfDoc->DrawPage(_pageNumber,hdc.ToInt32(),width,height,0,false,0)!=0)
+		{
+			return nullptr;
+		}
+		g->ReleaseHdc();
+		return bmp;
+	}
+
+
 	System::Drawing::Image ^PDFPage::GetImage(int index)
 	{
 		extractImages();

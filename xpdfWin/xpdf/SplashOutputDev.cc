@@ -581,6 +581,7 @@ SplashOutputDev::SplashOutputDev(SplashColorMode colorModeA,
 				 SplashColorPtr paperColorA,
 				 GBool bitmapTopDownA,
 				 GBool allowAntialiasA) {
+  _needNonText = gTrue;
   colorMode = colorModeA;
   bitmapRowPad = bitmapRowPadA;
   bitmapTopDown = bitmapTopDownA;

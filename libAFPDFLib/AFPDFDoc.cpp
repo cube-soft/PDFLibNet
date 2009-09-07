@@ -1241,24 +1241,61 @@
 			dpi =  72.0*width/ow; //Same DPI for width and height
 		}
 		tp->renderDPI = IFZERO(dpi,18);
-		if(m_renderThumbs==0){
-			m_renderThumbs = ::CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThreadThumb,(LPVOID)&m_QueuedThumbs,CREATE_SUSPENDED,0);
-			::SetThreadPriority(m_renderThumbs,THREAD_PRIORITY_NORMAL);
-			::ResumeThread(m_renderThumbs);
+
+		if(bThread){
+			if(m_renderThumbs==0){
+				m_renderThumbs = ::CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThreadThumb,(LPVOID)&m_QueuedThumbs,CREATE_SUSPENDED,0);
+				::SetThreadPriority(m_renderThumbs,THREAD_PRIORITY_NORMAL);
+				::ResumeThread(m_renderThumbs);
+			}
+
+			if(!m_QueuedThumbs.AddTail(tp))
+			return -1;
+
+			return 0;
+		}else{
+			PDFDoc *doc;
+			double renderDPI=18;
+			PageMemory *bmpMem=0;
+			int page=0;
+
+			doc=(PDFDoc *)tp->doc;
+			renderDPI =tp->renderDPI;
+			page = tp->pageToRender;
+			renderDPI=IFZERO(renderDPI,18);
+			page=MAX(1,page);
+		
+			if(doc->getCatalog() && doc->getCatalog()->isOk()){
+				Page *p = doc->getCatalog()->getPage(page);
+				if(p && p->isOk()){
+					p->display(tp->out,renderDPI, renderDPI, 0,
+									gFalse, gTrue, gFalse,doc->getCatalog() /*,
+										callbackAbortDisplay,pdfDoc*/);
+
+					SplashBitmap * bitmap = tp->out->getBitmap();
+					int bmWidth = bitmap->getWidth();
+					int bmHeight = bitmap->getHeight();					
+
+					PageMemory *bmpMem = new PageMemory();
+					bmpMem->Create(tp->hDC,bmWidth,bmHeight,renderDPI, tp->out->getDefCTM(),tp->out->getDefICTM());	
+
+					//********START DIB
+					bmpMem->SetDimensions(bmWidth,bmHeight,renderDPI);
+					bmpMem->SetDIBits(tp->hDC,(void *)bitmap->getDataPtr());
+
+					bmpMem->Draw(tp->hDC,0,0,bmWidth,bmHeight,0,0);
+					
+					bmpMem->Dispose();
+					delete bmpMem;
+					delete tp;
+					bmpMem=0;
+					return 0;
+				}
+
+			}				
 		}
 		
-		if(!m_QueuedThumbs.AddTail(tp))
-		{
-			/*m_QueuedThumbs.enterlock();
-			m_QueuedThumbs.clear();
-			if(!m_QueuedThumbs.AddTail(tp)){
-				m_QueuedThumbs.unlock();*/
-			return -1;
-			/*}
-			m_QueuedThumbs.unlock();*/
-		}
-	
-		return 0;
+		return -1;
 	}
 
 	UINT AFPDFDoc::RenderingThreadThumb( LPVOID value )
@@ -1334,6 +1371,7 @@
 			//Verificar los valores de variables
 			renderDPI=IFZERO(renderDPI,72);
 			page=MAX(1,page);
+			
 			//globalParams->setPrintCommands(gTrue);
 			pdfDoc->m_LastPageRenderedByThread=page;
 			if(pdfDoc->m_sliceBox.NotEmpty()){
@@ -2882,3 +2920,6 @@
 		m_sliceBox.width=w;
 		m_sliceBox.height=h;
 	}
+
+	bool AFPDFDoc::getNeedNonText(){ return _needNonText; }
+	void AFPDFDoc::setNeedNonText(bool needs) { _needNonText = needs; }

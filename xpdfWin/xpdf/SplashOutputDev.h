@@ -191,13 +191,15 @@ public:
 
   SplashFont *getCurrentFont() { return font; }
 
+  GBool needNonText(){ return _needNonText; }
+  void setNeedNonText(GBool need) { _needNonText = need; }
 #if 1 //~tmp: turn off anti-aliasing temporarily
   virtual GBool getVectorAntialias();
   virtual void setVectorAntialias(GBool vaa);
 #endif
 
 private:
-
+	GBool _needNonText;
   void setupScreenParams(double hDPI, double vDPI);
 #if SPLASH_CMYK
   SplashPattern *getColor(GfxGray gray, GfxRGB *rgb, GfxCMYK *cmyk);

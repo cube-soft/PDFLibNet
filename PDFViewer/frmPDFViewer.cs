@@ -1055,7 +1055,6 @@ namespace PDFViewer
                 if(bmp!=null)
                     e.Graphics.DrawImageUnscaledAndClipped(bmp, pageRect);
 
-
                 e.Graphics.DrawRectangle(Pens.LightGray, pageRect);
 
                 StringFormat stringFormat = new StringFormat();
@@ -1066,6 +1065,13 @@ namespace PDFViewer
 
                 e.DrawFocusRectangle();
             }
+        }
+
+        private void toolStripButton3_Click(object sender, EventArgs e)
+        {
+            PDFPage pg = _pdfDoc.Pages[_pdfDoc.CurrentPage];
+            Bitmap bmp = pg.GetBitmap(800, (int)(800 * pg.Height / pg.Width));
+            bmp.Save("C:\\bmp.png", System.Drawing.Imaging.ImageFormat.Png); 
         }
     }
 

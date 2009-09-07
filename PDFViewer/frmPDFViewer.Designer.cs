@@ -66,6 +66,7 @@ namespace PDFViewer
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.bgLoadPages = new System.ComponentModel.BackgroundWorker();
+            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -230,7 +231,8 @@ namespace PDFViewer
             this.toolStripButton1,
             this.toolStripButton2,
             this.tsbAntialias,
-            this.tsbVectorAntialias});
+            this.tsbVectorAntialias,
+            this.toolStripButton3});
             resources.ApplyResources(this.toolStrip1, "toolStrip1");
             this.toolStrip1.Name = "toolStrip1";
             // 
@@ -351,6 +353,13 @@ namespace PDFViewer
             this.bgLoadPages.WorkerReportsProgress = true;
             this.bgLoadPages.WorkerSupportsCancellation = true;
             // 
+            // toolStripButton3
+            // 
+            this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            resources.ApplyResources(this.toolStripButton3, "toolStripButton3");
+            this.toolStripButton3.Name = "toolStripButton3";
+            this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
+            // 
             // frmPDFViewer
             // 
             resources.ApplyResources(this, "$this");
@@ -421,6 +430,7 @@ namespace PDFViewer
         private System.Windows.Forms.TabPage tabPage2;
         private System.ComponentModel.BackgroundWorker bgLoadPages;
         private System.Windows.Forms.ListView listView2;
+        private System.Windows.Forms.ToolStripButton toolStripButton3;
     }
 }
 

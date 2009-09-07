@@ -133,12 +133,14 @@ void DynArray<T>::Delete(unsigned int pos)
 		Clear(); // than we clear it, since it will be deleted 
 	else
 	{
-		// otherwise, shift array elements 
-		for(unsigned int i=pos; i<size-1; i++) 
-			array[i] = array[i+1];
- 
-		// decrease array size
-		size--;
+		if(size>0){
+			// otherwise, shift array elements 
+			for(unsigned int i=pos; i<size-1; i++) 
+				array[i] = array[i+1];
+	 
+			// decrease array size
+			size--;
+		}
 	}
 }
  

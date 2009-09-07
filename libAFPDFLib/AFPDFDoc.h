@@ -68,7 +68,7 @@ private:
 	int			 _pageCached[MAX_BITMAP_CACHE+1];
 	int			 _countCached;
 	bool		m_searchWholeWord;
-
+	bool		_needNonText;
 	PageMemory *GetBitmapCache(int page);
 	void InvalidateBitmapCache();
 	void RemoveFromCache(int page);
@@ -83,6 +83,8 @@ protected:
 	static GBool callbackAbortDisplay(void *data);
 	static UINT ExportingJpgThread( LPVOID param );
 	bool m_PageRenderedByThread;
+	bool getNeedNonText();
+	void setNeedNonText(bool needs);
 	HANDLE hExportJpgCancel;
 	HANDLE hRenderFinished;
 	HANDLE hExportJpgCancelled;

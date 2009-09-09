@@ -1212,7 +1212,7 @@
 		return false;
 	}
 
-	long AFPDFDoc::DrawPage(int page, long hdc, int width, int height, double dpi,bool bThread, void *callback)
+	long AFPDFDoc::DrawPage(int page, long hdc, int width, int height, double dpi,bool bThread, void *callback, bool bAntialising)
 	{
 		//Establecemos el color del papel
 		SplashColor paperColor;
@@ -1226,13 +1226,15 @@
 		PDFDoc *doc = m_PDFDoc; //this->createDoc(NULL);
 		if(m_thumbOut==0){
 			m_thumbOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,0);
-			m_thumbOut->setVectorAntialias(gFalse);
+			if(bAntialising)
+				m_thumbOut->setVectorAntialias(gTrue);
+			else
+				m_thumbOut->setVectorAntialias(gFalse);
 			m_thumbOut->startDoc(doc->getXRef());
 		}
 		SplashOutputDev *out=m_thumbOut;
 		out->clearModRegion();
 		
-
 		threadParamThumb *tp=new threadParamThumb((HDC)hdc,out,doc,page,&m_QueuedThumbs,callback);
 		//Calculate DPI
 		if(width >0 && height >0 && dpi==0){
@@ -1325,7 +1327,7 @@
 						p->display(param->out,renderDPI, renderDPI, 0,
 										gFalse, gTrue, gFalse,doc->getCatalog() /*,
 											callbackAbortDisplay,pdfDoc*/);
-
+						
 						SplashBitmap * bitmap = param->out->getBitmap();
 						int bmWidth = bitmap->getWidth();
 						int bmHeight = bitmap->getHeight();					

@@ -64,6 +64,10 @@ namespace PDFLibNet
 		void loadPage();
 		void extractImages();
 		void _RenderNotifyFinished(int page, bool bSuccesss);
+		static int MakeCOLORREF(unsigned char r, unsigned char g, unsigned char b)
+		{
+			return  (int) (((unsigned int)r) | ( ((unsigned int)g) <<8 ) |  ( ((unsigned int)b) << 16 ));
+		}
 	internal:
 		PDFPage(AFPDFDocInterop *pdfDoc, PDFPageInterop *page);
 		PDFPage(AFPDFDocInterop *pdfDoc, int page);
@@ -143,7 +147,11 @@ namespace PDFLibNet
 		///Get a bitmap asynchronous
 		///</summary>
 		System::Drawing::Bitmap ^LoadThumbnail(System::Int32 width, System::Int32 height);
+
 		System::Drawing::Bitmap ^GetBitmap(System::Int32 width, System::Int32 height);
+		System::Drawing::Bitmap ^GetBitmap(System::Int32 width, System::Int32 height, System::Boolean antialias);
+		System::Drawing::Bitmap ^GetBitmap(System::Double dpi, System::Boolean antialias);
+		System::Drawing::Bitmap ^GetBitmap(System::Double dpi);
 		/*///<summary>
 		///Calculate the proportional Height
 		///</summary>

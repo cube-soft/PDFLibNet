@@ -95,7 +95,7 @@ namespace PDFLibNet
 			_thumbG = System::Drawing::Graphics::FromImage(_thumbNail);
 			_thumbG->Clear(System::Drawing::Color::White);
 			_thumbHdc = _thumbG->GetHdc();
-			if(_pdfDoc->DrawPage(_pageNumber,_thumbHdc.ToInt32(),width,height,0,true,ptrCallBack)!=0)
+			if(_pdfDoc->DrawPage(_pageNumber,_thumbHdc.ToInt32(),width,height,0,true,ptrCallBack,false)!=0)
 			{
 				_thumbHdc=IntPtr::Zero;
 				_thumbG=nullptr;
@@ -113,15 +113,81 @@ namespace PDFLibNet
 		System::Drawing::Graphics ^g = System::Drawing::Graphics::FromImage(bmp);
 		g->Clear(System::Drawing::Color::White);
 		System::IntPtr hdc = g->GetHdc();
-		if(_pdfDoc->DrawPage(_pageNumber,hdc.ToInt32(),width,height,0,false,0)!=0)
+		double dpi = 72*width/this->Width*72/254;
+		if(_pdfDoc->DrawPage(_pageNumber,hdc.ToInt32(),width,height,0,false,0,true)!=0)
 		{
 			return nullptr;
 		}
+		this->_page->RenderSelection(dpi,hdc.ToInt32(),
+			MakeCOLORREF(System::Drawing::Color::Black.R,System::Drawing::Color::Black.G,System::Drawing::Color::Black.B),
+			MakeCOLORREF(System::Drawing::Color::Black.R,System::Drawing::Color::Black.G,System::Drawing::Color::Black.B),
+			1);
+
 		g->ReleaseHdc();
 		return bmp;
 	}
 
+	System::Drawing::Bitmap ^PDFPage::GetBitmap(System::Int32 width, System::Int32 height, System::Boolean antialias)
+	{
+		System::Drawing::Bitmap ^bmp=gcnew System::Drawing::Bitmap(width,height);
+		loadPage();
+		System::Drawing::Graphics ^g = System::Drawing::Graphics::FromImage(bmp);
+		g->Clear(System::Drawing::Color::White);
+		System::IntPtr hdc = g->GetHdc();
+		double dpi = 72*width/this->Width*72/254;
+		if(_pdfDoc->DrawPage(_pageNumber,hdc.ToInt32(),width,height,0,false,0,antialias)!=0)
+			return nullptr;
+		
+		this->_page->RenderSelection(dpi,hdc.ToInt32(),
+			MakeCOLORREF(System::Drawing::Color::Black.R,System::Drawing::Color::Black.G,System::Drawing::Color::Black.B),
+			MakeCOLORREF(System::Drawing::Color::Black.R,System::Drawing::Color::Black.G,System::Drawing::Color::Black.B),
+			1);
 
+		g->ReleaseHdc();
+		return bmp;
+	}
+	System::Drawing::Bitmap ^PDFPage::GetBitmap(System::Double dpi, System::Boolean antialias)
+	{
+		int width=Width*dpi/254;
+		int height=Height*dpi/254;
+		System::Drawing::Bitmap ^bmp=gcnew System::Drawing::Bitmap(width,height);
+		loadPage();
+		System::Drawing::Graphics ^g = System::Drawing::Graphics::FromImage(bmp);
+		g->Clear(System::Drawing::Color::White);
+		System::IntPtr hdc = g->GetHdc();
+		if(_pdfDoc->DrawPage(_pageNumber,hdc.ToInt32(),0,0,dpi,false,0,antialias)!=0)
+			return nullptr;
+		
+		this->_page->RenderSelection(dpi,hdc.ToInt32(),
+			MakeCOLORREF(System::Drawing::Color::Black.R,System::Drawing::Color::Black.G,System::Drawing::Color::Black.B),
+			MakeCOLORREF(System::Drawing::Color::Black.R,System::Drawing::Color::Black.G,System::Drawing::Color::Black.B),
+			1);
+	
+		g->ReleaseHdc();
+		return bmp;
+	}
+	System::Drawing::Bitmap ^PDFPage::GetBitmap(System::Double dpi)
+	{
+		int width=Width*dpi/254;
+		int height=Height*dpi/254;
+		System::Drawing::Bitmap ^bmp=gcnew System::Drawing::Bitmap(width,height);
+		loadPage();
+		System::Drawing::Graphics ^g = System::Drawing::Graphics::FromImage(bmp);
+		g->Clear(System::Drawing::Color::White);
+		System::IntPtr hdc = g->GetHdc();
+		if(_pdfDoc->DrawPage(_pageNumber,hdc.ToInt32(),0,0,dpi,false,0,true)!=0)
+			return nullptr;
+		
+		this->_page->RenderSelection(dpi,hdc.ToInt32(),
+			MakeCOLORREF(System::Drawing::Color::Black.R,System::Drawing::Color::Black.G,System::Drawing::Color::Black.B),
+			MakeCOLORREF(System::Drawing::Color::Black.R,System::Drawing::Color::Black.G,System::Drawing::Color::Black.B),
+			1);
+
+		g->ReleaseHdc();
+		return bmp;
+	}
+
+	
 	System::Drawing::Image ^PDFPage::GetImage(int index)
 	{
 		extractImages();

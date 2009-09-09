@@ -291,6 +291,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\CRect.h"
+				>
+			</File>
+			<File
 				RelativePath=".\DynArray.h"
 				>
 			</File>

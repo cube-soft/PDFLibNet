@@ -599,8 +599,8 @@ namespace PDFViewer
             int lFound=0;
             if (_pdfDoc != null)
             {
-                PDFLibNet.xPDFParams.ErrorQuiet = false;
-                PDFLibNet.xPDFParams.ErrorFile="C:\\errorstd.log";
+                //PDFLibNet.xPDFParams.ErrorQuiet = false;
+                //PDFLibNet.xPDFParams.ErrorFile="C:\\errorstd.log";
                 _pdfDoc.SearchCaseSensitive = e.Exact;
                 
                 if (e.FromBegin)
@@ -1070,7 +1070,7 @@ namespace PDFViewer
         private void toolStripButton3_Click(object sender, EventArgs e)
         {
             PDFPage pg = _pdfDoc.Pages[_pdfDoc.CurrentPage];
-            Bitmap bmp = pg.GetBitmap(800, (int)(800 * pg.Height / pg.Width));
+            Bitmap bmp = pg.GetBitmap(96,false);
             bmp.Save("C:\\bmp.png", System.Drawing.Imaging.ImageFormat.Png); 
         }
     }

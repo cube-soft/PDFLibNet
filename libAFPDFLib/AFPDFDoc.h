@@ -7,6 +7,7 @@
 #include "OutlineItemA.h"
 #include "PageMemory.h"
 #include "queue.h"
+#include "CRect.h"
 
 void InitGlobalParams(char *configFile);
 typedef int (__stdcall *NOTIFYHANDLE)();
@@ -15,41 +16,7 @@ typedef int (__stdcall *PROGRESSHANDLE)(int, int);
 typedef void (__stdcall *OUTPUTFUNCTIONB)(unsigned char *,int);
 typedef void (__stdcall *OUTPUTFUNCTION)(wchar_t *,int);
 
-
 void OutputToDelegate(void *stream, char *str, int len);
-
-class CRect 
-	: public tagRECT
-{
-public:
-	int width;
-	int height;
-	CRect(int x, int y, int r, int b){
-		left=x;
-		top=y;
-		width = r - x;
-		height = b - y;
-		right = r;
-		bottom = b;
-	}
-	
-	bool NotEmpty(){
-		return (width>0 || height>0 || left>0 || top>0);
-	}
-	void OffsetRect(int dx, int dy){
-		::OffsetRect(this,dx,dy);
-	}
-	void InflateRect(int dx, int dy)
-	{	
-		::InflateRect(this,dx,dy);
-	}
-	void DeflateRect(int dx, int dy){
-		::InflateRect(this,-dx,-dy);
-	}
-	CRect(){
-		left=right=top=bottom=width=height=0;
-	}
-};
 
 class CPDFSearchResult 
 	: public CRect
@@ -146,7 +113,7 @@ public:
 	PDFDoc *getDoc(){
 		return m_PDFDoc;
 	}
-	long DrawPage(int page,long hdc, int width, int height, double dpi,bool bThread, void *callback);
+	long DrawPage(int page,long hdc, int width, int height, double dpi,bool bThread, void *callback, bool bAntialising);
 	bool ThumbInQueue(int page);
 	long LoadFromStream(void *callback,long fullLenght, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password, char *owner_password);

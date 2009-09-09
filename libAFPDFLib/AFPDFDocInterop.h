@@ -22,7 +22,7 @@ public:
 	long RenderPage(long lhWnd, bool bForce);
 	long RenderPage(long lhWnd, bool bForce, bool enableThread);
 	long RenderPageThread(long lhWnd, bool bForce);
-	long DrawPage(int page, long hdc, int width, int height, double pdi, bool bThread, void *callback);
+	long DrawPage(int page, long hdc, int width, int height, double pdi, bool bThread, void *callback, bool bAntialising);
 	bool ThumbInQueue(int page);
 	void SetUserPassword(char *pass);
 	void SetOwnerPassword(char *pass);

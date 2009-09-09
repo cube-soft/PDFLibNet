@@ -3,6 +3,8 @@
 #include "AFPDFDocInterop.h"
 #include "DynArray.h"
 #include "ImagesMemoryOutputDev.h"
+#include "CRect.h"
+
 static wchar_t		EmptyChar[1]						={'\0'};
 
 
@@ -26,13 +28,15 @@ wchar_t* UTF8translate(char artist[])
 }
 
 
-class pdfPageSelection {
+class pdfPageSelection 
+	: public CRect{
 public:
-	CRect rect;
 	wchar_t *text;
-	pdfPageSelection(wchar_t *text, int x, int y, int w, int h)
-		: rect(x,y,x+w,y+h)
+	double dpi;
+	pdfPageSelection(wchar_t *text, double DPI, int x, int y, int w, int h)
+		: CRect(x,y,x+w,y+h)
 		, text(text)
+		, dpi(DPI)
 	{
 	}
 };
@@ -45,6 +49,7 @@ PDFPageInterop::PDFPageInterop(int page, void *lptr,void *pdfDoc)
 , _text(0)
 , dpi(0)
 , _images(0)
+, _ctmdpi(0)
 {
 }
 PDFPageInterop::~PDFPageInterop(void)
@@ -229,11 +234,15 @@ void PDFPageInterop::getTextCharBox(int x, int y, int *x1,int *y1, int *x2, int 
 void PDFPageInterop::getTextWordBox(int x, int y, int *x1,int *y1, int *x2, int *y2)
 {
 }
-void PDFPageInterop::addSelection(int x1, int y1, int x2, int y2)
+void PDFPageInterop::addSelection(double dpi, int x1, int y1, int x2, int y2)
 {
+	DynArray<pdfPageSelection> *arr= (DynArray<pdfPageSelection> *)this->_selectionArray;
+	arr->Add(*(new pdfPageSelection(NULL,dpi,x1,y1,x2-x1,y2-y1)));
 }
 void PDFPageInterop::clearSelection()
 {
+	DynArray<pdfPageSelection> *arr= (DynArray<pdfPageSelection> *)this->_selectionArray;
+	arr->Clear();
 }
 void PDFPageInterop::takeText()
 {
@@ -247,9 +256,21 @@ void PDFPageInterop::takeText()
 		dpi = doc->GetRenderDPI();
 		doc->getDoc()->displayPage(txt,_page,dpi,dpi,0,gFalse,gFalse,gFalse);
 		((Page *)_pdfPage)->getDefaultCTM(ctm, dpi, dpi, 0,  gFalse, gFalse);
-		
+		_ctmdpi=dpi;
 		_text = txt->takeText();
 		delete txt;
+	}
+}
+void PDFPageInterop::CvtUserToDevDpi(double dpi,int xu,int yu,int *xd,int *yd)
+{
+	if(_ctmdpi!=dpi){
+		double lctm[6];
+		((Page *)_pdfPage)->getDefaultCTM(lctm, dpi, dpi, 0,  gFalse, gFalse);
+		*xd = (int)(lctm[0] * xu + lctm[2] * yu + lctm[4] + 0.5);
+		*yd = (int)(lctm[1] * xu + lctm[3] * yu + lctm[5] + 0.5);
+	}else{
+		*xd = (int)(ctm[0] * xu + ctm[2] * yu + ctm[4] + 0.5);
+		*yd = (int)(ctm[1] * xu + ctm[3] * yu + ctm[5] + 0.5);
 	}
 }
 void PDFPageInterop::CvtUserToDev(int xu, int yu,int *xd,int *yd){
@@ -381,4 +402,36 @@ double PDFPageInterop::getPageHeight(){
     double h = doc->getDoc()->getPageCropHeight(_page);
     
 	return 254*h/72;
+}
+
+void PDFPageInterop::RenderSelection(double dpi, long hdc,unsigned long color,unsigned long linecolor,int linewidth)
+{
+	HDC dc =(HDC)hdc;
+	DynArray<pdfPageSelection> *arr= (DynArray<pdfPageSelection> *)this->_selectionArray;
+	HGDIOBJ draw_pen, old_pen;
+	HGDIOBJ old_brush;
+
+	draw_pen = CreatePen(PS_SOLID, 0,(COLORREF)linecolor);
+	old_pen = SelectObject(dc,draw_pen);
+	//old_brush = SelectStockObject(dc,NULL_BRUSH);
+	old_brush = SelectObject(dc,GetStockObject(NULL_BRUSH));
+
+	for(int i=0;i<arr->GetCount();i++){
+		const double mul = dpi / arr->operator [](i).dpi;
+		CRect nsel =(CRect)arr->operator [](i);
+
+		nsel.left   = int(nsel.left   * mul);
+		nsel.top    = int(nsel.top    * mul);
+		nsel.right  = int(nsel.right  * mul);
+		nsel.bottom = int(nsel.bottom * mul);
+
+		// enlarge right/bottom 
+		nsel.right++;
+		nsel.bottom++;
+
+		::Rectangle(dc,nsel.left,nsel.top,nsel.right,nsel.bottom);
+		::InvertRect(dc,&nsel);
+	}
+	SelectObject(dc,old_pen);
+	SelectObject(dc,old_brush);
 }

@@ -83,6 +83,7 @@ public:
 			::LeaveCriticalSection(&lock);
 			return result;
 		}
+		return NULL;
 	} // RemoveHead
 
 	//----------------

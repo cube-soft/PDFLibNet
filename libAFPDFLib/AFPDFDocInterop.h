@@ -83,7 +83,7 @@ public:
 	void SetRenderDPI(float newVal);
 	wchar_t *GetPDFVersion(void);
 	
-	long FindString(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc);
+	long FindString(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc, bool bWholeWord);
 	long FindNext(const wchar_t *sText);
 	long FindPrior(const wchar_t *sText);
 	long FindFirst(const wchar_t *sText, long SearchOrder, bool Backward, bool WholeWord);

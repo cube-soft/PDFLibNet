@@ -9,6 +9,8 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>PDFViewer</RootNamespace>
     <AssemblyName>PDFViewer</AssemblyName>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>PDFLibNet.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -242,6 +244,7 @@
     <None Include="Resources\Save.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="PDFLibNet.snk" />
     <None Include="Resources\RefreshDocView.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

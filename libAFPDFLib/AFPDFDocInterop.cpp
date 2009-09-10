@@ -100,8 +100,8 @@ void AFPDFDocInterop::SetRenderDPI(float newVal){
 wchar_t *AFPDFDocInterop::GetPDFVersion(void){
 	return ((AFPDFDoc *)_ptr)->GetPDFVersion();
 }
-long AFPDFDocInterop::FindString(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc){
-	return ((AFPDFDoc *)_ptr)->FindText(sText,iPage,SearchOrder,bCaseSensitive,bBackward,bMarkAll,bWholeDoc);
+long AFPDFDocInterop::FindString(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc,bool bWholeWord){
+	return ((AFPDFDoc *)_ptr)->FindText(sText,iPage,SearchOrder,bCaseSensitive,bBackward,bMarkAll,bWholeDoc,bWholeWord);
 }
 long AFPDFDocInterop::FindNext(const wchar_t *sText){
 	return ((AFPDFDoc *)_ptr)->FindNext(sText);

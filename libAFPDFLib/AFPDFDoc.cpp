@@ -1224,14 +1224,15 @@
 
 		PageMemory *bmp;
 		PDFDoc *doc = m_PDFDoc; //this->createDoc(NULL);
-		if(m_thumbOut==0){
-			m_thumbOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,0);
-			if(bAntialising)
-				m_thumbOut->setVectorAntialias(gTrue);
-			else
-				m_thumbOut->setVectorAntialias(gFalse);
-			m_thumbOut->startDoc(doc->getXRef());
-		}
+		
+		m_thumbOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,bAntialising?1:0);
+		
+		if(bAntialising)
+			m_thumbOut->setVectorAntialias(gTrue);
+		else
+			m_thumbOut->setVectorAntialias(gFalse);
+		m_thumbOut->startDoc(doc->getXRef());
+	
 		SplashOutputDev *out=m_thumbOut;
 		out->clearModRegion();
 		
@@ -1901,7 +1902,7 @@
 		return strResult.AllocSysString();
 	}
 
-	long AFPDFDoc::FindText(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc)
+	long AFPDFDoc::FindText(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc, bool bWholeWord)
 	{
 		
 
@@ -1951,10 +1952,16 @@
 		//Mientras haya que hacer
 		while(true) {
 			//Buscar el texto
-			rc = FindPage.findText(ucstring, length,
+			if(bWholeWord)
+					rc = FindPage.findTextWholeWord(ucstring, length,
 				startAtTop, gTrue, startAtLast, gFalse,
 				bCaseSensitive, backward,
 				&x0, &y0, &x1, &y1);
+			else
+				rc = FindPage.findText(ucstring, length,
+					startAtTop, gTrue, startAtLast, gFalse,
+					bCaseSensitive, backward,
+					&x0, &y0, &x1, &y1);
 			//Si existen resultados, agregamos esta coincidencia a la lista
 			if (rc) {
 				m_Selection.Add(CPDFSearchResult(CRect((int)x0, (int)y0, (int)x1, (int)y1),searchPage));

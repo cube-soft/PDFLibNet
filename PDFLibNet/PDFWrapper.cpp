@@ -131,6 +131,9 @@ namespace PDFLibNet{
 
 
 	long PDFWrapper::FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc){
+		return FindText(sText,iPage,SearchOrder,bCaseSensitive,bBackward,bMarkAll,bWholeDoc,true);
+	}
+	long PDFWrapper::FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc, Boolean bWholeWord){
 		IntPtr ptr = Marshal::StringToCoTaskMemUni(sText);
 		wchar_t *singleByte= (wchar_t*)ptr.ToPointer();
 
@@ -140,7 +143,7 @@ namespace PDFLibNet{
 				_searchResults=nullptr;
 			}
 			
-			return _pdfDoc->FindString(singleByte,(long)iPage,(long)SearchOrder,(bool)bCaseSensitive,(bool)bBackward,(bool)bMarkAll,(bool)bWholeDoc);
+			return _pdfDoc->FindString(singleByte,(long)iPage,(long)SearchOrder,(bool)bCaseSensitive,(bool)bBackward,(bool)bMarkAll,(bool)bWholeDoc,(bool)bWholeWord);
 		}finally{
 			Marshal::FreeCoTaskMem(ptr);
 		}

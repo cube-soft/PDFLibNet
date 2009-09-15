@@ -178,8 +178,9 @@ namespace PDFLibNet {
 
 		LinkDest ^FindDestination(String ^destName);
 
+		long FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc, Boolean bWholeWord, Boolean stopOnFirstPageResults);
 		long FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc, Boolean bWholeWord);
-				long FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc);
+		long FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc);
 		long FindFirst(String ^sText,PDFSearchOrder SearchOrder, Boolean Backward, Boolean bWholeWord);
 		long FindNext(String ^sText);
 		long FindPrevious(String ^sText);

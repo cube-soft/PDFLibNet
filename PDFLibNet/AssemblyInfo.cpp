@@ -16,4 +16,4 @@ using namespace System::Reflection;
 [assembly: AssemblyCopyright("Copyright (c) 2009")];
 [assembly: AssemblyTrademark("xPDF")];
 [assembly: AssemblyCulture("")];
-[assembly: AssemblyVersion("1.0.6.5")];
+[assembly: AssemblyVersion("1.0.6.6")];

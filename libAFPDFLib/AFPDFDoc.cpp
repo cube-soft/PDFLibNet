@@ -1902,7 +1902,7 @@
 		return strResult.AllocSysString();
 	}
 
-	long AFPDFDoc::FindText(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc, bool bWholeWord)
+	long AFPDFDoc::FindText(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc, bool bWholeWord, bool stopOnFirstPageResults)
 	{
 		
 
@@ -1981,13 +1981,15 @@
 			startAtLast = gFalse;
 
 			// Si se desea buscar en todo el documento
-			if(bWholeDoc)
+			if(bWholeDoc || m_Selection.GetCount()==0)
+			{
+				if(m_Selection.GetCount()>0 && stopOnFirstPageResults)
+					break;
 				if (backward)	//Buscar hacia atras
 					searchPage--;
 				else
 					searchPage++;
-			else
-				break;	// Salir si no se deseaba buscar desde el primer registro
+			}	
 
 			//Si ya no hay paginas para buscar
 			if (searchPage < 1 || searchPage > m_PDFDoc->getNumPages()) {

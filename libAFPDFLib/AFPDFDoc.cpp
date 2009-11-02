@@ -22,7 +22,7 @@
 			pageToRender=page;
 		}
 		AFPDFDoc *doc;	
-		SplashOutputDev *out;
+		AuxOutputDev *out;
 		bool enablePreRender;
 		int pageToRender;
 	};
@@ -527,6 +527,11 @@
 	, m_QueuedThumbs(15)
 	, m_renderThumbs(0)
 	, m_thumbOut(0)
+#ifdef _MUPDF
+	, _mupdf(0)
+#endif
+	, _useMuPDF(false)
+
 	{
 		
 		// GMutex m;
@@ -881,7 +886,7 @@
 				double newbytes = (m_renderDPI/72.0)*(m_renderDPI/72.0) * m_PDFDoc->getPageCropWidth(m_CurrentPage)* m_PDFDoc->getPageCropHeight(m_CurrentPage); //new approx. number of pixels
 				newbytes = newbytes * 3 + newbytes*2; //24-bit splashbitmap, 16-bit gdi-bitmap
 				newbytes=(newbytes*1.2); //Safety area;
-				newbytes -= m_splashOut->getBitmap()->getWidth()*m_splashOut->getBitmap()->getHeight()*3; //substract old 24-bit splash bitmap size
+				newbytes -= m_splashOut->GetWidth()*m_splashOut->GetHeight()*3; //substract old 24-bit splash bitmap size
 				void* testAllocation = malloc((int)2.0*newbytes);
 				if (testAllocation==0 && newbytes>0){
 					//We better dont zoom this far in!
@@ -930,11 +935,11 @@
 					}
 					threadParam *tp =new threadParam(this,m_PageToRenderByThread);
 					//Note: the alignment is given by GDI requirements: bitmaps have to be 16-bit aligned.
-					tp->out= new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+					tp->out=new AuxOutputDev(new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias()));
 					tp->out->startDoc(m_PDFDoc->getXRef());
 					tp->out->clearModRegion();
 					tp->enablePreRender=true;
-					
+
 					m_splashOut=tp->out;
 					ResetEvent(this->hRenderFinished);
 					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID)tp,CREATE_SUSPENDED,0);
@@ -947,7 +952,7 @@
 		return 0;
 	}
 
-	int AFPDFDoc::RenderThreadFinished(SplashOutputDev *out, int page, bool enablePreRender)
+	int AFPDFDoc::RenderThreadFinished(AuxOutputDev *out, int page, bool enablePreRender)
 	{
 		//The process was cancelled!
 		if(::InterlockedExchange(&this->g_lLocker,0)!=0)
@@ -959,9 +964,9 @@
 		m_PageRenderedByThread=false;
 
 		//Rendered bitmap by xpdf
-		SplashBitmap * bitmap = out->getBitmap();
-		int bmWidth = bitmap->getWidth();
-		int bmHeight = bitmap->getHeight();
+		//SplashBitmap * bitmap = out->getBitmap();
+		int bmWidth = out->GetWidth();
+		int bmHeight = out->GetHeight();
 		
 
 		HDC clientDC;
@@ -977,7 +982,7 @@
 		}
 		//********START DIB
 		bmpMem->SetDimensions(bmWidth,bmHeight,m_renderDPI);
-		bmpMem->SetDIBits(clientDC,(void *)out->getBitmap()->getDataPtr());
+		bmpMem->SetDIBits(clientDC,(void *)out->GetDataPtr());
 		//********END DIB
 		AddBitmapCache(bmpMem,page);
 		//If was called by render current, then update the current Bitmap, if not just save in cache	
@@ -989,6 +994,7 @@
 
 			//Update page box
 			int box_left, box_top, box_right, box_bottom;
+			
 			out->getModRegion(&box_left, &box_top, &box_right, &box_bottom);
 			m_bbox = CRect(box_left, box_top, box_right, box_bottom);
 
@@ -1015,7 +1021,7 @@
 			}
 			
 			threadParam *tp = new threadParam(this,m_PageToRenderByThread);
-			tp->out= new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+			tp->out=new AuxOutputDev(new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias()));
 			tp->out->startDoc(m_PDFDoc->getXRef());
 			tp->out->clearModRegion();
 			tp->pageToRender=m_PageToRenderByThread;
@@ -1072,7 +1078,7 @@
 				double newbytes = (m_renderDPI/72.0)*(m_renderDPI/72.0) * m_PDFDoc->getPageCropWidth(m_CurrentPage)* m_PDFDoc->getPageCropHeight(m_CurrentPage); //new approx. number of pixels
 				newbytes = newbytes * 3 + newbytes*2; //24-bit splashbitmap, 16-bit gdi-bitmap
 				newbytes=(newbytes*1.2); //Safety area;
-				newbytes -= m_splashOut->getBitmap()->getWidth()*m_splashOut->getBitmap()->getHeight()*3; //substract old 24-bit splash bitmap size
+				newbytes -= m_splashOut->GetWidth()*m_splashOut->GetHeight()*3; //substract old 24-bit splash bitmap size
 				void* testAllocation = malloc((size_t)(2*newbytes));
 				if (testAllocation==0 && newbytes>0){
 					//We better dont zoom this far in!
@@ -1117,7 +1123,7 @@
 						m_splashOut=0;
 					}
 					threadParam *tp=new threadParam(this,m_PageToRenderByThread);
-					tp->out= new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+					tp->out=new AuxOutputDev(new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias()));
 					tp->out->setVectorAntialias(globalParams->getVectorAntialias());
 					tp->out->startDoc(m_PDFDoc->getXRef());
 					tp->out->clearModRegion();
@@ -1150,7 +1156,7 @@
 						m_splashOut=0;
 					}
 					threadParam *tp = new threadParam(this, m_PageToRenderByThread);
-					tp->out= new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias());
+					tp->out=new AuxOutputDev(new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias()));
 					tp->out->startDoc(m_PDFDoc->getXRef());
 					tp->out->clearModRegion();
 					tp->enablePreRender=false;
@@ -1368,6 +1374,7 @@
 		//Add a mutex?
 		::gLockMutex(&pdfDoc->hgMutex);
 		__try {
+			bool render = true;
 			double renderDPI =pdfDoc->m_renderDPI;
 			int page = pdfDoc->m_PageToRenderByThread;
 		
@@ -1377,28 +1384,64 @@
 			
 			//globalParams->setPrintCommands(gTrue);
 			pdfDoc->m_LastPageRenderedByThread=page;
-			if(pdfDoc->m_sliceBox.NotEmpty()){
-				pdfDoc->m_PDFDoc->displayPageSlice(param->out,page,
-											renderDPI,renderDPI, pdfDoc->m_Rotation,
-											gFalse,gTrue,gFalse,
-											pdfDoc->m_sliceBox.left ,pdfDoc->m_sliceBox.top,
-											pdfDoc->m_sliceBox.width,pdfDoc->m_sliceBox.height,callbackAbortDisplay,pdfDoc);					
-			}else{
-				if(pdfDoc->m_PDFDoc->getCatalog() && pdfDoc->m_PDFDoc->getCatalog()->isOk()){
-					Page *p = pdfDoc->m_PDFDoc->getCatalog()->getPage(page);
-					if(p && p->isOk()){
-						p->display(param->out,renderDPI, renderDPI, pdfDoc->m_Rotation, 
-											gFalse, gTrue, gFalse,pdfDoc->m_PDFDoc->getCatalog(),
-											callbackAbortDisplay,pdfDoc);
+
+#ifdef _MUPDF
+			if(pdfDoc->SupportsMuPDF() && pdfDoc->GetUseMuPDF() || 1){
+				if(pdfDoc->LoadFromMuPDF())
+				{
+					fz_pixmap *im = pdfDoc->_mupdf->display(param->out,page,pdfDoc->m_Rotation,renderDPI/72,callbackAbortDisplay,pdfDoc);
+					param->out->SetDataPtr((void *)im->samples);
+					param->out->setSize(im->w,im->h);
+					
+					render =false;
+				}
+			}
+#endif
+			if(render){
+				if(pdfDoc->m_sliceBox.NotEmpty()){
+					pdfDoc->m_PDFDoc->displayPageSlice(param->out->getSplash(),page,
+												renderDPI,renderDPI, pdfDoc->m_Rotation,
+												gFalse,gTrue,gFalse,
+												pdfDoc->m_sliceBox.left ,pdfDoc->m_sliceBox.top,
+												pdfDoc->m_sliceBox.width,pdfDoc->m_sliceBox.height,callbackAbortDisplay,pdfDoc);					
+				}else{
+					if(pdfDoc->m_PDFDoc->getCatalog() && pdfDoc->m_PDFDoc->getCatalog()->isOk()){
+						Page *p = pdfDoc->m_PDFDoc->getCatalog()->getPage(page);
+						if(p && p->isOk()){
+							p->display(param->out->getSplash(),renderDPI, renderDPI, pdfDoc->m_Rotation, 
+												gFalse, gTrue, gFalse,pdfDoc->m_PDFDoc->getCatalog(),
+												callbackAbortDisplay,pdfDoc);
+							param->out->SetDataPtr(param->out->getSplash()->getBitmap()->getDataPtr());
+							param->out->setDefCTM(param->out->getSplash()->getDefCTM());
+							param->out->setDefICTM(param->out->getSplash()->getDefICTM());
+							param->out->setSize(param->out->getSplash()->getBitmapWidth(),param->out->getSplash()->getBitmapHeight());
+						}
 					}
 				}
 			}
-		
 		}__finally{
 			pdfDoc->RenderThreadFinished(param->out,param->pageToRender, param->enablePreRender);
 			::gUnlockMutex(&pdfDoc->hgMutex);
 			return true;
 		}
+	}
+
+	bool AFPDFDoc::LoadFromMuPDF(){
+#ifdef _MUPDF
+		if(_mupdf == NULL){
+			_mupdf = new mupdfEngine();
+			if(this->_mupdf->LoadFile(this->m_LastOpenedFile.getCString(),m_OwnerPassword.GetBuffer(),m_UserPassword.GetBuffer())){
+				delete _mupdf;
+				_mupdf=NULL;
+			}
+			m_OwnerPassword.ReleaseBuffer();
+			m_UserPassword.ReleaseBuffer();
+		}
+		return _mupdf!=NULL;
+#else
+		return NULL;
+#endif
+
 	}
 
 
@@ -1872,6 +1915,7 @@
 				y = dy;
 				break;
 			}*/
+			
 			m_splashOut->cvtUserToDev(0, dest->getTop(), &dx, &dy);
 			return (long)dy;
 		}
@@ -2472,8 +2516,8 @@
 			BITMAPINFO bmi;
 			ZeroMemory(&bmi,sizeof(bmi));
 			bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-			bmi.bmiHeader.biWidth = m_splashOut->getBitmap()->getWidth();
-			bmi.bmiHeader.biHeight = m_splashOut->getBitmap()->getHeight();
+			bmi.bmiHeader.biWidth = m_splashOut->GetWidth();
+			bmi.bmiHeader.biHeight = m_splashOut->GetHeight();
 			bmi.bmiHeader.biPlanes=1;
 			bmi.bmiHeader.biBitCount=24;
 			bmi.bmiHeader.biCompression=BI_RGB;
@@ -2483,7 +2527,7 @@
 			bmi.bmiColors[0].rgbRed = 0;
 			bmi.bmiColors[0].rgbReserved = 0;
 			
-			int ret = JpegFromDib((HANDLE)m_splashOut->getBitmap()->getDataPtr(),&bmi,quality,CString(fileName),&errmsg);
+			int ret = JpegFromDib((HANDLE)m_splashOut->GetDataPtr(),&bmi,quality,CString(fileName),&errmsg);
 			if(this->m_ExportProgressHandle != 0){
 				if(this->m_ExportProgressHandle(1,1) !=0){
 				}

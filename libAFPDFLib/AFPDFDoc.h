@@ -8,6 +8,11 @@
 #include "PageMemory.h"
 #include "queue.h"
 #include "CRect.h"
+#include "AuxOutputDev.h"
+
+#ifdef _MUPDF
+	#include "mupdfEngine.h"
+#endif
 
 void InitGlobalParams(char *configFile);
 typedef int (__stdcall *NOTIFYHANDLE)();
@@ -31,16 +36,20 @@ public:
  class AFPDFDoc 
 {
 private:
+	#ifdef _MUPDF
+		mupdfEngine *_mupdf;
+	#endif
 	PageMemory	*_bitmapCache[MAX_BITMAP_CACHE+1];
 	int			 _pageCached[MAX_BITMAP_CACHE+1];
 	int			 _countCached;
 	bool		m_searchWholeWord;
 	bool		_needNonText;
+	bool		_useMuPDF;
 	PageMemory *GetBitmapCache(int page);
 	void InvalidateBitmapCache();
 	void RemoveFromCache(int page);
 	void AddBitmapCache(PageMemory *bmp, int page);
-	int RenderThreadFinished(SplashOutputDev *out,int page, bool enablePreRender);
+	int RenderThreadFinished(AuxOutputDev *out,int page, bool enablePreRender);
 protected:
 	long m_PageToRenderByThread;
 	long m_LastPageRenderedByThread;
@@ -75,7 +84,7 @@ private:
 	SplashOutputDev *m_thumbOut;
 	Links *_pageLinks;
 
-	SplashOutputDev	*m_splashOut;
+	AuxOutputDev	*m_splashOut;
 	//SplashOutputDev	*m_splashOutThread;
 	Outline *m_Outline;
 	PageMemory *m_Bitmap;
@@ -119,13 +128,16 @@ public:
 	long LoadFromFile(char *FileName, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password);
 	long LoadFromFile(char *sFileName);
+	bool LoadFromMuPDF();
 	void SetUserPassword(char *user_password);
 	void SetOwnerPassword(char *owner_password);
 	void SetSliceBox(int x, int y, int w, int h);
 	long RenderPage(long lhWnd);
 	long RenderPage(long lhWnd, bool bForce);
 	long RenderPage(long lhWnd, bool bForce, bool enableThread);
+	long RenderPageMuPDF(long lhWnd, bool bForce, bool enableThread);
 	long RenderPageThread(long lhWnd, bool bForce);
+	long RenderPageThreadMuPDF(long lhWnd, bool bForce);
 	long GetCurrentPage(void);
 	void SetCurrentPage(long newVal);
 	long GetCurrentX(void);
@@ -204,6 +216,31 @@ public:
 	wchar_t * getProducer();
 	char * getCreationDate();
 	char * getLastModifiedDate();
+
+	//Add support for MuPDF
+	bool SupportsMuPDF(){
+#ifndef _MUPDF_H_
+		return false;
+#else
+		if(m_LastOpenedFile.getLength()==0 && this->m_LastOpenedStream!=0)
+			return false;
+		else
+			return true;
+#endif
+	}
+
+	bool GetUseMuPDF(){
+		#ifndef _MUPDF
+			return false;
+		#endif
+		return _useMuPDF;
+	}
+	void setUseMuPDF(bool buse){
+		#ifdef _MUPDF
+			_useMuPDF =buse;
+			InvalidateBitmapCache();
+		#endif
+	}
 };
 
 struct ExportParams{

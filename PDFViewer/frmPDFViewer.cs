@@ -534,9 +534,9 @@ namespace PDFViewer
                     fs.Close();
                     fs = null;
                 }
-                fs = new System.IO.FileStream(filename, System.IO.FileMode.Open);
-                //return pdfDoc.LoadPDF(filename);
-                return pdfDoc.LoadPDF(fs);
+                //fs = new System.IO.FileStream(filename, System.IO.FileMode.Open);
+                return pdfDoc.LoadPDF(filename);
+                //return pdfDoc.LoadPDF(fs);
                 
             }
             catch (System.Security.SecurityException)

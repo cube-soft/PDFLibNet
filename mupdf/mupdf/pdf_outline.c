@@ -13,6 +13,7 @@ loadoutline(pdf_outline **nodep, pdf_xref *xref, fz_obj *dict)
 	node->link = nil;
 	node->child = nil;
 	node->next = nil;
+	node->count = 0;
 
 	pdf_logpage("load outline {\n");
 
@@ -31,6 +32,10 @@ loadoutline(pdf_outline **nodep, pdf_xref *xref, fz_obj *dict)
 		if (error)
 			return fz_rethrow(error, "cannot load link");
 	}
+
+	/* cf. http://bugs.ghostscript.com/show_bug.cgi?id=690735 */
+	obj = fz_dictgets(dict, "Count");
+	node->count = fz_toint(obj);
 
 	obj = fz_dictgets(dict, "First");
 	if (obj)

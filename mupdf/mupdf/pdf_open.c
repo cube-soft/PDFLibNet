@@ -278,6 +278,11 @@ readoldxref(fz_obj **trailerp, pdf_xref *xref, char *buf, int cap)
 			if (!xref->table[ofs + i].type)
 			{
 				s = buf;
+
+				/* broken pdfs where line start with white space */
+				while (*s != '\0' && iswhite(*s))
+					s++;
+
 				xref->table[ofs + i].ofs = atoi(s);
 				xref->table[ofs + i].gen = atoi(s + 11);
 				xref->table[ofs + i].type = s[17];
@@ -386,6 +391,7 @@ readnewxref(fz_obj **trailerp, pdf_xref *xref, char *buf, int cap)
 	xref->table[oid].gen = gen;
 	xref->table[oid].obj = fz_keepobj(trailer);
 	xref->table[oid].stmofs = stmofs;
+	xref->table[oid].ofs = 0;
 
 	obj = fz_dictgets(trailer, "Size");
 	if (!obj)
@@ -646,22 +652,14 @@ cleanupobj:
  * open and load xref tables from pdf
  */
 
-fz_error
-pdf_loadxref(pdf_xref *xref, char *filename)
+static fz_error
+pdf_loadxref2(pdf_xref *xref)
 {
 	fz_error error;
 	fz_obj *size;
 	int i;
 
 	char buf[65536];	/* yeowch! */
-
-	pdf_logxref("loadxref '%s' %p\n", filename, xref);
-
-	error = fz_openrfile(&xref->file, filename);
-	if (error)
-	{
-		return fz_rethrow(error, "cannot open file: '%s'", filename);
-	}
 
 	error = loadversion(xref);
 	if (error)
@@ -720,6 +718,23 @@ pdf_loadxref(pdf_xref *xref, char *filename)
 		goto cleanup;
 	}
 
+	/* broken pdfs where first object is not free */
+	if (xref->table[0].type != 'f')
+	{
+		fz_warn("first object in xref is not free");
+		xref->table[0].type = 'f';
+	}
+
+	/* broken pdfs where freed objects have offset and gen set to 0
+	   but still exits */
+	for (i = 0; i < xref->len; i++)
+		if (xref->table[i].type == 'n' && xref->table[i].ofs == 0 &&
+			xref->table[i].gen == 0 && xref->table[i].obj == nil)
+		{
+			fz_warn("object (%d %d R) has invalid offset, assumed missing", i, xref->table[i].gen);
+			xref->table[i].type = 'f';
+		}
+
 	return fz_okay;
 
 cleanup:
@@ -729,4 +744,31 @@ cleanup:
 	xref->table = nil;
 	return error;
 }
+
+fz_error
+pdf_loadxref(pdf_xref *xref, char *filename)
+{
+	fz_error error;    
+	pdf_logxref("loadxref '%s' %p\n", filename, xref);
+
+	error = fz_openrfile(&xref->file, filename);
+	if (error)
+	{
+		return fz_rethrow(error, "cannot open file: '%s'", filename);
+	}
+	return pdf_loadxref2(xref);
+}
+
+#ifdef WIN32
+fz_error
+pdf_loadxrefw(pdf_xref *xref, wchar_t *filename)
+{
+	fz_error error = fz_openrfilew(&xref->file, filename);
+	if (error)
+	{
+		return fz_rethrow(error, "cannot open file");
+	}
+	return pdf_loadxref2(xref);
+}
+#endif
 

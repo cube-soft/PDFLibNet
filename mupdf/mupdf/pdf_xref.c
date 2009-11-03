@@ -27,7 +27,6 @@ pdf_newxref(pdf_xref **xrefp)
 	xref->trailer = nil;
 	xref->root = nil;
 	xref->info = nil;
-	xref->dests = nil;
 	xref->store = nil;
 
 	xref->cap = 0;
@@ -64,8 +63,6 @@ pdf_closexref(pdf_xref *xref)
 		fz_dropobj(xref->root);
 	if (xref->info)
 		fz_dropobj(xref->info);
-	if (xref->dests)
-		fz_dropobj(xref->dests);
 	if (xref->crypt)
 		pdf_freecrypt(xref->crypt);
 
@@ -137,7 +134,6 @@ pdf_debugxref(pdf_xref *xref)
 	}
 }
 
-/* ICKY! */
 fz_error
 pdf_decryptxref(pdf_xref *xref)
 {
@@ -148,12 +144,12 @@ pdf_decryptxref(pdf_xref *xref)
 	encrypt = fz_dictgets(xref->trailer, "Encrypt");
 	id = fz_dictgets(xref->trailer, "ID");
 
-	if (encrypt && id)
+	if (encrypt)
 	{
 		if (fz_isnull(encrypt))
 			return fz_okay;
 
-		error = pdf_newdecrypt(&xref->crypt, encrypt, id);
+		error = pdf_newcrypt(&xref->crypt, encrypt, id);
 		if (error)
 			return fz_rethrow(error, "cannot create decrypter");
 	}
@@ -200,7 +196,7 @@ pdf_cacheobject(pdf_xref *xref, int oid, int gen)
 		if (error)
 			return fz_rethrow(error, "cannot parse object (%d %d R)", oid, gen);
 
-		if (roid != oid || rgen != gen)
+		if (roid != oid)
 			return fz_throw("found object (%d %d R) instead of (%d %d R)", roid, rgen, oid, gen);
 
 		if (xref->crypt)
@@ -229,7 +225,16 @@ pdf_loadobject(fz_obj **objp, pdf_xref *xref, int oid, int gen)
 	if (error)
 		return fz_rethrow(error, "cannot load object (%d %d R) into cache", oid, gen);
 
-	*objp = fz_keepobj(xref->table[oid].obj);
+	if (xref->table[oid].obj)
+		*objp = fz_keepobj(xref->table[oid].obj);
+	else
+	{
+		fz_warn("cannot load missing object (%d %d R), assuming null object", oid, gen);
+
+		error = fz_newnull(&xref->table[oid].obj);
+		if (error)
+			return fz_rethrow(error, "cannot create missing object (%d %d R)", oid, gen);
+	}
 
 	return fz_okay;
 }

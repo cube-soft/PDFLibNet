@@ -153,7 +153,7 @@ DEBUG("solid %s [%d %d %d %d];\n", solid->cs->name, gc->argb[0], gc->argb[1], gc
 	r = gc->argb[1];
 	g = gc->argb[2];
 	b = gc->argb[3];
-	if (((unsigned)p & 3)) {
+	if ((p - (unsigned char *)0) & 3) {
 	while (n--)
 	{
 		p[0] = a;
@@ -412,6 +412,10 @@ DEBUG("image %dx%d %d+%d %s\n{\n", image->w, image->h, image->n, image->a, image
         if (image->w == 0 || image->h == 0)
                 return fz_okay;
 
+	/* cf. http://bugs.ghostscript.com/show_bug.cgi?id=690409 */
+	if (image->n + image->a == 0)
+		return fz_okay;
+
 	calcimagescale(ctm, image->w, image->h, &dx, &dy);
 
 	/* try to fit tile into a typical L2 cachce */
@@ -494,6 +498,9 @@ DEBUG("  convert from %s to %s\n", image->cs->name, gc->model->name);
 	imgmat.e = 0.0;
 	imgmat.f = 1.0;
 	invmat = fz_invertmatrix(fz_concat(imgmat, ctm));
+
+	invmat.e -= 0.5;
+	invmat.f -= 0.5;
 
 	w = clip.x1 - clip.x0;
 	h = clip.y1 - clip.y0;
@@ -827,6 +834,9 @@ DEBUG("potentially useless mask\n");
 			clip.y0 = MAX(colorpix->y, shapepix->y);
 			clip.x1 = MIN(colorpix->x+colorpix->w, shapepix->x+shapepix->w);
 			clip.y1 = MIN(colorpix->y+colorpix->h, shapepix->y+shapepix->h);
+			/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=653 */
+			if (clip.x0 > clip.x1) clip.x1 = clip.x0;
+			if (clip.y0 > clip.y1) clip.y1 = clip.y0;
 			error = fz_newpixmapwithrect(&gc->dest, clip, colorpix->n);
 			if (error)
 				goto cleanup;

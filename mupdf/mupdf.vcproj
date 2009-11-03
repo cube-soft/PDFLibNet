@@ -354,6 +354,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\fitz\crypt_aes.c"
+				>
+			</File>
+			<File
 				RelativePath=".\fitz\crypt_arc4.c"
 				>
 			</File>
@@ -374,6 +378,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\fitz\filt_aesd.c"
+				>
+			</File>
+			<File
 				RelativePath=".\fitz\filt_ahxd.c"
 				>
 			</File>
@@ -383,6 +391,10 @@
 			</File>
 			<File
 				RelativePath=".\fitz\filt_arc4.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fitz\filt_copy.c"
 				>
 			</File>
 			<File

@@ -253,19 +253,44 @@ fz_objcmp(fz_obj *a, fz_obj *b)
 
 	if (a == b)
 		return 0;
+
+	if (!a || !b)
+		return 1;
+
 	if (a->kind != b->kind)
 		return 1;
 
 	switch (a->kind)
 	{
-	case FZ_NULL: return 0;
-	case FZ_BOOL: return a->u.b - b->u.b;
-	case FZ_INT: return a->u.i - b->u.i;
-	case FZ_REAL: return a->u.f - b->u.f;
+	case FZ_NULL:
+		return 0;
+
+	case FZ_BOOL:
+		return a->u.b - b->u.b;
+
+	case FZ_INT:
+		return a->u.i - b->u.i;
+
+	case FZ_REAL:
+		if (a->u.f < b->u.f)
+			return -1;
+		if (a->u.f > b->u.f)
+			return 1;
+		return 0;
 
 	case FZ_STRING:
-		if (a->u.s.len != b->u.s.len)
-			return a->u.s.len - b->u.s.len;
+		if (a->u.s.len < b->u.s.len)
+		{
+			if (memcmp(a->u.s.buf, b->u.s.buf, a->u.s.len) <= 0)
+				return -1;
+			return 1;
+		}
+		if (a->u.s.len > b->u.s.len)
+		{
+			if (memcmp(a->u.s.buf, b->u.s.buf, b->u.s.len) >= 0)
+				return 1;
+			return -1;
+		}
 		return memcmp(a->u.s.buf, b->u.s.buf, a->u.s.len);
 
 	case FZ_NAME:

@@ -598,8 +598,7 @@ loadindexed(fz_colorspace **csp, pdf_xref *xref, fz_obj *array)
 		for (i = 0; i < n; i++)
 			cs->lookup[i] = buf[i];
 	}
-
-	if (fz_isindirect(lookup))
+	else if (fz_isindirect(lookup))
 	{
 		fz_buffer *buf;
 		int i;
@@ -618,6 +617,8 @@ loadindexed(fz_colorspace **csp, pdf_xref *xref, fz_obj *array)
 
 		fz_dropbuffer(buf);
 	}
+	else
+		return fz_throw("cannot parse colorspace lookup table");
 
 	pdf_logrsrc("}\n");
 
@@ -629,8 +630,8 @@ loadindexed(fz_colorspace **csp, pdf_xref *xref, fz_obj *array)
  * Parse and create colorspace from PDF object.
  */
 
-fz_error
-pdf_loadcolorspace(fz_colorspace **csp, pdf_xref *xref, fz_obj *obj)
+static fz_error
+pdf_loadcolorspaceimp(fz_colorspace **csp, pdf_xref *xref, fz_obj *obj)
 {
 	if (fz_isname(obj))
 	{
@@ -731,5 +732,27 @@ pdf_loadcolorspace(fz_colorspace **csp, pdf_xref *xref, fz_obj *obj)
 	}
 
 	return fz_throw("syntaxerror: could not parse color space");
+}
+
+fz_error
+pdf_loadcolorspace(fz_colorspace **csp, pdf_xref *xref, fz_obj *obj)
+{
+	fz_error error;
+
+	if ((*csp = pdf_finditem(xref->store, PDF_KCOLORSPACE, obj)))
+	{
+		fz_keepcolorspace(*csp);
+		return fz_okay;
+	}
+
+	error = pdf_loadcolorspaceimp(csp, xref, obj);
+	if (error)
+		return fz_rethrow(error, "cannot load colorspace");
+
+	error = pdf_storeitem(xref->store, PDF_KCOLORSPACE, obj, *csp);
+	if (error)
+		return fz_rethrow(error, "cannot store colorspace resource");
+
+	return fz_okay;
 }
 

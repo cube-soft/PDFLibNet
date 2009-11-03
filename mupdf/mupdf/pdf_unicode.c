@@ -4,7 +4,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-#if ((FREETYPE_MAJOR == 2) && (FREETYPE_MINOR == 2)) || \
+#if ((FREETYPE_MAJOR == 2) && (FREETYPE_MINOR == 1)) || \
+    ((FREETYPE_MAJOR == 2) && (FREETYPE_MINOR == 2)) || \
     ((FREETYPE_MAJOR == 2) && (FREETYPE_MINOR == 3) && (FREETYPE_PATCH < 8))
 
 int FT_Get_Advance(FT_Face face, int gid, int masks, FT_Fixed *out)
@@ -37,7 +38,7 @@ pdf_loadtounicode(pdf_fontdesc *font, pdf_xref *xref,
 	int ucs;
 	int i;
 
-	if (fz_isindirect(cmapstm))
+	if (pdf_isstream(xref, fz_tonum(cmapstm), fz_togen(cmapstm)))
 	{
 		pdf_logfont("tounicode embedded cmap\n");
 
@@ -174,7 +175,7 @@ pdf_droptextline(pdf_textline *line)
 }
 
 static fz_error
-addtextchar(pdf_textline *line, int x, int y, int c)
+addtextchar(pdf_textline *line, fz_irect bbox, int c)
 {
 	pdf_textchar *newtext;
 	int newcap;
@@ -189,8 +190,24 @@ addtextchar(pdf_textline *line, int x, int y, int c)
 		line->text = newtext;
 	}
 
-	line->text[line->len].x = x;
-	line->text[line->len].y = y;
+	/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=400 */
+	/* copy ligatures as individual characters */
+	switch (c)
+	{
+	case 0xFB00: /* ff */
+		addtextchar(line, bbox, 'f'); c = 'f'; break;
+	case 0xFB03: /* ffi */
+		addtextchar(line, bbox, 'f');
+	case 0xFB01: /* fi */
+		addtextchar(line, bbox, 'f'); c = 'i'; break;
+	case 0xFB04: /* ffl */
+		addtextchar(line, bbox, 'f');
+	case 0xFB02: /* fl */
+		addtextchar(line, bbox, 'f'); c = 'l'; break;
+	case 0xFB05: case 0xFB06: /* st */
+		addtextchar(line, bbox, 's'); c = 't'; break;
+	}
+	line->text[line->len].bbox = bbox;
 	line->text[line->len].c = c;
 	line->len ++;
 
@@ -214,11 +231,39 @@ extracttext(pdf_textline **line, fz_node *node, fz_matrix ctm, fz_point *oldpt)
 		float adv;
 		int i, x, y, fterr;
 
-		FT_Set_Transform(font->ftface, NULL, NULL);
-		fterr = FT_Set_Char_Size(font->ftface, 64, 64, 72, 72);
-		if (fterr)
-			return fz_throw("freetype set character size: %s", ft_errorstring(fterr));
+		// TODO: this is supposed to calculate font bbox, but doesn't seem
+		// to be right at all
+		fz_irect bbox;
+		int fontdx, fontdy;
+		fz_point fontp1, fontp2;
+		fz_matrix fontmtx;
+		fz_irect fontbbox;
 
+		fontmtx = inv;
+		fontbbox = font->bbox;
+		fontdx = fontbbox.x1 - fontbbox.x0;
+		fontdy = fontbbox.y1 - fontbbox.y0;
+		fontp1.x = fontbbox.x0;
+		fontp1.y = fontbbox.y0;
+		fontp1 = fz_transformpoint(fontmtx, fontp1);
+		fontp2.x = fontbbox.x1;
+		fontp2.y = fontbbox.y1;
+		fontp2 = fz_transformpoint(fontmtx, fontp2);
+		fontdx = fontp2.x - fontp1.x;
+		fontdy = fontp2.y - fontp1.y;
+
+		// TODO: magically divide by 10 because that's what it looks like
+		// we should be doing. Doesn't work well for all fonts
+		fontdx = fontdx / 10;
+		fontdy = fontdy / 10;
+
+		if (font->ftface)
+        {
+            FT_Set_Transform(font->ftface, NULL, NULL);
+		    fterr = FT_Set_Char_Size(font->ftface, 64, 64, 72, 72);
+		    if (fterr)
+			    return fz_throw("freetype set character size: %s", ft_errorstring(fterr));
+        }
 		for (i = 0; i < text->len; i++)
 		{
 			tm.e = text->els[i].x;
@@ -255,6 +300,11 @@ extracttext(pdf_textline **line, fz_node *node, fz_matrix ctm, fz_point *oldpt)
 				oldpt->x += adv;
 			}
 
+			bbox.x0 = x;
+			bbox.x1 = x + fontdx;
+			bbox.y0 = y;
+			bbox.y1 = y + fontdy;
+
 			if (fabs(dy) > 0.2)
 			{
 				pdf_textline *newline;
@@ -266,12 +316,12 @@ extracttext(pdf_textline **line, fz_node *node, fz_matrix ctm, fz_point *oldpt)
 			}
 			else if (fabs(dx) > 0.2)
 			{
-				error = addtextchar(*line, x, y, ' ');
+				error = addtextchar(*line, bbox, ' ');
 				if (error)
 					return fz_rethrow(error, "cannot add character to text line");
 			}
 
-			error = addtextchar(*line, x, y, text->els[i].ucs);
+			error = addtextchar(*line, bbox, text->els[i].ucs);
 			if (error)
 				return fz_rethrow(error, "cannot add character to text line");
 		}

@@ -6,16 +6,25 @@ runone(pdf_csi *csi, pdf_xref *xref, fz_obj *rdb, fz_obj *stmref)
 {
 	fz_error error;
 	fz_stream *stm;
+	fz_buffer *buf;
 
 	pdf_logpage("simple content stream\n");
 
-	error = pdf_openstream(&stm, xref, fz_tonum(stmref), fz_togen(stmref));
+	error = pdf_loadstream(&buf, xref, fz_tonum(stmref), fz_togen(stmref));
 	if (error)
-		return fz_rethrow(error, "cannot open content stream (%d %d R)", fz_tonum(stmref), fz_togen(stmref));
+		return fz_rethrow(error, "cannot load content stream (%d %d R)", fz_tonum(stmref), fz_togen(stmref));
+
+	error = fz_openrbuffer(&stm, buf);
+	if (error)
+	{
+		fz_dropbuffer(buf);
+		return fz_rethrow(error, "cannot open content buffer (read)");
+	}
 
 	error = pdf_runcsi(csi, xref, rdb, stm);
 
 	fz_dropstream(stm);
+	fz_dropbuffer(buf);
 
 	if (error)
 		return fz_rethrow(error, "cannot interpret content stream (%d %d R)", fz_tonum(stmref), fz_togen(stmref));
@@ -202,20 +211,30 @@ pdf_loadpage(pdf_page **pagep, pdf_xref *xref, fz_obj *dict)
 	}
 
 	/*
-	 * Load resources
+	 * Create store for resource objects
 	 */
 
-	obj = fz_dictgets(dict, "Resources");
-	if (!obj)
+	if (!xref->store)
+	{
+		error = pdf_newstore(&xref->store);
+		if (error)
+			return fz_rethrow(error, "cannot create resource store");
+	}
+
+	/*
+	 * Locate resources
+	 */
+
+	rdb = fz_dictgets(dict, "Resources");
+	if (rdb)
+		rdb = fz_keepobj(rdb);
+	else
 	{
 		fz_warn("cannot find page resources, proceeding anyway.");
-		error = fz_newdict(&obj, 0);
+		error = fz_newdict(&rdb, 0);
 		if (error)
 			return fz_rethrow(error, "cannot create fake page resources");
 	}
-	error = pdf_loadresources(&rdb, xref, obj);
-	if (error)
-		return fz_rethrow(error, "cannot load page resources");
 
 	/*
 	 * Interpret content stream to build display tree
@@ -256,7 +275,7 @@ pdf_loadpage(pdf_page **pagep, pdf_xref *xref, fz_obj *dict)
 	page->mediabox.x1 = MAX(bbox.x0, bbox.x1);
 	page->mediabox.y1 = MAX(bbox.y0, bbox.y1);
 	page->rotate = rotate;
-	page->resources = rdb;
+	page->resources = rdb; /* we have already kept or created it */
 	page->tree = tree;
 
 	page->comments = comments;
@@ -273,9 +292,10 @@ pdf_droppage(pdf_page *page)
 {
 	pdf_logpage("drop page %p\n", page);
 	/* if (page->comments) pdf_dropcomment(page->comments); */
+	if (page->resources)
+		fz_dropobj(page->resources);
 	if (page->links)
 		pdf_droplink(page->links);
-	fz_dropobj(page->resources);
 	if (page->tree)
 		fz_droptree(page->tree);
 	fz_free(page);

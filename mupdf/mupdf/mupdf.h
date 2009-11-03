@@ -60,41 +60,51 @@ fz_error pdf_toucs2(unsigned short **dstp, fz_obj *src);
 #define PDF_DEFAULT_PERM_FLAGS  0xfffc
 
 typedef struct pdf_crypt_s pdf_crypt;
+typedef struct pdf_cryptfilter_s pdf_cryptfilter;
+typedef enum pdf_cryptmethod_e pdf_cryptmethod;
+
+enum pdf_cryptmethod_e
+{
+	PDF_CRYPT_NONE,
+	PDF_CRYPT_RC4,
+	PDF_CRYPT_AESV2,
+	PDF_CRYPT_UNKNOWN,
+};
+
+struct pdf_cryptfilter_s
+{
+	pdf_cryptmethod method;
+	int length;
+	unsigned char key[16];
+};
 
 struct pdf_crypt_s
 {
+	unsigned char idstring[32];
+	int idlength;
+
+	int v;
+	int length;
+	fz_obj *cf;
+	pdf_cryptfilter stmf;
+	pdf_cryptfilter strf;
+
+	int r;
 	unsigned char o[32];
 	unsigned char u[32];
-	unsigned int p;
-	int v;
-	int r;
-	int len;
-	char *handler;
-	char *stmmethod;
-	int stmlength;
-	char *strmethod;
-	int strlength;
-	int encryptedmeta;
+	int p;
+	int encryptmetadata;
 
-	fz_obj *encrypt;
-	fz_obj *id;
-
-	unsigned char key[16];
-	int keylen;
+	unsigned char key[32]; /* decryption key generated from password */
 };
 
 /* crypt.c */
-fz_error pdf_newdecrypt(pdf_crypt **cp, fz_obj *enc, fz_obj *id);
-fz_error pdf_newencrypt(pdf_crypt **cp, char *userpw, char *ownerpw, int p, int n, fz_obj *id);
-
-int pdf_setpassword(pdf_crypt *crypt, char *pw);
-int pdf_setuserpassword(pdf_crypt *crypt, char *pw, int pwlen);
-int pdf_setownerpassword(pdf_crypt *crypt, char *pw, int pwlen);
-
-fz_error pdf_cryptstream(fz_filter **fp, pdf_crypt *crypt, int oid, int gen);
-void pdf_cryptbuffer(pdf_crypt *crypt, fz_buffer *buf, int oid, int gen);
-void pdf_cryptobj(pdf_crypt *crypt, fz_obj *obj, int oid, int gen);
+fz_error pdf_newcrypt(pdf_crypt **cp, fz_obj *enc, fz_obj *id);
 void pdf_freecrypt(pdf_crypt *crypt);
+
+fz_error pdf_parsecryptfilter(pdf_cryptfilter *cf, fz_obj *dict, int defaultlength);
+fz_error pdf_cryptstream(fz_filter **fp, pdf_crypt *crypt, pdf_cryptfilter *cf, int num, int gen);
+void pdf_cryptobj(pdf_crypt *crypt, fz_obj *obj, int num, int gen);
 
 int pdf_needspassword(pdf_xref *xref);
 int pdf_authenticatepassword(pdf_xref *xref, char *pw);
@@ -116,14 +126,12 @@ struct pdf_xref_s
 	fz_obj *trailer;		/* TODO split this into root/info/encrypt/id */
 	fz_obj *root;			/* resolved catalog dict */
 	fz_obj *info;			/* resolved info dict */
-	fz_obj *dests;			/* flattened dests nametree */
 
 	int len;
 	int cap;
 	pdf_xrefentry *table;
 
 	struct pdf_store_s *store;
-	struct pdf_pagetree_s *pages;
 	struct pdf_outline_s *outlines;
 };
 
@@ -139,7 +147,20 @@ struct pdf_xrefentry_s
 fz_error pdf_newxref(pdf_xref **);
 fz_error pdf_repairxref(pdf_xref *, char *filename);
 fz_error pdf_loadxref(pdf_xref *, char *filename);
+#ifdef WIN32
+#include <wchar.h>
+fz_error pdf_loadxrefw(pdf_xref *xref, wchar_t *filename);
+fz_error pdf_repairxrefw(pdf_xref *xref, wchar_t *filename);
+#ifdef _UNICODE
+#define pdf_loadxreft pdf_loadxrefw
+#define pdf_repairxreft pdf_repairxrefw
+#else
+#define pdf_loadxreft pdf_loadxref
+#define pdf_repairxreft pdf_repairxref
+#endif
+#endif
 fz_error pdf_initxref(pdf_xref *);
+fz_error pdf_decryptxref(pdf_xref *);
 
 void pdf_debugxref(pdf_xref *);
 void pdf_flushxref(pdf_xref *, int force);
@@ -160,7 +181,6 @@ fz_error pdf_transplant(pdf_xref *dst, pdf_xref *src, fz_obj **newp, fz_obj *old
 
 /* private */
 fz_error pdf_loadobjstm(pdf_xref *xref, int oid, int gen, char *buf, int cap);
-fz_error pdf_decryptxref(pdf_xref *xref);
 
 /*
  * Resource store
@@ -246,7 +266,7 @@ struct pdf_pattern_s
 	fz_tree *tree;
 };
 
-fz_error pdf_loadpattern(pdf_pattern **patp, pdf_xref *xref, fz_obj *obj, fz_obj *ref);
+fz_error pdf_loadpattern(pdf_pattern **patp, pdf_xref *xref, fz_obj *obj);
 pdf_pattern *pdf_keeppattern(pdf_pattern *pat);
 void pdf_droppattern(pdf_pattern *pat);
 
@@ -256,14 +276,14 @@ void pdf_droppattern(pdf_pattern *pat);
 
 void pdf_setmeshvalue(float *mesh, int i, float x, float y, float t);
 fz_error pdf_loadshadefunction(fz_shade *shade, pdf_xref *xref, fz_obj *dict, float t0, float t1);
-fz_error pdf_loadtype1shade(fz_shade *, pdf_xref *, fz_obj *dict, fz_obj *ref);
-fz_error pdf_loadtype2shade(fz_shade *, pdf_xref *, fz_obj *dict, fz_obj *ref);
-fz_error pdf_loadtype3shade(fz_shade *, pdf_xref *, fz_obj *dict, fz_obj *ref);
-fz_error pdf_loadtype4shade(fz_shade *, pdf_xref *, fz_obj *dict, fz_obj *ref);
-fz_error pdf_loadtype5shade(fz_shade *, pdf_xref *, fz_obj *dict, fz_obj *ref);
-fz_error pdf_loadtype6shade(fz_shade *, pdf_xref *, fz_obj *dict, fz_obj *ref);
-fz_error pdf_loadtype7shade(fz_shade *, pdf_xref *, fz_obj *dict, fz_obj *ref);
-fz_error pdf_loadshade(fz_shade **shadep, pdf_xref *xref, fz_obj *obj, fz_obj *ref);
+fz_error pdf_loadtype1shade(fz_shade *, pdf_xref *, fz_obj *dict);
+fz_error pdf_loadtype2shade(fz_shade *, pdf_xref *, fz_obj *dict);
+fz_error pdf_loadtype3shade(fz_shade *, pdf_xref *, fz_obj *dict);
+fz_error pdf_loadtype4shade(fz_shade *, pdf_xref *, fz_obj *dict);
+fz_error pdf_loadtype5shade(fz_shade *, pdf_xref *, fz_obj *dict);
+fz_error pdf_loadtype6shade(fz_shade *, pdf_xref *, fz_obj *dict);
+fz_error pdf_loadtype7shade(fz_shade *, pdf_xref *, fz_obj *dict);
+fz_error pdf_loadshade(fz_shade **shadep, pdf_xref *xref, fz_obj *obj);
 
 /*
  * XObject
@@ -283,7 +303,7 @@ struct pdf_xobject_s
 	fz_buffer *contents;
 };
 
-fz_error pdf_loadxobject(pdf_xobject **xobjp, pdf_xref *xref, fz_obj *obj, fz_obj *ref);
+fz_error pdf_loadxobject(pdf_xobject **xobjp, pdf_xref *xref, fz_obj *obj);
 pdf_xobject *pdf_keepxobject(pdf_xobject *xobj);
 void pdf_dropxobject(pdf_xobject *xobj);
 
@@ -307,8 +327,9 @@ struct pdf_image_s
 };
 
 fz_error pdf_loadinlineimage(pdf_image **imgp, pdf_xref *xref, fz_obj *rdb, fz_obj *dict, fz_stream *file);
-fz_error pdf_loadimage(pdf_image **imgp, pdf_xref *xref, fz_obj *obj, fz_obj *ref);
+fz_error pdf_loadimage(pdf_image **imgp, pdf_xref *xref, fz_obj *obj);
 fz_error pdf_loadtile(fz_image *image, fz_pixmap *tile);
+void pdf_dropimage(fz_image *img);
 
 /*
  * CMap
@@ -476,12 +497,12 @@ fz_error pdf_loadsystemfont(pdf_fontdesc *font, char *basefont, char *collection
 fz_error pdf_loadsubstitutefont(pdf_fontdesc *font, int fdflags, char *collection);
 
 /* type3.c */
-fz_error pdf_loadtype3font(pdf_fontdesc **fontp, pdf_xref *xref, fz_obj *obj, fz_obj *ref);
+fz_error pdf_loadtype3font(pdf_fontdesc **fontp, pdf_xref *xref, fz_obj *rdb, fz_obj *obj);
 
 /* font.c */
 int pdf_fontcidtogid(pdf_fontdesc *fontdesc, int cid);
 fz_error pdf_loadfontdescriptor(pdf_fontdesc *font, pdf_xref *xref, fz_obj *desc, char *collection);
-fz_error pdf_loadfont(pdf_fontdesc **fontp, pdf_xref *xref, fz_obj *obj, fz_obj *ref);
+fz_error pdf_loadfont(pdf_fontdesc **fontp, pdf_xref *xref, fz_obj *rdb, fz_obj *obj);
 pdf_fontdesc * pdf_newfontdesc(void);
 pdf_fontdesc * pdf_keepfont(pdf_fontdesc *fontdesc);
 void pdf_dropfont(pdf_fontdesc *font);
@@ -496,8 +517,15 @@ typedef struct pdf_comment_s pdf_comment;
 typedef struct pdf_widget_s pdf_widget;
 typedef struct pdf_outline_s pdf_outline;
 
+typedef enum pdf_linkkind_e
+{
+	PDF_LGOTO = 0,
+	PDF_LURI,
+} pdf_linkkind;
+
 struct pdf_link_s
 {
+	pdf_linkkind kind;
 	fz_rect rect;
 	fz_obj *dest;
 	pdf_link *next;
@@ -533,12 +561,13 @@ struct pdf_outline_s
 	pdf_link *link;
 	pdf_outline *child;
 	pdf_outline *next;
+	int count;
 };
 
 fz_error pdf_loadnametree(fz_obj **dictp, pdf_xref *xref, fz_obj *root);
-fz_error pdf_loadnametrees(pdf_xref *xref);
+fz_obj *pdf_lookupdest(pdf_xref *xref, fz_obj *nameddest);
 
-fz_error pdf_newlink(pdf_link**, fz_rect rect, fz_obj *dest);
+fz_error pdf_newlink(pdf_link**, pdf_linkkind kind, fz_rect rect, fz_obj *dest);
 fz_error pdf_loadlink(pdf_link **linkp, pdf_xref *xref, fz_obj *dict);
 void pdf_droplink(pdf_link *link);
 
@@ -552,19 +581,9 @@ fz_error pdf_loadannots(pdf_comment **, pdf_link **, pdf_xref *, fz_obj *annots)
  * Page tree, pages and related objects
  */
 
-typedef struct pdf_pagetree_s pdf_pagetree;
 typedef struct pdf_page_s pdf_page;
 typedef struct pdf_textline_s pdf_textline;
 typedef struct pdf_textchar_s pdf_textchar;
-
-struct pdf_pagetree_s
-{
-	int cap;
-	int count;
-	int cursor;
-	fz_obj **pref;
-	fz_obj **pobj;
-};
 
 struct pdf_page_s
 {
@@ -578,7 +597,7 @@ struct pdf_page_s
 
 struct pdf_textchar_s
 {
-	int x, y;
+	fz_irect bbox;
 	int c;
 };
 
@@ -590,12 +609,9 @@ struct pdf_textline_s
 };
 
 /* pagetree.c */
-fz_error pdf_loadpagetree(pdf_pagetree **pp, pdf_xref *xref);
-int pdf_getpagecount(pdf_pagetree *pages);
-fz_obj *pdf_getpageobject(pdf_pagetree *pages, int p);
-fz_obj *pdf_getpagereference(pdf_pagetree *pages, int p);
-void pdf_debugpagetree(pdf_pagetree *pages);
-void pdf_droppagetree(pdf_pagetree *pages);
+fz_error pdf_getpagecount(pdf_xref *xref, int *pagesp);
+fz_error pdf_getpageobject(pdf_xref *xref, int p, fz_obj **pagep);
+fz_error pdf_findpageobject(pdf_xref *xref, fz_obj *pageobj, int *page);
 
 /* page.c */
 fz_error pdf_loadpage(pdf_page **pagep, pdf_xref *xref, fz_obj *ref);

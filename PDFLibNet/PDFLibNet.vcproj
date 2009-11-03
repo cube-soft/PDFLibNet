@@ -71,6 +71,8 @@
 				IgnoreDefaultLibraryNames="libc.lib;libcmt.lib;nafxcwd.lib;nafxcw.lib;libcmtd.lib"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
+				HeapReserveSize="16000000"
+				StackReserveSize="16000000"
 				TargetMachine="1"
 				KeyFile="PDFLibNet.snk"
 			/>

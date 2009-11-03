@@ -64,6 +64,36 @@ fz_dropstream(fz_stream *stm)
 	}
 }
 
+#ifdef WIN32
+fz_error fz_openrfilew(fz_stream **stmp, wchar_t *path)
+{
+	fz_error error;
+	fz_stream *stm;
+
+	stm = newstm(FZ_SFILE);
+	if (!stm)
+		return fz_rethrow(-1, "out of memory: stream struct");
+
+	error = fz_newbuffer(&stm->buffer, FZ_BUFSIZE);
+	if (error)
+	{
+		fz_free(stm);
+		return fz_rethrow(error, "cannot create buffer");
+	}
+
+	stm->file = _wopen(path, O_BINARY | O_RDONLY, 0666);
+	if (stm->file < 0)
+	{
+		fz_dropbuffer(stm->buffer);
+		fz_free(stm);
+		return fz_throw("syserr: open '%s': %s", path, strerror(errno));
+	}
+
+	*stmp = stm;
+	return fz_okay;
+}
+#endif
+
 fz_error fz_openrfile(fz_stream **stmp, char *path)
 {
 	fz_error error;

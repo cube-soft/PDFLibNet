@@ -136,6 +136,19 @@ namespace PDFLibNet {
 
 		}
 
+		property bool SupportsMuPDF{
+			bool get(){
+				return _pdfDoc->GetSupportsMuPDF();
+			}
+		}
+		property bool UseMuPDF{
+			bool get(){
+				return _pdfDoc->GetUseMuPDF();
+			}
+			void set(bool bUse){
+				_pdfDoc->SetUseMuPDF(bUse);
+			}
+		}
 		///<sumary>
 		/// Returns true if exist a background process exporting to jpeg
 		///</sumary>

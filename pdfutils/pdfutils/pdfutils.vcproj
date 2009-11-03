@@ -67,6 +67,7 @@
 				IgnoreDefaultLibraryNames="libcmt.lib; libcmtd.lib"
 				GenerateDebugInformation="true"
 				SubSystem="1"
+				StackReserveSize="2097152"
 				TargetMachine="1"
 			/>
 			<Tool

@@ -1,6 +1,6 @@
 #include "fitz_base.h"
 #include "fitz_tree.h"
-
+#include "ansi_stack.h"
 /*
  * Remove (mask ... white) until we get something not white
  */
@@ -78,12 +78,52 @@ static int cleanwhite(fz_node *node)
 
 static void cleanovers(fz_node *node)
 {
+	MyStack *s;
 	fz_node *prev;
 	fz_node *next;
 	fz_node *current;
 	fz_node *child;
 
 	prev = nil;
+/*Too-Slow when it has a big depth	
+	s=newstack();
+	push(s,(void *)node);
+
+	while(s->StackPosition>=0)
+	{
+		node=(fz_node *)pop(s);
+
+		for(current=node->first; current; current = next)
+		{
+			next = current->next;
+
+			if (fz_isovernode(current))
+			{
+				if (current->first == current->last)
+				{
+					child = current->first;
+					fz_removenode(current);
+					if (child)
+					{
+						if (prev)
+							fz_insertnodeafter(prev, child);
+						else
+							fz_insertnodefirst(node, child);
+					}
+					current = child;
+				}
+			}
+
+			if (current)
+				prev = current;	
+		}
+
+		for (current = node->first; current; current = current->next)
+			push(s,current);
+		prev = nil;
+	}
+	freestack(s);*/
+	
 	for (current = node->first; current; current = next)
 	{
 		next = current->next;
@@ -109,8 +149,9 @@ static void cleanovers(fz_node *node)
 			prev = current;
 	}
 
+
 	for (current = node->first; current; current = current->next)
-		cleanovers(current);
+			cleanovers(current);
 }
 
 /*
@@ -232,4 +273,3 @@ fz_optimizetree(fz_tree *tree)
 	cleanmasks(tree->root);
 	return fz_okay;
 }
-

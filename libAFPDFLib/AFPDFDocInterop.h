@@ -113,5 +113,8 @@ public:
 	char *GetCreationDate();
 	char *GetLastModifiedDate();
 	
+	bool GetSupportsMuPDF();
+	bool GetUseMuPDF();
+	void SetUseMuPDF(bool bUse);
 };
 

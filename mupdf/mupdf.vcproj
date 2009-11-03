@@ -40,7 +40,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="fitz; ..\jpeg; fitzdraw; ..\zlib; mupdf; ..\freetype-2.3.1\include; jbig2dec; ..\libopenjpeg"
-				PreprocessorDefinitions="WIN32; _WIN32; DOPJ_STATIC; NOCJK"
+				PreprocessorDefinitions="WIN32; _WIN32; _DEBUG; OPJ_STATIC; NOCJK;NEED_MATH; NEED_GETTIMEOFDAY; HAVE_JBIG2DEC; USE_HINTING; HAVE_OPENJPEG; HAVE_STRING_H=1"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -59,6 +59,8 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
+				LinkLibraryDependencies="true"
+				AdditionalOptions="/STACK:2097152"
 				AdditionalDependencies="..\bin\freetype231_D.lib ..\bin\libjpeg_D.lib ..\bin\zlib_D.lib ..\bin\mapsfonts.lib"
 				OutputFile="..\bin\$(ProjectName)_D.lib"
 			/>
@@ -108,7 +110,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="false"
 				AdditionalIncludeDirectories="fitz; ..\jpeg; fitzdraw; ..\zlib; mupdf; ..\freetype-2.3.1\include; jbig2dec; ..\libopenjpeg"
-				PreprocessorDefinitions="WIN32; _WIN32; DOPJ_STATIC; NOCJK"
+				PreprocessorDefinitions="WIN32; _WIN32; OPJ_STATIC; NOCJK;NEED_MATH; NEED_GETTIMEOFDAY; HAVE_JBIG2DEC; USE_HINTING; HAVE_OPENJPEG"
 				RuntimeLibrary="2"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
@@ -125,7 +127,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\bin\freetype231.lib ..\bin\libjpeg.lib ..\bin\zlib.lib ..\bin\mapsfonts.lib"
+				AdditionalDependencies="..\bin\freetype231.lib ..\bin\libjpeg.lib ..\bin\zlib.lib ..\bin\mapsfonts.lib "
 				OutputFile="..\bin\$(ProjectName).lib"
 			/>
 			<Tool
@@ -321,6 +323,14 @@
 		<Filter
 			Name="fitz"
 			>
+			<File
+				RelativePath=".\fitz\ansi_stack.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fitz\ansi_stack.h"
+				>
+			</File>
 			<File
 				RelativePath=".\fitz\base_cpudep.c"
 				>

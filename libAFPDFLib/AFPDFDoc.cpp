@@ -1397,7 +1397,7 @@
 			pdfDoc->m_LastPageRenderedByThread=page;
 
 #ifdef _MUPDF
-			if(pdfDoc->SupportsMuPDF() && pdfDoc->GetUseMuPDF() || 1){
+			if(pdfDoc->SupportsMuPDF() && pdfDoc->GetUseMuPDF()){
 				if(pdfDoc->LoadFromMuPDF())
 				{
 					fz_pixmap *im = pdfDoc->_mupdf->display(param->out,page,pdfDoc->m_Rotation,renderDPI/72,callbackAbortDisplay,pdfDoc);

@@ -297,3 +297,19 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 		AFPDFDoc *doc =((AFPDFDoc *)_ptr);
 		return doc->ThumbInQueue(page);
 	}
+
+	bool AFPDFDocInterop::GetSupportsMuPDF()
+	{
+		AFPDFDoc *doc =((AFPDFDoc *)_ptr);
+		return doc->SupportsMuPDF();
+	}
+	bool AFPDFDocInterop::GetUseMuPDF()
+	{
+		AFPDFDoc *doc =((AFPDFDoc *)_ptr);
+		return doc->GetUseMuPDF();
+	}
+	void AFPDFDocInterop::SetUseMuPDF(bool bUse)
+	{
+		AFPDFDoc *doc =((AFPDFDoc *)_ptr);
+		doc->SetUseMuPDF(bUse);
+	}

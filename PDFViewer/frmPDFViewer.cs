@@ -464,6 +464,7 @@ namespace PDFViewer
                     _pdfDoc.RenderNotifyFinished += new RenderNotifyFinishedHandler(_pdfDoc_RenderNotifyFinished);
                     _pdfDoc.PDFLoadCompeted += new PDFLoadCompletedHandler(_pdfDoc_PDFLoadCompeted);
                     _pdfDoc.PDFLoadBegin += new PDFLoadBeginHandler(_pdfDoc_PDFLoadBegin);
+                    _pdfDoc.UseMuPDF = true;
                     //}
                     //xPDFParams.ErrorQuiet =true;
                     //xPDFParams.ErrorFile = "C:\\stderr.log";
@@ -534,9 +535,13 @@ namespace PDFViewer
                     fs.Close();
                     fs = null;
                 }
+                //Does not supported by MuPDF.
                 //fs = new System.IO.FileStream(filename, System.IO.FileMode.Open);
-                return pdfDoc.LoadPDF(filename);
                 //return pdfDoc.LoadPDF(fs);
+                bool bRet =  pdfDoc.LoadPDF(filename);
+                tsbUseMuPDF.Checked = pdfDoc.UseMuPDF;
+                return bRet;
+                
                 
             }
             catch (System.Security.SecurityException)
@@ -1072,6 +1077,25 @@ namespace PDFViewer
             PDFPage pg = _pdfDoc.Pages[_pdfDoc.CurrentPage];
             Bitmap bmp = pg.GetBitmap(96,false);
             bmp.Save("C:\\bmp.png", System.Drawing.Imaging.ImageFormat.Png); 
+        }
+
+        private void tsbUseMuPDF_Click(object sender, EventArgs e)
+        {
+            if (_pdfDoc != null)
+            {
+                if (_pdfDoc.SupportsMuPDF)
+                {
+                    bool bs = _pdfDoc.UseMuPDF;
+                    _pdfDoc.UseMuPDF = tsbUseMuPDF.Checked;
+                    if (tsbUseMuPDF.Checked != bs)
+                    {
+                        tsbUseMuPDF.Checked = _pdfDoc.UseMuPDF;
+                        _pdfDoc.RenderPage(pageViewControl1.Handle, true);
+                        Render();
+                        pageViewControl1.Invalidate();
+                    }
+                }
+            }
         }
     }
 

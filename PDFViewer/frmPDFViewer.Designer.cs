@@ -59,6 +59,7 @@ namespace PDFViewer
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.tsbAntialias = new System.Windows.Forms.ToolStripButton();
             this.tsbVectorAntialias = new System.Windows.Forms.ToolStripButton();
+            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
             this.printDialog1 = new System.Windows.Forms.PrintDialog();
             this.printDocument1 = new System.Drawing.Printing.PrintDocument();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
@@ -66,7 +67,7 @@ namespace PDFViewer
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.StatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.bgLoadPages = new System.ComponentModel.BackgroundWorker();
-            this.toolStripButton3 = new System.Windows.Forms.ToolStripButton();
+            this.tsbUseMuPDF = new System.Windows.Forms.ToolStripButton();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
             this.splitContainer1.SuspendLayout();
@@ -232,7 +233,8 @@ namespace PDFViewer
             this.toolStripButton2,
             this.tsbAntialias,
             this.tsbVectorAntialias,
-            this.toolStripButton3});
+            this.toolStripButton3,
+            this.tsbUseMuPDF});
             resources.ApplyResources(this.toolStrip1, "toolStrip1");
             this.toolStrip1.Name = "toolStrip1";
             // 
@@ -332,6 +334,13 @@ namespace PDFViewer
             this.tsbVectorAntialias.Name = "tsbVectorAntialias";
             this.tsbVectorAntialias.Click += new System.EventHandler(this.tsbVectorAntialias_Click);
             // 
+            // toolStripButton3
+            // 
+            this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            resources.ApplyResources(this.toolStripButton3, "toolStripButton3");
+            this.toolStripButton3.Name = "toolStripButton3";
+            this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
+            // 
             // printDialog1
             // 
             this.printDialog1.UseEXDialog = true;
@@ -353,12 +362,13 @@ namespace PDFViewer
             this.bgLoadPages.WorkerReportsProgress = true;
             this.bgLoadPages.WorkerSupportsCancellation = true;
             // 
-            // toolStripButton3
+            // tsbUseMuPDF
             // 
-            this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            resources.ApplyResources(this.toolStripButton3, "toolStripButton3");
-            this.toolStripButton3.Name = "toolStripButton3";
-            this.toolStripButton3.Click += new System.EventHandler(this.toolStripButton3_Click);
+            this.tsbUseMuPDF.CheckOnClick = true;
+            this.tsbUseMuPDF.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            resources.ApplyResources(this.tsbUseMuPDF, "tsbUseMuPDF");
+            this.tsbUseMuPDF.Name = "tsbUseMuPDF";
+            this.tsbUseMuPDF.Click += new System.EventHandler(this.tsbUseMuPDF_Click);
             // 
             // frmPDFViewer
             // 
@@ -431,6 +441,7 @@ namespace PDFViewer
         private System.ComponentModel.BackgroundWorker bgLoadPages;
         private System.Windows.Forms.ListView listView2;
         private System.Windows.Forms.ToolStripButton toolStripButton3;
+        private System.Windows.Forms.ToolStripButton tsbUseMuPDF;
     }
 }
 

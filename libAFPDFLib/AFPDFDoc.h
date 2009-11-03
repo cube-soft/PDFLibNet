@@ -235,10 +235,10 @@ public:
 		#endif
 		return _useMuPDF;
 	}
-	void setUseMuPDF(bool buse){
+	void SetUseMuPDF(bool buse){
 		#ifdef _MUPDF
 			_useMuPDF =buse;
-			InvalidateBitmapCache();
+			//InvalidateBitmapCache();
 		#endif
 	}
 };

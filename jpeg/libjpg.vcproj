@@ -57,7 +57,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/STACK:2097152"
 				OutputFile="..\bin\$(ProjectName)_D.lib"
 			/>
 			<Tool

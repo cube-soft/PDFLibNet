@@ -85,7 +85,8 @@ static void cleanovers(fz_node *node)
 	fz_node *child;
 
 	prev = nil;
-/*Too-Slow when it has a big depth	
+
+/*
 	s=newstack();
 	push(s,(void *)node);
 
@@ -152,6 +153,7 @@ static void cleanovers(fz_node *node)
 
 	for (current = node->first; current; current = current->next)
 			cleanovers(current);
+
 }
 
 /*
@@ -214,6 +216,59 @@ static void cleanmasks(fz_node *node)
 	fz_node *color;
 	fz_rect bbox;
 
+	/*
+	s=newstack();
+	push(s,(void *)node);
+	prev = nil;
+	while(s->StackPosition>=0)
+	{
+		node=(fz_node *)pop(s);
+
+
+		for (current = node->first; current; current = current->next)
+		{
+	retry:
+			if (!current)
+				continue;
+
+			if (fz_ismasknode(current))
+			{
+				shape = current->first;
+				color = shape->next;
+
+				if (color == nil)
+				{
+					fz_removenode(current);
+					prev = nil;
+					current = node->first;
+					goto retry;
+				}
+
+				if (fz_ispathnode(shape))
+				{
+					if (getrect((fz_pathnode*)shape, &bbox))
+					{
+						if (fitsinside(color, bbox))
+						{
+							fz_removenode(current);
+							if (prev)
+								fz_insertnodeafter(prev, color);
+							else
+								fz_insertnodefirst(node, color);
+							current = color;
+							goto retry;
+						}
+					}
+				}
+			}
+
+			prev = current;
+		}
+		for (current = node->first; current; current = current->next)
+			push(s,current);
+		prev = nil;
+	}
+	freestack(s);*/
 	for (current = node->first; current; current = current->next)
 		cleanmasks(current);
 

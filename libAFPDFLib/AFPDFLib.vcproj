@@ -274,7 +274,6 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="false"
-				AdditionalOptions="/STACK:2097152"
 				AdditionalDependencies="..\bin\xpdf_D.lib ..\bin\libjpeg_D.lib ..\bin\mupdf_D.lib "
 				OutputFile="..\bin\$(ProjectName)_D.lib"
 			/>

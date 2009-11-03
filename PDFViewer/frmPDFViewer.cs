@@ -10,7 +10,6 @@ using System.Configuration;
 using PDFLibNet;
 using System.Management;
 
-
 namespace PDFViewer
 {
   

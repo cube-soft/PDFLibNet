@@ -144,7 +144,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalOptions="/STACK:2097152"
 				OutputFile="..\..\..\..\bin\freetype231_D.lib"
 				SuppressStartupBanner="true"
 			/>

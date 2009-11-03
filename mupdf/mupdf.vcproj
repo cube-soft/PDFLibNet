@@ -60,7 +60,6 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
-				AdditionalOptions="/STACK:2097152"
 				AdditionalDependencies="..\bin\freetype231_D.lib ..\bin\libjpeg_D.lib ..\bin\zlib_D.lib ..\bin\mapsfonts.lib"
 				OutputFile="..\bin\$(ProjectName)_D.lib"
 			/>

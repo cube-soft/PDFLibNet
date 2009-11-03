@@ -508,6 +508,9 @@ fz_pixmap* mupdfEngine::display(AuxOutputDev *out,int pageNo, int rotate, double
 	double dctm[6] = {ctm.a,ctm.b,ctm.c,ctm.d,ctm.e,ctm.f};
 	out->setDefCTM(dctm);
 	out->setDefICTM(dctm);
+#ifndef CACHE_MUPDF_PAGES
+	pdf_droppage(page);
+#endif
     ConvertPixmapForWindows(image);
 	return image;
 }

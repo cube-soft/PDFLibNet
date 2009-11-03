@@ -1327,7 +1327,18 @@
 				page = param->pageToRender;
 				renderDPI=IFZERO(renderDPI,18);
 				page=MAX(1,page);
-			
+/*#ifdef _MUPDF
+				if(pdfDoc->SupportsMuPDF() && pdfDoc->GetUseMuPDF() || 1){
+					if(pdfDoc->LoadFromMuPDF())
+					{
+						fz_pixmap *im = pdfDoc->_mupdf->display(param->out,page,pdfDoc->m_Rotation,renderDPI/72,callbackAbortDisplay,pdfDoc);
+						param->out->SetDataPtr((void *)im->samples);
+						param->out->setSize(im->w,im->h);
+						param->out->setPixmap(im);
+						render =false;
+					}
+				}
+#endif*/
 				if(doc->getCatalog() && doc->getCatalog()->isOk()){
 					Page *p = doc->getCatalog()->getPage(page);
 					if(p && p->isOk()){
@@ -1392,7 +1403,7 @@
 					fz_pixmap *im = pdfDoc->_mupdf->display(param->out,page,pdfDoc->m_Rotation,renderDPI/72,callbackAbortDisplay,pdfDoc);
 					param->out->SetDataPtr((void *)im->samples);
 					param->out->setSize(im->w,im->h);
-					
+					param->out->setPixmap(im);
 					render =false;
 				}
 			}

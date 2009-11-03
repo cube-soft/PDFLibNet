@@ -49,6 +49,7 @@
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="true"
 				WarningLevel="3"
+				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -71,14 +72,15 @@
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				TargetMachine="1"
+				KeyFile="PDFLibNet.snk"
 			/>
 			<Tool
 				Name="VCALinkTool"
 			/>
 			<Tool
 				Name="VCManifestTool"
-				OutputManifestFile="..\bin\$(TargetFileName).embed.manifest"
-				ManifestResourceFile="..\bin\$(TargetFileName).embed.manifest.res"
+				OutputManifestFile="$(IntDir)\$(TargetFileName).embed.manifest"
+				ManifestResourceFile="$(IntDir)\$(TargetFileName).embed.manifest.res"
 			/>
 			<Tool
 				Name="VCXDCMakeTool"

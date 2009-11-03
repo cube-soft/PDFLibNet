@@ -22,6 +22,7 @@ private:
 
 public:
 	AuxOutputDev(SplashOutputDev *splash);
+	~AuxOutputDev();
 
 	void *GetDataPtr();
 	void SetDataPtr(void *data);
@@ -52,6 +53,8 @@ public:
 #ifdef _MUPDF
 	//muPDF
 	void startDoc(pdf_xref *xrefA);
-
+	void setPixmap(fz_pixmap *pixmap){ _pixmap=pixmap; }
+private:
+	fz_pixmap *_pixmap;
 #endif
 };

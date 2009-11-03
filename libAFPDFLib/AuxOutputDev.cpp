@@ -8,7 +8,24 @@ AuxOutputDev::AuxOutputDev(SplashOutputDev *splash)
 , _width(0)
 , _height(0)
 , _antialias(gTrue)
+#ifdef _MUPDF
+, _pixmap(NULL)
+#endif
 {
+}
+
+AuxOutputDev::~AuxOutputDev()
+{
+#ifdef _MUPDF
+	if(_pixmap!=NULL){
+		::fz_droppixmap(_pixmap);
+		_pixmap=NULL;
+	}
+#endif
+	if(_splash!=NULL){
+		delete _splash;
+		_splash=NULL;
+	}
 }
 
 void *AuxOutputDev::GetDataPtr(){	return _data_ptr;}

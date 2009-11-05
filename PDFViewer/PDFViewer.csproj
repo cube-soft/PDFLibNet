@@ -262,5 +262,7 @@
   <PropertyGroup>
     <PreBuildEvent>
     </PreBuildEvent>
+    <PostBuildEvent>call "$(DevEnvDir)..\..\VC\bin\vcvars32.bat"
+editbin.exe /STACK:4194304  "$(TargetPath)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

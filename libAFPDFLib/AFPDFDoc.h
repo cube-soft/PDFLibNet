@@ -1,5 +1,5 @@
 #pragma once
-#define			MAX_BITMAP_CACHE	1
+#define			MAX_BITMAP_CACHE	16
 
 
 #include "stdafx.h"

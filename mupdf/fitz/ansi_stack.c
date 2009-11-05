@@ -8,8 +8,6 @@ struct LinkedList
 
 struct MyStack
 {	
-
-
 	LinkedList *PreviousNode;
 	LinkedList **FirstNode;
 	int StackPosition;
@@ -33,8 +31,6 @@ struct MyStack
 		s->StackPosition += 1;	
 		node->value = obj;
 		node->Address = s->PreviousNode;
-		//node->Address = NULL;
-		//this->PreviousNode->Address = node;
 		s->PreviousNode = node;
 	}
 }
@@ -47,13 +43,9 @@ struct MyStack
 	{
 		s->StackPosition -= 1;
 		temp = s->PreviousNode->value;
-		//this->PreviousNode = NULL;
 		node = s->PreviousNode;
 		if(s->StackPosition > -1)
-		{
 			s->PreviousNode = s->PreviousNode->Address;
-			//this->setFinalNode();
-		}
 		else
 			s->PreviousNode = NULL;
 		free(node);
@@ -79,5 +71,9 @@ struct MyStack
 
  void freestack(MyStack *s)
 {
+	while(s->StackPosition>-1)
+	{
+		pop(s);
+	}
 	free(s);
 }

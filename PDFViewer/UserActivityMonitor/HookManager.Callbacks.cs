@@ -131,7 +131,14 @@ namespace Gma.UserActivityMonitor
                         //If the message is WM_MOUSEWHEEL, the high-order word of MouseData member is the wheel delta. 
                         //One wheel click is defined as WHEEL_DELTA, which is 120. 
                         //(value >> 16) & 0xffff; retrieves the high-order word from the given 32-bit value
-                        mouseDelta = (short)((mouseHookStruct.MouseData >> 16) & 0xffff);
+                        try
+                        {
+                            mouseDelta = (short)((mouseHookStruct.MouseData >> 16) & 0xffff);
+                        }
+                        catch (Exception)
+                        {
+                        }
+                        
                        
                     //TODO: X BUTTONS (I havent them so was unable to test)
                         //If the message is WM_XBUTTONDOWN, WM_XBUTTONUP, WM_XBUTTONDBLCLK, WM_NCXBUTTONDOWN, WM_NCXBUTTONUP, 

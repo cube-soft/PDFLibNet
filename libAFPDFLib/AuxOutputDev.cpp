@@ -54,10 +54,12 @@ void AuxOutputDev::setVectorAntialias(GBool antialias){ _splash->setVectorAntial
 
 // Convert between device and user coordinates.
 void AuxOutputDev::cvtDevToUser(double dx, double dy, double *ux, double *uy){
-	return _splash->cvtDevToUser(dx,dy,ux,uy);
+	*ux = _ictm[0] * dx + _ictm[2] * dy + _ictm[4];
+	*uy = _ictm[1] * dx + _ictm[3] * dy + _ictm[5];
 }
 void AuxOutputDev::cvtUserToDev(double ux, double uy, int *dx, int *dy){
-	return _splash->cvtUserToDev(ux,uy,dx,dy);
+	*dx = (int)(_ctm[0] * ux + _ctm[2] * uy + _ctm[4] + 0.5);
+	*dy = (int)(_ctm[1] * ux + _ctm[3] * uy + _ctm[5] + 0.5);
 }
 	
 #ifdef _MUPDF

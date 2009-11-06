@@ -893,16 +893,16 @@ namespace PDFViewer
                 _pdfDoc.CurrentY = view.Y;
                 _pdfDoc.DrawPageHDC(g.GetHdc());
                 g.ReleaseHdc();
-
+                
                 /*
                 if (_pdfDoc.RenderDPI >= g.DpiX)
                 {
                     foreach (PageLink pl in _pdfDoc.GetLinks(_pdfDoc.CurrentPage))
-                    { 
+                    {
                         //Convert coordinates
-                        Point p1 =  Point.Ceiling(_pdfDoc.PointUserToDev(new PointF(pl.Bounds.Left,pl.Bounds.Top)));
+                        Point p1 = Point.Ceiling(_pdfDoc.PointUserToDev(new PointF(pl.Bounds.Left, pl.Bounds.Top)));
                         Point p2 = Point.Ceiling(_pdfDoc.PointUserToDev(new PointF(pl.Bounds.Right, pl.Bounds.Bottom)));
-                        Rectangle linkLoc = new Rectangle(p1.X, p1.Y, p2.X - p1.X, p1.Y-p2.Y);
+                        Rectangle linkLoc = new Rectangle(p1.X, p1.Y, p2.X - p1.X, p1.Y - p2.Y);
                         //Translate
                         linkLoc.Offset(-view.X, -view.Y);
                         linkLoc.Offset(r.X, r.Y);
@@ -910,8 +910,8 @@ namespace PDFViewer
                         //Draw Rectangle
                         g.DrawRectangle(Pens.Blue, linkLoc);
                     }
-                }*/
- 
+                }
+                */
             }
         }
 

@@ -1404,6 +1404,21 @@
 					param->out->SetDataPtr((void *)im->samples);
 					param->out->setSize(im->w,im->h);
 					param->out->setPixmap(im);
+
+					Page *p = pdfDoc->m_PDFDoc->getCatalog()->getPage(page);
+					double ctm[6];
+					double ictm[6];
+					p->getDefaultCTM(ctm,renderDPI,renderDPI,pdfDoc->m_Rotation,gFalse,gTrue);
+					param->out->setDefCTM(ctm);
+					//Invert CTM
+					double det = 1 / (ctm[0] * ctm[3] - ctm[1] * ctm[2]);
+				    ictm[0] = ctm[3] * det;
+				    ictm[1] = -ctm[1] * det;
+				    ictm[2] = -ctm[2] * det;
+				    ictm[3] = ctm[0] * det;
+				    ictm[4] = (ctm[2] * ctm[5] - ctm[3] * ctm[4]) * det;
+				    ictm[5] = (ctm[1] * ctm[4] - ctm[0] * ctm[5]) * det;
+					param->out->setDefICTM(ictm);
 					render =false;
 				}
 			}

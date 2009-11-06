@@ -116,17 +116,20 @@ fz_pixmap* mupdfEngine::display(AuxOutputDev *out,int pageNo, int rotate, double
         error(0,"Can not create mupdf renderer");
 		return NULL;
 	}
+
     ctm = viewctm(page, zoom, rotate);
     bbox = fz_transformaabb(ctm, *pageRect);
+	//ctm = fz_invertmatrix(ctm);
 	if(fz_rendertree(&image, _rast, page->tree, ctm, fz_roundrect(bbox), 1)){
 		error(0,"Can not render page, unknown problem with mupdf");
 		return NULL;
 	}
 	out->setSize(image->w,image->h);
 	out->SetDataPtr(image->samples);
-	double dctm[6] = {ctm.a,ctm.b,ctm.c,ctm.d,ctm.e,ctm.f};
+
+	/*double dctm[6] = {ctm.a,ctm.b,ctm.c,ctm.d,ctm.e,ctm.f};
 	out->setDefCTM(dctm);
-	out->setDefICTM(dctm);
+	out->setDefICTM(dctm);*/
 
     ConvertPixmapForWindows(image);
 

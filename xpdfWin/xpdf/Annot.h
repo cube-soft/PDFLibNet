@@ -78,7 +78,8 @@ public:
     { return ref.num == refA->num && ref.gen == refA->gen; }
 
   void generateFieldAppearance(Dict *field, Dict *annot, Dict *acroForm);
-
+  //07/Nov/09, Jose Antonio Sandoval Soria
+  void LoadAnnotText();
 private:
  
   void setColor(Array *a, GBool fill, int adjust);

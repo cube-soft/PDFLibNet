@@ -463,7 +463,7 @@ namespace PDFViewer
                     _pdfDoc.RenderNotifyFinished += new RenderNotifyFinishedHandler(_pdfDoc_RenderNotifyFinished);
                     _pdfDoc.PDFLoadCompeted += new PDFLoadCompletedHandler(_pdfDoc_PDFLoadCompeted);
                     _pdfDoc.PDFLoadBegin += new PDFLoadBeginHandler(_pdfDoc_PDFLoadBegin);
-                    _pdfDoc.UseMuPDF = true;
+                    _pdfDoc.UseMuPDF = tsbUseMuPDF.Checked;
                     //}
                     //xPDFParams.ErrorQuiet =true;
                     //xPDFParams.ErrorFile = "C:\\stderr.log";
@@ -917,7 +917,7 @@ namespace PDFViewer
 
         private bool doubleBufferControl1_NextPage(object sender)
         {
-            try
+            //try
             {
                 using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
                 {
@@ -931,16 +931,16 @@ namespace PDFViewer
                     }
                 }
             }
-            catch (Exception ex)
+          /*  catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
-            }
+            }*/
             return false;
         }
 
         private bool doubleBufferControl1_PreviousPage(object sender)
         {
-            try
+           // try
             {
                 using (StatusBusy sb = new StatusBusy(Resources.UIStrings.StatusLoadingPage))
                 {
@@ -954,10 +954,10 @@ namespace PDFViewer
                     }
                 }
             }
-            catch (Exception ex)
+           /* catch (Exception ex)
             {
                 MessageBox.Show(ex.ToString());
-            }
+            }*/
             return false;
         }
 

@@ -407,6 +407,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\AnnotInterop.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\AuxOutputDev.cpp"
 				>
 			</File>
@@ -490,6 +494,10 @@
 			</File>
 			<File
 				RelativePath=".\AFPDFDocInterop.h"
+				>
+			</File>
+			<File
+				RelativePath=".\AnnotInterop.h"
 				>
 			</File>
 			<File

@@ -23,7 +23,7 @@
 #include "GfxFont.h"
 #include "Lexer.h"
 #include "Annot.h"
-
+#include "Parser.h"
 //------------------------------------------------------------------------
 
 #define annotFlagHidden    0x0002
@@ -1407,6 +1407,97 @@ Object *Annot::fieldLookup(Dict *field, char *key, Object *obj) {
   }
   parent.free();
   return obj;
+}
+
+static void LoadAnnotStrings(XRef *xref,Object *str)
+{
+   Dict *dict, *resDict;
+   Object obj1;
+   Object resObj;
+	int i;
+
+  // draw the appearance stream (if there is one)
+  if (str->isStream()) {
+    // get stream dict
+    dict = str->streamGetDict();
+    // get resources
+    dict->lookup("Resources", &resObj);
+    resDict = resObj.isDict() ? resObj.getDict() : (Dict *)NULL;
+	Object *obj = str;
+	Object obj2;
+	  if (obj->isArray()) {
+		for (i = 0; i < obj->arrayGetLength(); ++i) {
+		  obj->arrayGet(i, &obj2);
+		  if (!obj2.isStream()) {
+		error(-1, "Weird page contents");
+		obj2.free();
+		return;
+		  }
+		  obj2.free();
+		}
+	  } else if (!obj->isStream()) {
+		error(-1, "Weird page contents");
+		return;
+	}
+	// draw it
+	Parser *parser = new Parser(xref, new Lexer(xref, obj), gFalse);
+
+	Object args[maxArgs];
+	int numArgs, i;
+	int lastAbortCheck;
+  // scan a sequence of objects
+	  numArgs = 0;
+	  parser->getObj(&obj2);
+	  while (!obj2.isEOF()) {
+		  // got a command - execute it
+		  if (obj2.isCmd()) {
+			  char *name;
+			  Object *argPtr;
+			  int i;
+
+			  // find operator
+			  name = obj2.getCmd();
+			  //Text!, append to the string in a new line
+			  
+			  if(strcmp(name,"Tj")==0)
+			  {
+				GString *str = args[0].getString();
+			  }
+			  obj2.free();
+			  for (i = 0; i < numArgs; ++i)
+				  args[i].free();
+			  numArgs = 0;
+			  
+			  // got an argument - save it
+		  } else if (numArgs < maxArgs) {
+			  args[numArgs++] = obj2;
+			  // too many arguments - something is wrong
+		  } else {
+			  error(0, "Too many args in content stream");
+			  obj2.free();
+		  }
+		  // grab the next object
+		  parser->getObj(&obj2);
+	  }
+	  obj2.free();
+
+	  // args at end with no command
+	  if (numArgs > 0) {
+		  error(0, "Leftover args in content stream");
+		  for (i = 0; i < numArgs; ++i)
+			  args[i].free();
+	  }
+	  delete parser;
+
+    resObj.free();
+  }
+}
+
+void Annot::LoadAnnotText()
+{
+	Object obj;	
+	appearance.fetch(xref, &obj);
+	LoadAnnotStrings(xref,&obj);
 }
 
 void Annot::draw(Gfx *gfx, GBool printing) {

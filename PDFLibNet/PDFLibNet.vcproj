@@ -259,6 +259,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PDFAnnot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PDFPage.cpp"
 				>
 			</File>
@@ -302,6 +306,10 @@
 			</File>
 			<File
 				RelativePath=".\PageLinkCollection.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PDFAnnot.h"
 				>
 			</File>
 			<File

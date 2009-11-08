@@ -100,7 +100,7 @@ Annot::Annot(XRef *xrefA, Dict *acroForm, Dict *dict, Ref *refA) {
   type = NULL;
   appearBuf = NULL;
   borderStyle = NULL;
-
+  annotText = NULL;
   //----- parse the type
 
   if (dict->lookup("Subtype", &obj1)->isName()) {
@@ -280,6 +280,9 @@ Annot::~Annot() {
   }
   if (borderStyle) {
     delete borderStyle;
+  }
+  if(annotText){
+	  delete annotText;
   }
 }
 
@@ -1409,15 +1412,14 @@ Object *Annot::fieldLookup(Dict *field, char *key, Object *obj) {
   return obj;
 }
 
-static void LoadAnnotStrings(XRef *xref,Object *str)
+static GString *LoadAnnotStrings(XRef *xref,Object *str)
 {
    Dict *dict, *resDict;
    Object obj1;
    Object resObj;
-	int i;
-
-  // draw the appearance stream (if there is one)
-  if (str->isStream()) {
+   int i;
+   GString *annotText=NULL;
+   if (str->isStream()) {
     // get stream dict
     dict = str->streamGetDict();
     // get resources
@@ -1431,20 +1433,19 @@ static void LoadAnnotStrings(XRef *xref,Object *str)
 		  if (!obj2.isStream()) {
 		error(-1, "Weird page contents");
 		obj2.free();
-		return;
+		return NULL;
 		  }
 		  obj2.free();
 		}
 	  } else if (!obj->isStream()) {
 		error(-1, "Weird page contents");
-		return;
+		return NULL;
 	}
 	// draw it
 	Parser *parser = new Parser(xref, new Lexer(xref, obj), gFalse);
 
 	Object args[maxArgs];
 	int numArgs, i;
-	int lastAbortCheck;
   // scan a sequence of objects
 	  numArgs = 0;
 	  parser->getObj(&obj2);
@@ -1452,16 +1453,18 @@ static void LoadAnnotStrings(XRef *xref,Object *str)
 		  // got a command - execute it
 		  if (obj2.isCmd()) {
 			  char *name;
-			  Object *argPtr;
-			  int i;
-
 			  // find operator
 			  name = obj2.getCmd();
 			  //Text!, append to the string in a new line
-			  
 			  if(strcmp(name,"Tj")==0)
 			  {
 				GString *str = args[0].getString();
+				if(annotText==NULL)
+					annotText=new GString(str);
+				else{
+					annotText->appendf("\n");
+					annotText->append(str);
+				}
 			  }
 			  obj2.free();
 			  for (i = 0; i < numArgs; ++i)
@@ -1491,13 +1494,17 @@ static void LoadAnnotStrings(XRef *xref,Object *str)
 
     resObj.free();
   }
+   return annotText;
 }
 
-void Annot::LoadAnnotText()
+GString *Annot::GetAnnotText()
 {
-	Object obj;	
-	appearance.fetch(xref, &obj);
-	LoadAnnotStrings(xref,&obj);
+	if(annotText==NULL){
+		Object obj;	
+		appearance.fetch(xref, &obj);
+		annotText=LoadAnnotStrings(xref,&obj);
+	}
+	return annotText;
 }
 
 void Annot::draw(Gfx *gfx, GBool printing) {

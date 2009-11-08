@@ -79,7 +79,7 @@ public:
 
   void generateFieldAppearance(Dict *field, Dict *annot, Dict *acroForm);
   //07/Nov/09, Jose Antonio Sandoval Soria
-  void LoadAnnotText();
+  GString *GetAnnotText();
 private:
  
   void setColor(Array *a, GBool fill, int adjust);
@@ -108,6 +108,7 @@ private:
   Guint flags;
   AnnotBorderStyle *borderStyle;
   GBool ok;
+  GString *annotText;
 };
 
 //------------------------------------------------------------------------

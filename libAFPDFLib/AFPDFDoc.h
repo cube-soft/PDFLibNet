@@ -176,10 +176,10 @@ public:
 	long NextPage(void);
 	long PreviousPage(void);
 	long GotoPage(long PageNumber);
-	long ZoomIN(void);
-	long ZoomOut(void);
-	long FitScreenWidth(long lhWnd);
-	long FitScreenHeight(long lhWnd);
+	double ZoomIN(void);
+	double ZoomOut(void);
+	double FitScreenWidth(long lhWnd);
+	double FitScreenHeight(long lhWnd);
 	long GetPageWidth(void);
 	long GetPageHeight(void);
 	OutlineItemA* GetOutline(long iOutline);

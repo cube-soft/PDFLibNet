@@ -63,17 +63,17 @@ void  XPDFParamsInterop::setTextPageBreaks(bool textpagebreak){
 	globalParams->setTextPageBreaks(textpagebreak?1:0);
 }
 bool XPDFParamsInterop::getTextPageBreaks(){
-	return globalParams->getTextPageBreaks();
+	return globalParams->getTextPageBreaks()==gTrue?true:false;
 }
 void  XPDFParamsInterop::setTextEOL(bool textEol){
 	globalParams->setTextEOL(textEol?"yes":"no");
 }
 bool XPDFParamsInterop::getTextEOL(){
-	return globalParams->getTextEOL();
+	return globalParams->getTextEOL()==gTrue?true:false;
 }
 void  XPDFParamsInterop::setEnableFreeType(bool enableFreeType){
 	globalParams->setEnableFreeType(enableFreeType?"yes":"no");
 }
 bool XPDFParamsInterop::getEnableFreeType(){
-	return globalParams->getEnableFreeType();
+	return globalParams->getEnableFreeType()==gTrue?true:false;
 }

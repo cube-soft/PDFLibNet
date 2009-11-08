@@ -865,7 +865,7 @@
 			m_LastOpenedStream = 0;
 		}
 		m_LastOpenedFile.clear();
-		m_LastOpenedFile.insert((int)0,FileName,strlen(FileName));
+		m_LastOpenedFile.insert((int)0,FileName,(int)strlen(FileName));
 		//El archivo se cargo correctamente
 		m_Outline = m_PDFDoc->getOutline();
 
@@ -887,7 +887,7 @@
 				newbytes = newbytes * 3 + newbytes*2; //24-bit splashbitmap, 16-bit gdi-bitmap
 				newbytes=(newbytes*1.2); //Safety area;
 				newbytes -= m_splashOut->GetWidth()*m_splashOut->GetHeight()*3; //substract old 24-bit splash bitmap size
-				void* testAllocation = malloc((int)2.0*newbytes);
+				void* testAllocation = malloc((int)2.0*(int)newbytes);
 				if (testAllocation==0 && newbytes>0){
 					//We better dont zoom this far in!
 					return errOutOfMemory+1;
@@ -945,7 +945,7 @@
 					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID)tp,CREATE_SUSPENDED,0);
 					ResumeThread(m_renderingThread);
 				}
-			} catch(void *e){
+			} catch(void *){
 				return errOutOfMemory;
 			}
 		}
@@ -965,8 +965,8 @@
 
 		//Rendered bitmap by xpdf
 		//SplashBitmap * bitmap = out->getBitmap();
-		int bmWidth = out->GetWidth();
-		int bmHeight = out->GetHeight();
+		int bmWidth = (int)out->GetWidth();
+		int bmHeight = (int)out->GetHeight();
 		
 
 		HDC clientDC;
@@ -1065,7 +1065,6 @@
 		if (m_PDFDoc != NULL) {
 
 			m_PageRenderedByThread=false;
-			int bmWidth, bmHeight;
 			
 			//Establecemos el color del papel
 			SplashColor paperColor;
@@ -1174,7 +1173,7 @@
 				m_LastRenderDPI = m_renderDPI;
 				m_LastPageRendered=m_CurrentPage;
 
-			} catch(void *e){
+			} catch(void *){
 				return errOutOfMemory;
 			}
 		}
@@ -1197,7 +1196,7 @@
 	{
 		m_QueuedThumbs.enterlock();
 		//Look waiting
-		for(int i=0;i<m_QueuedThumbs.queue.GetCount();++i)
+		for(unsigned int i=0;i<m_QueuedThumbs.queue.GetCount();++i)
 		{
 			if(((threadParamThumb *)m_QueuedThumbs.queue[i])->pageToRender == page)
 			{
@@ -1206,7 +1205,7 @@
 			}
 		}
 		//Look in process
-		for(int i=0;i<m_QueuedThumbs.delQueue.GetCount();++i)
+		for(unsigned int i=0;i<m_QueuedThumbs.delQueue.GetCount();++i)
 		{
 			if(((threadParamThumb *)m_QueuedThumbs.delQueue[i])->pageToRender == page)
 			{
@@ -1226,9 +1225,6 @@
 		paperColor[1] = 0xff;
 		paperColor[2] = 0xff;
 
-
-
-		PageMemory *bmp;
 		PDFDoc *doc = m_PDFDoc; //this->createDoc(NULL);
 		
 		m_thumbOut = new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,bAntialising?1:0);
@@ -1450,8 +1446,8 @@
 		}__finally{
 			pdfDoc->RenderThreadFinished(param->out,param->pageToRender, param->enablePreRender);
 			::gUnlockMutex(&pdfDoc->hgMutex);
-			return true;
 		}
+		return true;
 	}
 
 	bool AFPDFDoc::LoadFromMuPDF(){
@@ -1571,7 +1567,7 @@
 //				old_brush = SelectStockObject(dc,NULL_BRUSH);
 				old_brush = SelectObject(dc,GetStockObject(NULL_BRUSH));
 				
-				for(int j = 0; j < m_Selection.GetCount(); j++) {
+				for(unsigned int j = 0; j < m_Selection.GetCount(); j++) {
 					 // transform selection into current DPI and
 					 // offset it by current upper/left corner.
 					 // Provided m_renderDPI was integer we could
@@ -1693,20 +1689,20 @@
 		return m_CurrentPage;
 	}
 
-	long AFPDFDoc::ZoomIN(void)
+	double AFPDFDoc::ZoomIN(void)
 	{
 		m_renderDPI =m_renderDPI * 4 / 3;
 		return m_renderDPI;
 	}
 
-	long AFPDFDoc::ZoomOut(void)
+	double AFPDFDoc::ZoomOut(void)
 	{
 		
 		m_renderDPI =m_renderDPI *  3/4;
 		return m_renderDPI;
 	}
 
-	long AFPDFDoc::FitScreenWidth(long lhWnd)
+	double AFPDFDoc::FitScreenWidth(long lhWnd)
 	{
 		
 		if (m_PDFDoc!=NULL)
@@ -1756,7 +1752,7 @@
 		return m_renderDPI;
 	}
 
-	long AFPDFDoc::FitScreenHeight(long lhWnd)
+	double AFPDFDoc::FitScreenHeight(long lhWnd)
 	{
 		
 
@@ -2493,8 +2489,8 @@
 		else if(m_splashOut)
 			m_splashOut->cvtUserToDev(ux,uy,dx,dy);	
 		else{
-			*dx=ux;
-			*dy=uy;
+			*dx=(int)ux;
+			*dy=(int)uy;
 		}
 	}
 
@@ -2513,7 +2509,6 @@
 	int AFPDFDoc::SaveJpg(char *fileName,float renderDPI,int fromPage, int toPage, int quality, int waitProc)
 	{
 		CString errmsg;
-		char filenameBuff[1024];
 		DWORD waitRes=0;
 		//If the current rendered page is the same requested
 		if(renderDPI ==  this->m_renderDPI
@@ -2544,8 +2539,8 @@
 			BITMAPINFO bmi;
 			ZeroMemory(&bmi,sizeof(bmi));
 			bmi.bmiHeader.biSize=sizeof(BITMAPINFOHEADER);
-			bmi.bmiHeader.biWidth = m_splashOut->GetWidth();
-			bmi.bmiHeader.biHeight = m_splashOut->GetHeight();
+			bmi.bmiHeader.biWidth = (long)m_splashOut->GetWidth();
+			bmi.bmiHeader.biHeight = (long)m_splashOut->GetHeight();
 			bmi.bmiHeader.biPlanes=1;
 			bmi.bmiHeader.biBitCount=24;
 			bmi.bmiHeader.biCompression=BI_RGB;

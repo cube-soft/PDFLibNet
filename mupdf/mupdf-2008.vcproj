@@ -932,10 +932,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\libopenjpeg\t1_generate_luts.c"
-				>
-			</File>
-			<File
 				RelativePath="..\libopenjpeg\t1_luts.h"
 				>
 			</File>

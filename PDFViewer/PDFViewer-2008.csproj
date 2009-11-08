@@ -16,6 +16,11 @@
     <OldToolsVersion>2.0</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <ManifestCertificateThumbprint>EC0783C1615F593143CE8CD99FCDE4A2AFCECB9E</ManifestCertificateThumbprint>
+    <ManifestKeyFile>PDFViewer-2008_TemporaryKey.pfx</ManifestKeyFile>
+    <GenerateManifests>true</GenerateManifests>
+    <SignManifests>true</SignManifests>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -26,9 +31,8 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>1</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -269,6 +273,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="PDFLibNet.snk" />
+    <None Include="PDFViewer-2008_TemporaryKey.pfx" />
     <None Include="Resources\RefreshDocView.bmp" />
   </ItemGroup>
   <ItemGroup>

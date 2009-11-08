@@ -341,7 +341,7 @@
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="true"
 				AdditionalIncludeDirectories="&quot;..\xpdfWin\xpdf&quot;;&quot;..\xpdfWin\goo&quot;;&quot;..\xpdfWin\fofi&quot;;&quot;..\xpdfWin\splash&quot;;&quot;..\freetype-2.3.1\include\freetype&quot;;&quot;..\jpg&quot;;&quot;..\xpdfWin\pdf2html&quot;;&quot;..\mupdf\mupdf&quot;;&quot;..\mupdf&quot;;&quot;..\mupdf\fitz&quot;;&quot;..\mupdf\fitzdraw&quot;"
-				PreprocessorDefinitions="WIN32; _WINDOWS; _MUPDF"
+				PreprocessorDefinitions="WIN32; _WINDOWS; _MUPDF; _CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"
 				UsePrecompiledHeader="0"
@@ -368,6 +368,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
+				AdditionalOptions="/IGNORE:4006"
 				AdditionalDependencies="..\bin\xpdf.lib ..\bin\libjpeg.lib ..\bin\mupdf.lib "
 				OutputFile="..\bin\$(ProjectName).lib"
 				IgnoreDefaultLibraryNames="libc.lib;libcmt.lib;nafxcw.lib"

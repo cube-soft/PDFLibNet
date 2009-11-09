@@ -1764,6 +1764,7 @@ void Gfx::doTilingPatternFill(GfxTilingPattern *tPat,
 			   m1, tPat->getBBox(),
 			   xi0, yi0, xi1, yi1, xstep, ystep);
   } else {
+	  if(yi1*xi1<10000){
     for (yi = yi0; yi < yi1; ++yi) {
       for (xi = xi0; xi < xi1; ++xi) {
 	x = xi * xstep;
@@ -1773,7 +1774,8 @@ void Gfx::doTilingPatternFill(GfxTilingPattern *tPat,
 	doForm1(tPat->getContentStream(), tPat->getResDict(),
 		m1, tPat->getBBox());
       }
-    }
+	}
+	  }
   }
 
   // restore graphics state

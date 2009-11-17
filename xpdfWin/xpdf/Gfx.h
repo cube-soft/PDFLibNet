@@ -73,6 +73,64 @@ struct Operator {
   void (Gfx::*func)(Object args[], int numArgs);
 };
 
+class  GfxImageColorMap;
+struct SplashOutImageData;
+struct ImageCache 
+{
+	Object *ref;
+	Stream *str;
+	int width;
+	int height;
+	GfxImageColorMap *colorMap;
+	int *maskColors; //64
+	GBool inlineImg;
+	SplashOutImageData *imgData;
+public:
+	ImageCache(){
+		ref = NULL;
+		str = NULL;
+		width=height=0;
+		colorMap = NULL;
+		maskColors = NULL;
+		inlineImg = gFalse;
+		imgData = NULL;
+	}
+	~ImageCache(){
+		if(ref!=NULL){
+			ref->free();
+			delete ref;
+		}
+		if(colorMap!=NULL)
+			delete colorMap;
+		if(maskColors!=NULL)
+			delete maskColors;
+		if(imgData!=NULL)
+			delete imgData;
+	}
+};
+
+
+struct CachedOperation {
+  Operator *op;
+  Object *args;
+  Object *argPtr;
+  ImageCache *imgCache;
+public:
+  CachedOperation(){
+	  args=NULL;
+	  imgCache=NULL;
+  }
+  ~CachedOperation(){
+	  if(args!=NULL){
+		 for(int i=0;i<op->numArgs;i++)
+			 args[i].free();
+		 delete args;
+	  }
+	  if(imgCache!=NULL)
+		delete imgCache;
+  }
+};
+
 //------------------------------------------------------------------------
 
 class GfxResources {
@@ -171,7 +229,8 @@ private:
   Operator *findOp(char *name);
   GBool checkArg(Object *arg, TchkType type);
   int getPos();
-
+  int goCache(CachedOperation **cache,GBool topLevel);
+  void execOpCache(CachedOperation **cache,int cachePos,Object *cmd, Object args[], int numArgs);
   // graphics state operators
   void opSave(Object args[], int numArgs);
   void opRestore(Object args[], int numArgs);
@@ -285,7 +344,9 @@ private:
 	       GBool isolated = gFalse, GBool knockout = gFalse,
 	       GBool alpha = gFalse, Function *transferFunc = NULL,
 	       GfxColor *backdropColor = NULL);
-
+  void doForm2(Object *str,Dict *resDict,double *bbox,int xi0,int yi0,int xi1,int yi1,double *m,double *m1,double xstep,double ystep);
+  ImageCache *getImageCache(Object *ref,Stream *str, GBool inlineImg);
+  void doImageCache(ImageCache *img);
   // in-line image operators
   void opBeginImage(Object args[], int numArgs);
   Stream *buildImageStream();

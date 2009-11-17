@@ -8,81 +8,81 @@
 fz_error
 fz_newovernode(fz_node **nodep)
 {
-        fz_node *node;
+	fz_node *node;
 
-        node = *nodep = fz_malloc(sizeof (fz_overnode));
-        if (!node)
-                return fz_rethrow(-1, "out of memory");
+	node = *nodep = fz_malloc(sizeof (fz_overnode));
+	if (!node)
+		return fz_rethrow(-1, "out of memory");
 
-        fz_initnode(node, FZ_NOVER);
+	fz_initnode(node, FZ_NOVER);
 
-        return fz_okay;
+	return fz_okay;
 }
 
 fz_rect
 fz_boundovernode(fz_overnode *node, fz_matrix ctm)
 {
-        /* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=533 */
-        struct {
-                int cap, ix;
-                struct {
-                        fz_node *node;
-                        fz_rect bbox;
-                } *items;
-        } stack;
+	/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=533 */
+	struct {
+		int cap, ix;
+		struct {
+			fz_node *node;
+			fz_rect bbox;
+		} *items;
+	} stack;
 
-        fz_node *child = node->super.first;
-        fz_rect bbox = fz_emptyrect;
-        fz_rect temp;
+	fz_node *child = node->super.first;
+	fz_rect bbox = fz_emptyrect;
+	fz_rect temp;
 
-        if (!child)
-                return fz_emptyrect;
+	if (!child)
+		return fz_emptyrect;
 
-        stack.cap = 8;
-        stack.ix = 0;
-        stack.items = nil;
-        do
-        {
-                if (child->kind != FZ_NOVER)
-                {
-                        temp = fz_boundnode(child, ctm);
-                        bbox = fz_mergerects(temp, bbox);
-                        child = child->next;
-                }
-                else if (child->first)
-                {
-                        if (!stack.items)
-                                stack.items = fz_malloc(stack.cap * sizeof(*stack.items));
-                        else if (stack.ix >= stack.cap)
-                        {
-                                stack.cap *= 2;
-                                stack.items = fz_realloc(stack.items, stack.cap * sizeof(*stack.items));
-                                if (!stack.items)
-                                        return fz_emptyrect;
-                        }
+	stack.cap = 8;
+	stack.ix = 0;
+	stack.items = nil;
+	do
+	{
+		if (child->kind != FZ_NOVER)
+		{
+			temp = fz_boundnode(child, ctm);
+			bbox = fz_mergerects(temp, bbox);
+			child = child->next;
+		}
+		else if (child->first)
+		{
+			if (!stack.items)
+				stack.items = fz_malloc(stack.cap * sizeof(*stack.items));
+			else if (stack.ix >= stack.cap)
+			{
+				stack.cap *= 2;
+				stack.items = fz_realloc(stack.items, stack.cap * sizeof(*stack.items));
+				if (!stack.items)
+					return fz_emptyrect;
+			}
 
-                        stack.items[stack.ix].node = child;
-                        stack.items[stack.ix].bbox = bbox;
-                        stack.ix++;
+			stack.items[stack.ix].node = child;
+			stack.items[stack.ix].bbox = bbox;
+			stack.ix++;
 
-                        bbox = fz_emptyrect;
-                        child = child->first;
-                }
-                else
-                {
-                        child = child->next;
-                }
-                while (!child && stack.ix > 0)
-                {
-                        stack.ix--;
-                        temp = stack.items[stack.ix].bbox;
-                        bbox = fz_mergerects(temp, bbox);
-                        child = stack.items[stack.ix].node->next;
-                }
-        } while (child);
-        fz_free(stack.items);
+			bbox = fz_emptyrect;
+			child = child->first;
+		}
+		else
+		{
+			child = child->next;
+		}
+		while (!child && stack.ix > 0)
+		{
+			stack.ix--;
+			temp = stack.items[stack.ix].bbox;
+			bbox = fz_mergerects(temp, bbox);
+			child = stack.items[stack.ix].node->next;
+		}
+	} while (child);
+	fz_free(stack.items);
 
-        return bbox;
+	return bbox;
 }
 
 /*
@@ -92,30 +92,30 @@ fz_boundovernode(fz_overnode *node, fz_matrix ctm)
 fz_error
 fz_newmasknode(fz_node **nodep)
 {
-        fz_node *node;
+	fz_node *node;
 
-        node = *nodep = fz_malloc(sizeof (fz_masknode));
-        if (!node)
-                return fz_rethrow(-1, "out of memory");
+	node = *nodep = fz_malloc(sizeof (fz_masknode));
+	if (!node)
+		return fz_rethrow(-1, "out of memory");
 
-        fz_initnode(node, FZ_NMASK);
+	fz_initnode(node, FZ_NMASK);
 
-        return fz_okay;
+	return fz_okay;
 }
 
 fz_rect
 fz_boundmasknode(fz_masknode *node, fz_matrix ctm)
 {
-        fz_node *shape;
-        fz_node *color;
-        fz_rect one, two;
+	fz_node *shape;
+	fz_node *color;
+	fz_rect one, two;
 
-        shape = node->super.first;
-        color = shape->next;
+	shape = node->super.first;
+	color = shape->next;
 
-        one = fz_boundnode(shape, ctm);
-        two = fz_boundnode(color, ctm);
-        return fz_intersectrects(one, two);
+	one = fz_boundnode(shape, ctm);
+	two = fz_boundnode(color, ctm);
+	return fz_intersectrects(one, two);
 }
 
 /*
@@ -125,49 +125,49 @@ fz_boundmasknode(fz_masknode *node, fz_matrix ctm)
 fz_error
 fz_newblendnode(fz_node **nodep, fz_blendkind b, int i, int k)
 {
-        fz_blendnode *node;
+	fz_blendnode *node;
 
-        node = fz_malloc(sizeof (fz_blendnode));
-        if (!node)
-                return fz_rethrow(-1, "out of memory");
-        *nodep = (fz_node*)node;
+	node = fz_malloc(sizeof (fz_blendnode));
+	if (!node)
+		return fz_rethrow(-1, "out of memory");
+	*nodep = (fz_node*)node;
 
-        fz_initnode((fz_node*)node, FZ_NBLEND);
-        node->mode = b;
-        node->isolated = i;
-        node->knockout = k;
+	fz_initnode((fz_node*)node, FZ_NBLEND);
+	node->mode = b;
+	node->isolated = i;
+	node->knockout = k;
 
-        return fz_okay;
+	return fz_okay;
 }
 
 fz_rect
 fz_boundblendnode(fz_blendnode *node, fz_matrix ctm)
 {
-        fz_node *child;
-        fz_rect bbox;
-        fz_rect temp;
+	fz_node *child;
+	fz_rect bbox;
+	fz_rect temp;
 
-        child = node->super.first;
-        if (!child)
-                return fz_emptyrect;
+	child = node->super.first;
+	if (!child)
+		return fz_emptyrect;
 
-        bbox = fz_boundnode(child, ctm);
+	bbox = fz_boundnode(child, ctm);
 
-        child = child->next;
-        while (child)
-        {
-                temp = fz_boundnode(child, ctm);
-                bbox = fz_mergerects(temp, bbox);
-                child = child->next;
-        }
+	child = child->next;
+	while (child)
+	{
+		temp = fz_boundnode(child, ctm);
+		bbox = fz_mergerects(temp, bbox);
+		child = child->next;
+	}
 
-        return bbox;
+	return bbox;
 }
 
 void
 fz_dropblendnode(fz_blendnode *node)
 {
-        fz_dropcolorspace(node->cs);
+	fz_dropcolorspace(node->cs);
 }
 
 /*
@@ -177,58 +177,57 @@ fz_dropblendnode(fz_blendnode *node)
 fz_error
 fz_newtransformnode(fz_node **nodep, fz_matrix m)
 {
-        fz_transformnode *node;
+	fz_transformnode *node;
 
-        node = fz_malloc(sizeof (fz_transformnode));
-        if (!node)
-                return fz_rethrow(-1, "out of memory");
-        *nodep = (fz_node*)node;
+	node = fz_malloc(sizeof (fz_transformnode));
+	if (!node)
+		return fz_rethrow(-1, "out of memory");
+	*nodep = (fz_node*)node;
 
-        fz_initnode((fz_node*)node, FZ_NTRANSFORM);
-        node->m = m;
+	fz_initnode((fz_node*)node, FZ_NTRANSFORM);
+	node->m = m;
 
-        return fz_okay;
+	return fz_okay;
 }
 
 fz_rect
 fz_boundtransformnode(fz_transformnode *node, fz_matrix ctm)
 {
-        if (!node->super.first)
-                return fz_emptyrect;
-        return fz_boundnode(node->super.first, fz_concat(node->m, ctm));
+	if (!node->super.first)
+		return fz_emptyrect;
+	return fz_boundnode(node->super.first, fz_concat(node->m, ctm));
 }
 
 /*
  * Link to tree
  */
 
-
 fz_error
 fz_newlinknode(fz_node **nodep, fz_tree *subtree)
 {
-        fz_linknode *node;
+	fz_linknode *node;
 
-        node = fz_malloc(sizeof (fz_linknode));
-        if (!node)
-                return fz_rethrow(-1, "out of memory");
-        *nodep = (fz_node*)node;
+	node = fz_malloc(sizeof (fz_linknode));
+	if (!node)
+		return fz_rethrow(-1, "out of memory");
+	*nodep = (fz_node*)node;
 
-        fz_initnode((fz_node*)node, FZ_NLINK);
-        node->tree = fz_keeptree(subtree);
+	fz_initnode((fz_node*)node, FZ_NLINK);
+	node->tree = fz_keeptree(subtree);
 
-        return fz_okay;
+	return fz_okay;
 }
 
 void
 fz_droplinknode(fz_linknode *node)
 {
-        fz_droptree(node->tree);
+	fz_droptree(node->tree);
 }
 
 fz_rect
 fz_boundlinknode(fz_linknode *node, fz_matrix ctm)
 {
-        return fz_boundtree(node->tree, ctm);
+	return fz_boundtree(node->tree, ctm);
 }
 
 /*
@@ -238,34 +237,34 @@ fz_boundlinknode(fz_linknode *node, fz_matrix ctm)
 fz_error
 fz_newsolidnode(fz_node **nodep, float a, fz_colorspace *cs, int n, float *v)
 {
-        fz_solidnode *node;
-        int i;
+	fz_solidnode *node;
+	int i;
 
-        node = fz_malloc(sizeof(fz_solidnode) + sizeof(float) * n);
-        if (!node)
-                return fz_rethrow(-1, "out of memory");
-        *nodep = (fz_node*)node;
+	node = fz_malloc(sizeof(fz_solidnode) + sizeof(float) * n);
+	if (!node)
+		return fz_rethrow(-1, "out of memory");
+	*nodep = (fz_node*)node;
 
-        fz_initnode((fz_node*)node, FZ_NCOLOR);
-        node->a = a;
-        node->cs = fz_keepcolorspace(cs);
-        node->n = n;
-        for (i = 0; i < n; i++)
-                node->samples[i] = v[i];
+	fz_initnode((fz_node*)node, FZ_NCOLOR);
+	node->a = a;
+	node->cs = fz_keepcolorspace(cs);
+	node->n = n;
+	for (i = 0; i < n; i++)
+		node->samples[i] = v[i];
 
-        return fz_okay;
+	return fz_okay;
 }
 
 fz_rect
 fz_boundsolidnode(fz_solidnode *node, fz_matrix ctm)
 {
-        return fz_infiniterect;
+	return fz_infiniterect;
 }
 
 void
 fz_dropsolidnode(fz_solidnode *node)
 {
-        fz_dropcolorspace(node->cs);
+	fz_dropcolorspace(node->cs);
 }
 
 /*
@@ -275,34 +274,34 @@ fz_dropsolidnode(fz_solidnode *node)
 fz_error
 fz_newimagenode(fz_node **nodep, fz_image *image)
 {
-        fz_imagenode *node;
+	fz_imagenode *node;
 
-        node = fz_malloc(sizeof (fz_imagenode));
-        if (!node)
-                return fz_rethrow(-1, "out of memory");
-        *nodep = (fz_node*)node;
+	node = fz_malloc(sizeof (fz_imagenode));
+	if (!node)
+		return fz_rethrow(-1, "out of memory");
+	*nodep = (fz_node*)node;
 
-        fz_initnode((fz_node*)node, FZ_NIMAGE);
-        node->image = fz_keepimage(image);
+	fz_initnode((fz_node*)node, FZ_NIMAGE);
+	node->image = fz_keepimage(image);
 
-        return fz_okay;
+	return fz_okay;
 }
 
 void
 fz_dropimagenode(fz_imagenode *node)
 {
-        fz_dropimage(node->image);
+	fz_dropimage(node->image);
 }
 
 fz_rect
 fz_boundimagenode(fz_imagenode *node, fz_matrix ctm)
 {
-        fz_rect bbox;
-        bbox.x0 = 0;
-        bbox.y0 = 0;
-        bbox.x1 = 1;
-        bbox.y1 = 1;
-        return fz_transformaabb(ctm, bbox);
+	fz_rect bbox;
+	bbox.x0 = 0;
+	bbox.y0 = 0;
+	bbox.x1 = 1;
+	bbox.y1 = 1;
+	return fz_transformaabb(ctm, bbox);
 }
 
 /*
@@ -312,27 +311,28 @@ fz_boundimagenode(fz_imagenode *node, fz_matrix ctm)
 fz_error
 fz_newshadenode(fz_node **nodep, fz_shade *shade)
 {
-        fz_shadenode *node;
+	fz_shadenode *node;
 
-        node = fz_malloc(sizeof (fz_shadenode));
-        if (!node)
-                return fz_rethrow(-1, "out of memory");
-        *nodep = (fz_node*)node;
+	node = fz_malloc(sizeof (fz_shadenode));
+	if (!node)
+		return fz_rethrow(-1, "out of memory");
+	*nodep = (fz_node*)node;
 
-        fz_initnode((fz_node*)node, FZ_NSHADE);
-        node->shade = fz_keepshade(shade);
+	fz_initnode((fz_node*)node, FZ_NSHADE);
+	node->shade = fz_keepshade(shade);
 
-        return fz_okay;
+	return fz_okay;
 }
 
 void
 fz_dropshadenode(fz_shadenode *node)
 {
-        fz_dropshade(node->shade);
+	fz_dropshade(node->shade);
 }
 
 fz_rect
 fz_boundshadenode(fz_shadenode *node, fz_matrix ctm)
 {
-        return fz_boundshade(node->shade, ctm);
+	return fz_boundshade(node->shade, ctm);
 }
+

@@ -100,7 +100,7 @@
 /*
  * This is defined if using libpaper.
  */
-#undef HAVE_PAPER_H
+#define HAVE_PAPER_H
 
 /*
  * Enable support for loading plugins.
@@ -110,7 +110,7 @@
 /*
  * Defined if the Splash library is avaiable.
  */
-#undef HAVE_SPLASH
+#define HAVE_SPLASH
 
 /*
  * Enable support for CMYK output.

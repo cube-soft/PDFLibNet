@@ -556,6 +556,108 @@ void Gfx::display(Object *obj, GBool topLevel) {
   parser = NULL;
 }
 
+int Gfx::goCache(CachedOperation **cache,GBool topLevel)
+{
+	Object obj;
+	Object args[maxArgs];
+	int numArgs, i;
+	int lastAbortCheck;
+
+	// scan a sequence of objects
+	updateLevel = lastAbortCheck = 0;
+	numArgs = 0;
+	parser->getObj(&obj);
+	int cacheCount=-1;
+	for(i=0;i<maxArgs;i++){
+		args[i].abortCheckCbk = 0;
+		args[i].abortCheckCbkData = 0;
+	}
+	while (!obj.isEOF()) {
+
+		// got a command - execute it
+		if (obj.isCmd()) {
+			
+			args[numArgs].abortCheckCbk=abortCheckCbk;
+			args[numArgs].abortCheckCbkData=abortCheckCbkData;
+
+			execOpCache(cache,++cacheCount, &obj, args, numArgs);
+			
+			// check for an abort
+			if (abortCheckCbk) {
+				if (updateLevel - lastAbortCheck > 10) {
+					if ((*abortCheckCbk)(abortCheckCbkData)) 
+						break;
+					lastAbortCheck = updateLevel;
+				}
+			}
+			numArgs = 0;
+			// got an argument - save it
+		} else if (numArgs < maxArgs) {
+			args[numArgs++] = obj;
+			// too many arguments - something is wrong
+		} else {
+			error(getPos(), "Too many args in content stream");
+			obj.free();
+		}
+		// grab the next object
+		parser->getObj(&obj);
+	}	
+	return cacheCount;
+}
+void Gfx::execOpCache(CachedOperation **cache,int cachePos,Object *cmd, Object args[], int numArgs)
+{
+	Operator *op;
+	char *name;
+	Object *argPtr;
+	int i;
+	cache[cachePos] =NULL;
+	// find operator
+	name = cmd->getCmd();
+	if (!(op = findOp(name))) {
+		if (ignoreUndef == 0)
+			error(getPos(), "Unknown operator '%s'", name);
+		return;
+	}
+
+	// type check args
+	argPtr = args;
+	if (op->numArgs >= 0) {
+		if (numArgs < op->numArgs) {
+			error(getPos(), "Too few (%d) args to '%s' operator", numArgs, name);
+			return;
+		}
+		if (numArgs > op->numArgs) {
+			argPtr += numArgs - op->numArgs;
+			numArgs = op->numArgs;
+		}
+	} else {
+		if (numArgs > -op->numArgs) {
+			error(getPos(), "Too many (%d) args to '%s' operator",numArgs, name);
+			return;
+		}
+	}
+	for (i = 0; i < numArgs; ++i) {
+		if (!checkArg(&argPtr[i], op->tchk[i])) {
+			error(getPos(), "Arg #%d to '%s' operator is wrong type (%s)",i, name, argPtr[i].getTypeName());
+			return;
+		}
+	}
+	CachedOperation *opc =new CachedOperation();
+	Object *cacheArgs = new Object[numArgs];
+	for(i=0;i<numArgs;i++) 
+		argPtr[i].copy(&cacheArgs[i]);
+	
+	cacheArgs[numArgs].abortCheckCbk = argPtr[i].abortCheckCbk;
+	cacheArgs[numArgs].abortCheckCbkData = argPtr[i].abortCheckCbkData;
+	opc->op	= op;
+	opc->args = cacheArgs;
+	opc->argPtr = cacheArgs;
+	cache[cachePos] =opc;
+	
+	// do it
+	//(this->*op->func)(argPtr, numArgs);
+}
+
 void Gfx::go(GBool topLevel) {
   Object obj;
   Object args[maxArgs];
@@ -1764,7 +1866,7 @@ void Gfx::doTilingPatternFill(GfxTilingPattern *tPat,
 			   m1, tPat->getBBox(),
 			   xi0, yi0, xi1, yi1, xstep, ystep);
   } else {
-	  if(yi1*xi1<10000){
+//	doForm2(tPat->getContentStream(), tPat->getResDict(),tPat->getBBox(),xi0,yi0,xi1,yi1,m,m1,xstep,ystep);
     for (yi = yi0; yi < yi1; ++yi) {
       for (xi = xi0; xi < xi1; ++xi) {
 	x = xi * xstep;
@@ -1775,7 +1877,6 @@ void Gfx::doTilingPatternFill(GfxTilingPattern *tPat,
 		m1, tPat->getBBox());
       }
 	}
-	  }
   }
 
   // restore graphics state
@@ -3776,6 +3877,337 @@ void Gfx::doForm(Object *str) {
     delete blendingColorSpace;
   }
   resObj.free();
+}
+
+ImageCache *Gfx::getImageCache(Object *ref,Stream *str, GBool inlineImg)
+{
+	Dict *dict, *maskDict;
+	int width, height;
+	int bits, maskBits;
+	StreamColorSpaceMode csMode;
+	GBool mask;
+	GBool invert;
+	GfxColorSpace *colorSpace, *maskColorSpace;
+	GfxImageColorMap *colorMap, *maskColorMap;
+	Object maskObj, smaskObj;
+	GBool haveColorKeyMask, haveExplicitMask, haveSoftMask;
+	int maskColors[2*gfxColorMaxComps];
+	int maskWidth, maskHeight;
+	GBool maskInvert;
+	Stream *maskStr;
+	Object obj1, obj2;
+	int i;
+
+	// get info from the stream
+	bits = 0;
+	csMode = streamCSNone;
+	str->getImageParams(&bits, &csMode);
+
+	// get stream dict
+	dict = str->getDict();
+
+	// get size
+	dict->lookup("Width", &obj1);
+	if (obj1.isNull()) {
+		obj1.free();
+		dict->lookup("W", &obj1);
+	}
+	if (!obj1.isInt())
+		goto err2;
+	width = obj1.getInt();
+	obj1.free();
+	dict->lookup("Height", &obj1);
+	if (obj1.isNull()) {
+		obj1.free();
+		dict->lookup("H", &obj1);
+	}
+	if (!obj1.isInt())
+		goto err2;
+	height = obj1.getInt();
+	obj1.free();
+
+	// image or mask?
+	dict->lookup("ImageMask", &obj1);
+	if (obj1.isNull()) {
+		obj1.free();
+		dict->lookup("IM", &obj1);
+	}
+	mask = gFalse;
+	if (obj1.isBool())
+		mask = obj1.getBool();
+	else if (!obj1.isNull())
+		goto err2;
+	obj1.free();
+
+	// bit depth
+	if (bits == 0) {
+		dict->lookup("BitsPerComponent", &obj1);
+		if (obj1.isNull()) {
+			obj1.free();
+			dict->lookup("BPC", &obj1);
+		}
+		if (obj1.isInt()) {
+			bits = obj1.getInt();
+		} else if (mask) {
+			bits = 1;
+		} else {
+			goto err2;
+		}
+		obj1.free();
+	}
+
+	// display a mask
+	if (mask) {
+		return NULL;
+	} else {
+		// get color space and color map
+		dict->lookup("ColorSpace", &obj1);
+		if (obj1.isNull()) {
+			obj1.free();
+			dict->lookup("CS", &obj1);
+		}
+		if (obj1.isName()) {
+			res->lookupColorSpace(obj1.getName(), &obj2);
+			if (!obj2.isNull()) {
+				obj1.free();
+				obj1 = obj2;
+			} else {
+				obj2.free();
+			}
+		}
+		if (!obj1.isNull()) {
+			colorSpace = GfxColorSpace::parse(&obj1);
+		} else if (csMode == streamCSDeviceGray) {
+			colorSpace = new GfxDeviceGrayColorSpace();
+		} else if (csMode == streamCSDeviceRGB) {
+			colorSpace = new GfxDeviceRGBColorSpace();
+		} else if (csMode == streamCSDeviceCMYK) {
+			colorSpace = new GfxDeviceCMYKColorSpace();
+		} else {
+			colorSpace = NULL;
+		}
+		obj1.free();
+		if (!colorSpace) {
+			goto err1;
+		}
+		dict->lookup("Decode", &obj1);
+		if (obj1.isNull()) {
+			obj1.free();
+			dict->lookup("D", &obj1);
+		}
+		colorMap = new GfxImageColorMap(bits, &obj1, colorSpace);
+		obj1.free();
+		if (!colorMap->isOk()) {
+			delete colorMap;
+			goto err1;
+		}
+
+		// get the mask
+		haveColorKeyMask = haveExplicitMask = haveSoftMask = gFalse;
+		maskStr = NULL; // make gcc happy
+		maskWidth = maskHeight = 0; // make gcc happy
+		maskInvert = gFalse; // make gcc happy
+		maskColorMap = NULL; // make gcc happy
+		dict->lookup("Mask", &maskObj);
+		dict->lookup("SMask", &smaskObj);
+		if (smaskObj.isStream()) {
+			haveSoftMask = gTrue;
+		} else if (maskObj.isArray()) {
+			// color key mask
+			for (i = 0;
+				i < maskObj.arrayGetLength() && i < 2*gfxColorMaxComps;
+				++i) {
+					maskObj.arrayGet(i, &obj1);
+					maskColors[i] = obj1.getInt();
+					obj1.free();
+			}
+			haveColorKeyMask = gTrue;
+		} else if (maskObj.isStream()) {
+			haveExplicitMask = gTrue;
+		}
+
+		// draw it
+		if (haveSoftMask || haveExplicitMask) {
+			maskObj.free();
+			smaskObj.free();
+		} else {
+			ImageCache *img = new ImageCache();
+			img->colorMap = colorMap;
+			img->height = height;
+			img->width = width;
+			img->ref = ref;
+			img->str = str;
+			img->inlineImg = inlineImg;
+			img->maskColors = haveColorKeyMask ? maskColors :(int * )NULL;
+			return img;
+			/*out->drawImage(state, ref, str, width, height, colorMap,
+				haveColorKeyMask ? maskColors : (int *)NULL, inlineImg);*/
+		}
+		return NULL;
+	}
+
+err2:
+	obj1.free();
+err1:
+	error(getPos(), "Bad image parameters");
+
+	return NULL;
+}
+void Gfx::doImageCache(ImageCache *img)
+{
+	out->drawImage(state,img->ref,img->str,img->width,img->height,img->colorMap,img->maskColors,img->inlineImg);
+}
+
+void Gfx::doForm2(Object *str, Dict *resDict,  double *bbox,int xi0,int yi0, int xi1,int yi1,double *m, double *m1, double xstep, double ystep)
+{
+	Parser *oldParser;
+	Object obj2;
+	double oldBaseMatrix[6];
+	double matrix[6];
+	int i;
+
+	// push new resources on stack
+	pushResources(resDict);
+	// Save current state
+	saveState();
+	// save current parser
+	oldParser = parser;
+	// kill any pre-existing path
+    state->clearPath();
+
+	// Save old base matrix
+	for (i = 0; i < 6; ++i) 
+		oldBaseMatrix[i] = baseMatrix[i];
+		
+	// draw the form
+	if (str->isArray()) {
+		for (i = 0; i < str->arrayGetLength(); ++i) 
+		{
+			str->arrayGet(i, &obj2);
+			if (!obj2.isStream()) 
+			{
+				error(-1, "Weird page contents");
+				obj2.free();
+				return;
+			}
+			obj2.free();
+		}
+	} 
+	else if (!str->isStream()) 
+	{
+		error(-1, "Weird page contents");
+		return;
+	}
+	parser = new Parser(xref, new Lexer(xref, str), gFalse);
+	
+	CachedOperation *cache[32];
+	for(int i=0;i<32;i++)
+		cache[i]=NULL;
+
+	//Add to the cache the operations for the Pattern
+	int cacheCount = goCache(cache,gFalse);
+	
+	popResources();
+	pushResources(resDict);
+	//Create a cache from the image
+	for(i=0;i<=cacheCount;i++)
+	{
+		  Object obj1, obj2, *refObj;
+		  if(cache[i]->args[0].getType()== ObjType::objName
+			  && strcmp(cache[i]->op->name,"Do")==0)
+		  {
+			  char *name = cache[i]->args[0].getName();	  
+			  error(-1,name);
+			  if(res->lookupXObject(name, &obj1))
+			  {
+				  error(-1,"isStream?");
+				  if (obj1.isStream()) 
+				  {
+					  error(-1,"streamGetDict");
+					  obj1.streamGetDict()->lookup("Subtype", &obj2);
+					  if (obj2.isName("Image")) 
+					  {
+						  refObj = new Object();
+						  res->lookupXObjectNF(name, refObj);
+						  refObj->abortCheckCbk = cache[i]->args[cache[i]->op->numArgs].abortCheckCbk;
+						  refObj->abortCheckCbkData = cache[i]->args[cache[i]->op->numArgs].abortCheckCbkData;
+						  error(-1,"getImageCache");
+						  //Cache the image
+						  cache[i]->imgCache =getImageCache(refObj,obj1.getStream(),gFalse);
+						  if(cache[i]->imgCache!=NULL){
+							  cache[i]->imgCache->ref = refObj;
+							  cache[i]->imgCache->str = obj1.getStream();
+						  }
+					  }
+				  }
+			  }
+		  }
+	}
+	
+	error(-1,"Run Tiling");
+	//Run the operations
+	for (int yi = yi0; yi < yi1; ++yi) {
+		for (int xi = xi0; xi < xi1; ++xi) {
+			// save current graphics state
+			saveState();
+			// kill any pre-existing path
+			state->clearPath();
+
+			double x = xi * xstep;
+			double y = yi * ystep;
+			m1[4] = x * m[0] + y * m[2] + m[4];
+			m1[5] = x * m[1] + y * m[3] + m[5];
+			
+			// set form transformation matrix
+			state->concatCTM(m1[0], m1[1], m1[2], m1[3], m1[4], m1[5]);
+			out->updateCTM(state, m1[0], m1[1], m1[2],m1[3], m1[4], m1[5]);
+
+			// set form bounding box
+			state->moveTo(bbox[0], bbox[1]);
+			state->lineTo(bbox[2], bbox[1]);
+			state->lineTo(bbox[2], bbox[3]);
+			state->lineTo(bbox[0], bbox[3]);
+			state->closePath();
+			state->clip();
+			out->clip(state);
+			state->clearPath();
+
+			error(-1,"Build base matrix");
+			 // set new base matrix
+			for (i = 0; i < 6; ++i) 
+				baseMatrix[i] = state->getCTM()[i];
+		    
+			for(int i=0;i<=cacheCount;i++){
+				if(cache[i]->imgCache != NULL){
+					this->doImageCache(cache[i]->imgCache);
+				}else
+					(this->*cache[i]->op->func)(cache[i]->args,cache[i]->op->numArgs);
+			}
+
+			// restore graphics state
+			restoreState();
+		}
+	}
+	error(-1,"Delete cache");
+	for(int i=0;i<32;i++)
+	{
+		if(cache[i]==NULL)
+			delete cache[i];
+		cache[i]=NULL;
+	}
+
+	delete parser;
+	parser = NULL;
+
+	// restore base matrix
+	for (i = 0; i < 6; ++i) 
+		baseMatrix[i] = oldBaseMatrix[i];
+	// restore parser
+	parser = oldParser;
+	// restore graphics state
+	restoreState();
+	// pop resource stack
+	popResources();
 }
 
 void Gfx::doForm1(Object *str, Dict *resDict, double *matrix, double *bbox,

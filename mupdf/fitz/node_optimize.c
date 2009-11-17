@@ -1,6 +1,6 @@
 #include "fitz_base.h"
 #include "fitz_tree.h"
-#include "ansi_stack.h"
+
 /*
  * Remove (mask ... white) until we get something not white
  */
@@ -78,53 +78,12 @@ static int cleanwhite(fz_node *node)
 
 static void cleanovers(fz_node *node)
 {
-	MyStack *s;
 	fz_node *prev;
 	fz_node *next;
 	fz_node *current;
 	fz_node *child;
 
 	prev = nil;
-
-/*
-	s=newstack();
-	push(s,(void *)node);
-
-	while(s->StackPosition>=0)
-	{
-		node=(fz_node *)pop(s);
-
-		for(current=node->first; current; current = next)
-		{
-			next = current->next;
-
-			if (fz_isovernode(current))
-			{
-				if (current->first == current->last)
-				{
-					child = current->first;
-					fz_removenode(current);
-					if (child)
-					{
-						if (prev)
-							fz_insertnodeafter(prev, child);
-						else
-							fz_insertnodefirst(node, child);
-					}
-					current = child;
-				}
-			}
-
-			if (current)
-				prev = current;	
-		}
-
-		for (current = node->first; current; current = current->next)
-			push(s,current);
-		prev = nil;
-	}
-	freestack(s);*/
-	
 	for (current = node->first; current; current = next)
 	{
 		next = current->next;
@@ -150,10 +109,8 @@ static void cleanovers(fz_node *node)
 			prev = current;
 	}
 
-
 	for (current = node->first; current; current = current->next)
-			cleanovers(current);
-
+		cleanovers(current);
 }
 
 /*
@@ -216,59 +173,6 @@ static void cleanmasks(fz_node *node)
 	fz_node *color;
 	fz_rect bbox;
 
-	/*
-	s=newstack();
-	push(s,(void *)node);
-	prev = nil;
-	while(s->StackPosition>=0)
-	{
-		node=(fz_node *)pop(s);
-
-
-		for (current = node->first; current; current = current->next)
-		{
-	retry:
-			if (!current)
-				continue;
-
-			if (fz_ismasknode(current))
-			{
-				shape = current->first;
-				color = shape->next;
-
-				if (color == nil)
-				{
-					fz_removenode(current);
-					prev = nil;
-					current = node->first;
-					goto retry;
-				}
-
-				if (fz_ispathnode(shape))
-				{
-					if (getrect((fz_pathnode*)shape, &bbox))
-					{
-						if (fitsinside(color, bbox))
-						{
-							fz_removenode(current);
-							if (prev)
-								fz_insertnodeafter(prev, color);
-							else
-								fz_insertnodefirst(node, color);
-							current = color;
-							goto retry;
-						}
-					}
-				}
-			}
-
-			prev = current;
-		}
-		for (current = node->first; current; current = current->next)
-			push(s,current);
-		prev = nil;
-	}
-	freestack(s);*/
 	for (current = node->first; current; current = current->next)
 		cleanmasks(current);
 
@@ -328,3 +232,4 @@ fz_optimizetree(fz_tree *tree)
 	cleanmasks(tree->root);
 	return fz_okay;
 }
+

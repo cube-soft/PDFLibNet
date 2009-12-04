@@ -54,6 +54,7 @@ static int cleanwhite(fz_node *node)
 					fz_removenode(current);
 				else
 					return 1;
+				fz_dropnode(current); /* cf. http://bugs.ghostscript.com/show_bug.cgi?id=690679 */
 			}
 			else
 			{
@@ -90,10 +91,15 @@ static void cleanovers(fz_node *node)
 
 		if (fz_isovernode(current))
 		{
-			if (current->first == current->last)
+			if (current->first == current->last &&
+				/* HACK: We seem to leek the prev node, if a childless node is removed here
+				 * http://bugs.ghostscript.com/show_bug.cgi?id=690679 */
+				(current->first || !prev))
 			{
 				child = current->first;
 				fz_removenode(current);
+				/* cf. http://bugs.ghostscript.com/show_bug.cgi?id=690679 */
+				current->first = nil; fz_dropnode(current);
 				if (child)
 				{
 					if (prev)
@@ -207,6 +213,8 @@ retry:
 							fz_insertnodeafter(prev, color);
 						else
 							fz_insertnodefirst(node, color);
+						/* cf. http://bugs.ghostscript.com/show_bug.cgi?id=690679 */
+						current->first->next = nil; fz_dropnode(current);
 						current = color;
 						goto retry;
 					}

@@ -14,12 +14,7 @@ runone(pdf_csi *csi, pdf_xref *xref, fz_obj *rdb, fz_obj *stmref)
 	if (error)
 		return fz_rethrow(error, "cannot load content stream (%d %d R)", fz_tonum(stmref), fz_togen(stmref));
 
-	error = fz_openrbuffer(&stm, buf);
-	if (error)
-	{
-		fz_dropbuffer(buf);
-		return fz_rethrow(error, "cannot open content buffer (read)");
-	}
+	stm = fz_openrbuffer(buf);
 
 	error = pdf_runcsi(csi, xref, rdb, stm);
 
@@ -38,117 +33,84 @@ runone(pdf_csi *csi, pdf_xref *xref, fz_obj *rdb, fz_obj *stmref)
 static fz_error
 runmany(pdf_csi *csi, pdf_xref *xref, fz_obj *rdb, fz_obj *list)
 {
-    fz_error error;
-    fz_stream *file;
-    fz_buffer *big;
-    fz_buffer *one;
-    fz_obj *stm;
-    int i, n;
+	fz_error error;
+	fz_stream *file;
+	fz_buffer *big;
+	fz_buffer *one;
+	fz_obj *stm;
+	int i, n;
 
-    pdf_logpage("multiple content streams: %d\n", fz_arraylen(list));
+	pdf_logpage("multiple content streams: %d\n", fz_arraylen(list));
 
-    error = fz_newbuffer(&big, 32 * 1024);
-    if (error)
-	return fz_rethrow(error, "cannot create content buffer");
+	big = fz_newbuffer(32 * 1024);
 
-    for (i = 0; i < fz_arraylen(list); i++)
-    {
-	stm = fz_arrayget(list, i);
-	error = pdf_loadstream(&one, xref, fz_tonum(stm), fz_togen(stm));
+	for (i = 0; i < fz_arraylen(list); i++)
+	{
+		stm = fz_arrayget(list, i);
+		error = pdf_loadstream(&one, xref, fz_tonum(stm), fz_togen(stm));
+		if (error)
+		{
+			fz_dropbuffer(big);
+			return fz_rethrow(error, "cannot load content stream part %d/%d", i + 1, fz_arraylen(list));
+		}
+
+		n = one->wp - one->rp;
+
+		while (big->wp + n + 1 > big->ep)
+		{
+			fz_growbuffer(big);
+		}
+
+		memcpy(big->wp, one->rp, n);
+
+		big->wp += n;
+		*big->wp++ = ' ';
+
+		fz_dropbuffer(one);
+	}
+
+	file = fz_openrbuffer(big);
+
+	error = pdf_runcsi(csi, xref, rdb, file);
 	if (error)
 	{
-	    fz_dropbuffer(big);
-	    return fz_rethrow(error, "cannot load content stream part %d/%d", i + 1, fz_arraylen(list));
-	}
-
-	n = one->wp - one->rp;
-
-	while (big->wp + n + 1 > big->ep)
-	{
-	    error = fz_growbuffer(big);
-	    if (error)
-	    {
-		fz_dropbuffer(one);
 		fz_dropbuffer(big);
-		return fz_rethrow(error, "cannot load content stream part %d/%d", i + 1, fz_arraylen(list));
-	    }
+		fz_dropstream(file);
+		return fz_rethrow(error, "cannot interpret content buffer");
 	}
 
-	memcpy(big->wp, one->rp, n);
-
-	big->wp += n;
-	*big->wp++ = ' ';
-
-	fz_dropbuffer(one);
-    }
-
-    error = fz_openrbuffer(&file, big);
-    if (error)
-    {
-	fz_dropbuffer(big);
-	return fz_rethrow(error, "cannot open content buffer (read)");
-    }
-
-    error = pdf_runcsi(csi, xref, rdb, file);
-    if (error)
-    {
-	fz_dropbuffer(big);
 	fz_dropstream(file);
-	return fz_rethrow(error, "cannot interpret content buffer");
-    }
-
-    fz_dropstream(file);
-    fz_dropbuffer(big);
-    return fz_okay;
+	fz_dropbuffer(big);
+	return fz_okay;
 }
 
 static fz_error
-loadpagecontents(fz_tree **treep, pdf_xref *xref, fz_obj *rdb, fz_obj *ref)
+loadpagecontents(fz_tree **treep, pdf_xref *xref, fz_obj *rdb, fz_obj *obj)
 {
-	fz_error error;
-	fz_obj *obj;
+	fz_error error = fz_okay;
 	pdf_csi *csi;
 
 	error = pdf_newcsi(&csi, 0);
 	if (error)
 		return fz_rethrow(error, "cannot create interpreter");
 
-	if (fz_isindirect(ref))
+	if (fz_isarray(obj))
 	{
-		obj = fz_resolveindirect(ref);
-
-		if (fz_isarray(obj))
-		{
-			if (fz_arraylen(obj) == 1)
-				error = runone(csi, xref, rdb, fz_arrayget(obj, 0));
-			else
-				error = runmany(csi, xref, rdb, obj);
-		}
+		if (fz_arraylen(obj) == 1)
+			error = runone(csi, xref, rdb, fz_arrayget(obj, 0));
 		else
-			error = runone(csi, xref, rdb, ref);
-
-		if (error)
-		{
-			pdf_dropcsi(csi);
-			return fz_rethrow(error, "cannot interpret page contents (%d %d R)", fz_tonum(ref), fz_togen(ref));
-		}
+			error = runmany(csi, xref, rdb, obj);
 	}
-
-	else if (fz_isarray(ref))
-	{
-		if (fz_arraylen(ref) == 1)
-			error = runone(csi, xref, rdb, fz_arrayget(ref, 0));
-		else
-			error = runmany(csi, xref, rdb, ref);
-
-		if (error)
-		{
-			pdf_dropcsi(csi);
-			return fz_rethrow(error, "cannot interpret page contents (%d %d R)", fz_tonum(ref), fz_togen(ref));
-		}
-	}
+	else if (pdf_isstream(xref, fz_tonum(obj), fz_togen(obj)))
+		error = runone(csi, xref, rdb, obj);
 	else
 		fz_warn("page contents missing, leaving page blank");
+
+	if (obj && error)
+	{
+		pdf_dropcsi(csi);
+		return fz_rethrow(error, "cannot interpret page contents (%d %d R)", fz_tonum(obj), fz_togen(obj));
+	}
 
 	*treep = csi->tree;
 	csi->tree = nil;
@@ -185,10 +147,10 @@ pdf_loadpage(pdf_page **pagep, pdf_xref *xref, fz_obj *dict)
 	bbox = pdf_torect(obj);
 
 	pdf_logpage("bbox [%g %g %g %g]\n",
-			bbox.x0, bbox.y0, bbox.x1, bbox.y1);
+		bbox.x0, bbox.y0, bbox.x1, bbox.y1);
 
 	if (bbox.x1 - bbox.x0 < 1 || bbox.y1 - bbox.y0 < 1)
-	    return fz_throw("invalid page size");
+		return fz_throw("invalid page size");
 
 	obj = fz_dictgets(dict, "Rotate");
 	if (fz_isint(obj))
@@ -205,9 +167,7 @@ pdf_loadpage(pdf_page **pagep, pdf_xref *xref, fz_obj *dict)
 	obj = fz_dictgets(dict, "Annots");
 	if (obj)
 	{
-		error = pdf_loadannots(&comments, &links, xref, obj);
-		if (error)
-			return fz_rethrow(error, "cannot load annotations");
+		pdf_loadannots(&comments, &links, xref, obj);
 	}
 
 	/*
@@ -216,9 +176,7 @@ pdf_loadpage(pdf_page **pagep, pdf_xref *xref, fz_obj *dict)
 
 	if (!xref->store)
 	{
-		error = pdf_newstore(&xref->store);
-		if (error)
-			return fz_rethrow(error, "cannot create resource store");
+		xref->store = pdf_newstore();
 	}
 
 	/*
@@ -231,9 +189,7 @@ pdf_loadpage(pdf_page **pagep, pdf_xref *xref, fz_obj *dict)
 	else
 	{
 		fz_warn("cannot find page resources, proceeding anyway.");
-		error = fz_newdict(&rdb, 0);
-		if (error)
-			return fz_rethrow(error, "cannot create fake page resources");
+		rdb = fz_newdict(0);
 	}
 
 	/*
@@ -249,27 +205,11 @@ pdf_loadpage(pdf_page **pagep, pdf_xref *xref, fz_obj *dict)
 		return fz_rethrow(error, "cannot load page contents");
 	}
 
-	pdf_logpage("optimize tree\n");
-	error = fz_optimizetree(tree);
-	if (error)
-	{
-		fz_droptree(tree);
-		fz_dropobj(rdb);
-		return fz_rethrow(error, "cannot optimize page display tree");
-	}
-
 	/*
 	 * Create page object
 	 */
 
 	page = fz_malloc(sizeof(pdf_page));
-	if (!page)
-	{
-		fz_droptree(tree);
-		fz_dropobj(rdb);
-		return fz_rethrow(-1, "out of memory: page struct");
-	}
-
 	page->mediabox.x0 = MIN(bbox.x0, bbox.x1);
 	page->mediabox.y0 = MIN(bbox.y0, bbox.y1);
 	page->mediabox.x1 = MAX(bbox.x0, bbox.x1);

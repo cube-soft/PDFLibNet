@@ -397,6 +397,12 @@ char *PDFPageInterop::getISOANum(){
 	return "unknown";
 }
 
+int PDFPageInterop::getPageRotate()
+{
+	AFPDFDoc *doc = (AFPDFDoc *)_pdfDoc;
+    int r = doc->getDoc()->getPageRotate(_page);
+	return r;
+}
 double PDFPageInterop::getPageHeight(){
 	AFPDFDoc *doc = (AFPDFDoc *)_pdfDoc;
     double h = doc->getDoc()->getPageCropHeight(_page);

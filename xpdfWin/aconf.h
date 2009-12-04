@@ -37,7 +37,7 @@
 /*
  * Enable word list support.
  */
-#undef TEXTOUT_WORD_LIST
+#define TEXTOUT_WORD_LIST
 
 /*
  * Use fixed point (instead of floating point) arithmetic.

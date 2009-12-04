@@ -5,7 +5,7 @@
 /*    TrueTypeGX/AAT mort table validation                                 */
 /*    body for type1 (Contextual Substitution) subtable.                   */
 /*                                                                         */
-/*  Copyright 2005 by suzuki toshiya, Masatake YAMATO, Red Hat K.K.,       */
+/*  Copyright 2005, 2007 by suzuki toshiya, Masatake YAMATO, Red Hat K.K., */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -135,7 +135,7 @@
   gxv_mort_subtable_type1_entry_validate(
     FT_Byte                         state,
     FT_UShort                       flags,
-    GXV_StateTable_GlyphOffsetDesc  glyphOffset,
+    GXV_StateTable_GlyphOffsetCPtr  glyphOffset_p,
     FT_Bytes                        table,
     FT_Bytes                        limit,
     GXV_Validator                   valid )
@@ -154,8 +154,8 @@
     dontAdvance   = (FT_UShort)( ( flags >> 14 ) & 1      );
     reserved      = (FT_Short)(    flags         & 0x3FFF );
 
-    markOffset    = (FT_Short)( glyphOffset.ul >> 16 );
-    currentOffset = (FT_Short)( glyphOffset.ul       );
+    markOffset    = (FT_Short)( glyphOffset_p->ul >> 16 );
+    currentOffset = (FT_Short)( glyphOffset_p->ul       );
 
     if ( 0 < reserved )
     {
@@ -188,7 +188,7 @@
     FT_UShort  i;
 
 
-    GXV_NAME_ENTER( "validating contents of substitionTable" );
+    GXV_NAME_ENTER( "validating contents of substitutionTable" );
     for ( i = 0; i < num_gids ; i ++ )
     {
       FT_UShort  dst_gid;
@@ -202,7 +202,7 @@
 
       if ( dst_gid > valid->face->num_glyphs )
       {
-        GXV_TRACE(( "substTable include toolarge gid[%d]=%d >"
+        GXV_TRACE(( "substTable include too large gid[%d]=%d >"
                     " max defined gid #%d\n",
                     i, dst_gid, valid->face->num_glyphs ));
         if ( valid->root->level >= FT_VALIDATE_PARANOID )
@@ -215,7 +215,7 @@
 
 
   /*
-   * subtable for Contextual glyph substition is a modified StateTable.
+   * subtable for Contextual glyph substitution is a modified StateTable.
    * In addition to classTable, stateArray, and entryTable, the field
    * `substitutionTable' is added.
    */

@@ -94,6 +94,13 @@ namespace PDFLibNet
 				return isoS;
 			}
 		}
+		property int Rotation
+		{
+			int get() {
+				loadPage();
+				return _page->getPageRotate();
+			}
+		}
 		property double Width
 		{
 			double get(){

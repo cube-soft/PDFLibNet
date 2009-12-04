@@ -33,7 +33,7 @@
 		threadParamThumb(HDC hdc,SplashOutputDev *outDev,PDFDoc *pdfdoc,int page,Queue *queued, void *finishCallback){
 			pageToRender=page;
 			doc =pdfdoc;
-			out = outDev;
+			out = new AuxOutputDev(outDev);
 			hgMutex=0;
 			finishNotify=(PAGERENDERNOTIFY)finishCallback;
 			que = queued;
@@ -45,9 +45,10 @@
 		PDFDoc *doc;
 		LPCRITICAL_SECTION hgMutex;
 		PAGERENDERNOTIFY finishNotify;
-		SplashOutputDev *out;
+		AuxOutputDev *out;
 		Queue *que;
 		HDC hDC;
+		AFPDFDoc *pdfDoc;
 		int pageToRender;
 	};
 
@@ -808,6 +809,10 @@
 			delete m_PDFDoc;
 			m_PDFDoc=0;
 		}
+		if(_mupdf!=0){
+			delete _mupdf;
+			_mupdf=0;
+		}
 		
 		//Establecemos el color del papel
 		/*SplashColor paperColor;
@@ -940,7 +945,7 @@
 					tp->out->clearModRegion();
 					tp->enablePreRender=true;
 
-					m_splashOut=tp->out;
+					//m_splashOut=tp->out;
 					ResetEvent(this->hRenderFinished);
 					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID)tp,CREATE_SUSPENDED,0);
 					ResumeThread(m_renderingThread);
@@ -1159,7 +1164,6 @@
 					tp->out->startDoc(m_PDFDoc->getXRef());
 					tp->out->clearModRegion();
 					tp->enablePreRender=false;
-					m_splashOut=tp->out;
 					ResetEvent(this->hRenderFinished);
 
 					InterlockedExchange(&this->g_lLocker,0);
@@ -1246,7 +1250,7 @@
 			dpi =  72.0*width/ow; //Same DPI for width and height
 		}
 		tp->renderDPI = IFZERO(dpi,18);
-
+		tp->pdfDoc = this;
 		if(bThread){
 			if(m_renderThumbs==0){
 				m_renderThumbs = ::CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThreadThumb,(LPVOID)&m_QueuedThumbs,CREATE_SUSPENDED,0);
@@ -1255,7 +1259,7 @@
 			}
 
 			if(!m_QueuedThumbs.AddTail(tp))
-			return -1;
+				return -1;
 
 			return 0;
 		}else{
@@ -1263,30 +1267,55 @@
 			double renderDPI=18;
 			PageMemory *bmpMem=0;
 			int page=0;
-
+			bool render=true;
 			doc=(PDFDoc *)tp->doc;
 			renderDPI =tp->renderDPI;
 			page = tp->pageToRender;
 			renderDPI=IFZERO(renderDPI,18);
 			page=MAX(1,page);
-		
-			if(doc->getCatalog() && doc->getCatalog()->isOk()){
+#ifdef _MUPDF
+				if(SupportsMuPDF() && GetUseMuPDF()){
+					if(LoadFromMuPDF())
+					{
+						fz_pixmap *im = _mupdf->display(tp->out,page,m_Rotation,renderDPI/72,callbackAbortDisplay,this);
+						tp->out->SetDataPtr((void *)im->samples);
+						tp->out->setSize(im->w,im->h);
+						tp->out->setPixmap(im);
+						Page *p = doc->getCatalog()->getPage(page);
+						double ctm[6];
+						double ictm[6];
+						p->getDefaultCTM(ctm,renderDPI,renderDPI,m_Rotation,gFalse,gTrue);
+						tp->out->setDefCTM(ctm);
+						//Invert CTM
+						double det = 1 / (ctm[0] * ctm[3] - ctm[1] * ctm[2]);
+						ictm[0] = ctm[3] * det;
+						ictm[1] = -ctm[1] * det;
+						ictm[2] = -ctm[2] * det;
+						ictm[3] = ctm[0] * det;
+						ictm[4] = (ctm[2] * ctm[5] - ctm[3] * ctm[4]) * det;
+						ictm[5] = (ctm[1] * ctm[4] - ctm[0] * ctm[5]) * det;
+						tp->out->setDefICTM(ictm);
+						render =false;
+					}
+				}
+#endif			
+			if(render && doc->getCatalog() && doc->getCatalog()->isOk()){
 				Page *p = doc->getCatalog()->getPage(page);
 				if(p && p->isOk()){
-					p->display(tp->out,renderDPI, renderDPI, 0,
+					p->display(tp->out->getSplash(),renderDPI, renderDPI, 0,
 									gFalse, gTrue, gFalse,doc->getCatalog() /*,
 										callbackAbortDisplay,pdfDoc*/);
 
-					SplashBitmap * bitmap = tp->out->getBitmap();
-					int bmWidth = bitmap->getWidth();
-					int bmHeight = bitmap->getHeight();					
+
+					int bmWidth = tp->out->GetWidth();
+					int bmHeight = tp->out->GetHeight();					
 
 					PageMemory *bmpMem = new PageMemory();
 					bmpMem->Create(tp->hDC,bmWidth,bmHeight,renderDPI, tp->out->getDefCTM(),tp->out->getDefICTM());	
 
 					//********START DIB
 					bmpMem->SetDimensions(bmWidth,bmHeight,renderDPI);
-					bmpMem->SetDIBits(tp->hDC,(void *)bitmap->getDataPtr());
+					bmpMem->SetDIBits(tp->hDC,(void *)tp->out->GetDataPtr());
 
 					bmpMem->Draw(tp->hDC,0,0,bmWidth,bmHeight,0,0);
 					
@@ -1296,7 +1325,6 @@
 					bmpMem=0;
 					return 0;
 				}
-
 			}				
 		}
 		
@@ -1312,7 +1340,7 @@
 		PageMemory *bmpMem=0;
 		int page=0;
 		bool bSuccess =false;
-
+		bool render = true;
 		while(true){
 			param=0;
 			LPVOID lpParam =q->RemoveHead();
@@ -1323,44 +1351,61 @@
 				page = param->pageToRender;
 				renderDPI=IFZERO(renderDPI,18);
 				page=MAX(1,page);
-/*#ifdef _MUPDF
-				if(pdfDoc->SupportsMuPDF() && pdfDoc->GetUseMuPDF() || 1){
-					if(pdfDoc->LoadFromMuPDF())
+#ifdef _MUPDF
+				if(param->pdfDoc->SupportsMuPDF() && param->pdfDoc->GetUseMuPDF()){
+					if(param->pdfDoc->LoadFromMuPDF())
 					{
-						fz_pixmap *im = pdfDoc->_mupdf->display(param->out,page,pdfDoc->m_Rotation,renderDPI/72,callbackAbortDisplay,pdfDoc);
+						fz_pixmap *im = param->pdfDoc->_mupdf->display(param->out,page,param->pdfDoc->m_Rotation,renderDPI/72,callbackAbortDisplay,param->pdfDoc);
 						param->out->SetDataPtr((void *)im->samples);
 						param->out->setSize(im->w,im->h);
 						param->out->setPixmap(im);
+						Page *p = doc->getCatalog()->getPage(page);
+						double ctm[6];
+						double ictm[6];
+						p->getDefaultCTM(ctm,renderDPI,renderDPI,param->pdfDoc->m_Rotation,gFalse,gTrue);
+						param->out->setDefCTM(ctm);
+						//Invert CTM
+						double det = 1 / (ctm[0] * ctm[3] - ctm[1] * ctm[2]);
+						ictm[0] = ctm[3] * det;
+						ictm[1] = -ctm[1] * det;
+						ictm[2] = -ctm[2] * det;
+						ictm[3] = ctm[0] * det;
+						ictm[4] = (ctm[2] * ctm[5] - ctm[3] * ctm[4]) * det;
+						ictm[5] = (ctm[1] * ctm[4] - ctm[0] * ctm[5]) * det;
+						param->out->setDefICTM(ictm);
+						render =false;
 						render =false;
 					}
 				}
-#endif*/
-				if(doc->getCatalog() && doc->getCatalog()->isOk()){
+#endif
+				if(render && doc->getCatalog() && doc->getCatalog()->isOk()){
 					Page *p = doc->getCatalog()->getPage(page);
 					if(p && p->isOk()){
-						p->display(param->out,renderDPI, renderDPI, 0,
-										gFalse, gTrue, gFalse,doc->getCatalog() /*,
-											callbackAbortDisplay,pdfDoc*/);
-						
-						SplashBitmap * bitmap = param->out->getBitmap();
-						int bmWidth = bitmap->getWidth();
-						int bmHeight = bitmap->getHeight();					
-
-						PageMemory *bmpMem = new PageMemory();
-						bmpMem->Create(param->hDC,bmWidth,bmHeight,renderDPI, param->out->getDefCTM(),param->out->getDefICTM());	
-
-						//********START DIB
-						bmpMem->SetDimensions(bmWidth,bmHeight,renderDPI);
-						bmpMem->SetDIBits(param->hDC,(void *)bitmap->getDataPtr());
-
-						bmpMem->Draw(param->hDC,0,0,bmWidth,bmHeight,0,0);
-						
-						bmpMem->Dispose();
-						delete bmpMem;
-						bmpMem=0;
-						bSuccess=true;
+						p->display(param->out->getSplash(),renderDPI, renderDPI, 0,
+										gFalse, gTrue, gFalse,doc->getCatalog());
+						param->out->SetDataPtr(param->out->getSplash()->getBitmap()->getDataPtr());
+							param->out->setDefCTM(param->out->getSplash()->getDefCTM());
+							param->out->setDefICTM(param->out->getSplash()->getDefICTM());
+							param->out->setSize(param->out->getSplash()->getBitmapWidth(),param->out->getSplash()->getBitmapHeight());
 					}
 				}				
+				
+				int bmWidth = param->out->GetWidth();
+				int bmHeight = param->out->GetHeight();					
+
+				PageMemory *bmpMem = new PageMemory();
+				bmpMem->Create(param->hDC,bmWidth,bmHeight,renderDPI, param->out->getDefCTM(),param->out->getDefICTM());	
+
+				//********START DIB
+				bmpMem->SetDimensions(bmWidth,bmHeight,renderDPI);
+				bmpMem->SetDIBits(param->hDC,(void *)param->out->GetDataPtr());
+
+				bmpMem->Draw(param->hDC,0,0,bmWidth,bmHeight,0,0);
+				
+				bmpMem->Dispose();
+				delete bmpMem;
+				bmpMem=0;
+				bSuccess=true;
 			}
 			if(param->finishNotify)
 				 param->finishNotify(page,bSuccess);
@@ -1940,7 +1985,18 @@
 				break;
 			}*/
 			
-			m_splashOut->cvtUserToDev(0, dest->getTop(), &dx, &dy);
+			
+			if(m_splashOut==NULL){
+				double uy = dest->getTop();
+				Page *p =this->m_PDFDoc->getCatalog()->getPage(this->m_CurrentPage);
+				double ctm[6];
+				p->getDefaultCTM(ctm,this->m_renderDPI,m_renderDPI,m_Rotation,gTrue,gFalse);
+				dx = (int)(/*ctm[0] * ux + */ctm[2] * uy + ctm[4] + 0.5);
+				dy = (int)(/*ctm[1] * ux + */ctm[3] * uy + ctm[5] + 0.5);
+
+			}else{
+				m_splashOut->cvtUserToDev(0, dest->getTop(), &dx, &dy);
+			}
 			return (long)dy;
 		}
 		return 0;

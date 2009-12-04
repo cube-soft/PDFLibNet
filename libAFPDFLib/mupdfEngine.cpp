@@ -70,8 +70,9 @@ int mupdfEngine::LoadFile(char *fileName,char *own_pwd,char *usr_pwd){
 
 	//start xref
 	if(_xref==NULL){
-		_xref=new pdf_xref();
-		if (pdf_newxref(&_xref)){
+		//_xref=new pdf_xref();
+		_xref=pdf_newxref();
+		if (!_xref){
 			error(0,"XRef Read error, invalid file");
 			return 1;
 		}
@@ -156,9 +157,9 @@ pdf_page *mupdfEngine::GetPage(int pageNo)
     if (page) 
         return page;
 #endif   
-    
-	if(!pdf_getpageobject(_xref, pageNo,&obj)){
-        if(pdf_loadpage(&page, _xref, obj))
+    obj = pdf_getpageobject(_xref, pageNo);
+	if(obj){
+        if(pdf_loadpage(&page, _xref,obj))
 			return NULL;
 	}
 #ifdef CACHE_MUPDF_PAGES

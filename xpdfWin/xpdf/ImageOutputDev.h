@@ -36,7 +36,8 @@ public:
 
   // Destructor.
   virtual ~ImageOutputDev();
-
+  //useTilingPatternFill
+  virtual GBool useTilingPatternFill() { return gTrue; }
   // Check if file was successfully created.
   virtual GBool isOk() { return ok; }
 
@@ -64,6 +65,11 @@ public:
 			 int width, int height, GfxImageColorMap *colorMap,
 			 int *maskColors, GBool inlineImg);
 
+  virtual void tilingPatternFill(GfxState *state, Object *str,
+				 int paintType, Dict *resDict,
+				 double *mat, double *bbox,
+				 int x0, int y0, int x1, int y1,
+				 double xStep, double yStep) {}
 private:
 
   char *fileRoot;		// root of output file names

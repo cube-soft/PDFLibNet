@@ -6,14 +6,12 @@
  * needs to be initialized by initxref, openxref or repairxref.
  */
 
-fz_error
-pdf_newxref(pdf_xref **xrefp)
+pdf_xref *
+pdf_newxref(void)
 {
 	pdf_xref *xref;
 
 	xref = fz_malloc(sizeof(pdf_xref));
-	if (!xref)
-		return fz_rethrow(-1, "out of memory: xref struct");
 
 	memset(xref, 0, sizeof(pdf_xref));
 
@@ -35,8 +33,7 @@ pdf_newxref(pdf_xref **xrefp)
 
 	xref->store = nil;	/* you need to create this if you want to render */
 
-	*xrefp = xref;
-	return fz_okay;
+	return xref;
 }
 
 void
@@ -73,9 +70,6 @@ fz_error
 pdf_initxref(pdf_xref *xref)
 {
 	xref->table = fz_malloc(sizeof(pdf_xrefentry) * 128);
-	if (!xref->table)
-		return fz_rethrow(-1, "out of memory: xref table");
-
 	xref->cap = 128;
 	xref->len = 1;
 
@@ -126,11 +120,11 @@ pdf_debugxref(pdf_xref *xref)
 	for (i = 0; i < xref->len; i++)
 	{
 		printf("%010d %05d %c (ref=%d, ofs=%d)\n",
-				xref->table[i].ofs,
-				xref->table[i].gen,
-				xref->table[i].type,
-				xref->table[i].obj ? xref->table[i].obj->refs : 0,
-				xref->table[i].stmofs);
+			xref->table[i].ofs,
+			xref->table[i].gen,
+			xref->table[i].type,
+			xref->table[i].obj ? xref->table[i].obj->refs : 0,
+			xref->table[i].stmofs);
 	}
 }
 
@@ -180,9 +174,7 @@ pdf_cacheobject(pdf_xref *xref, int oid, int gen)
 
 	if (x->type == 'f' || x->type == 'd')
 	{
-		error = fz_newnull(&x->obj);
-		if (error)
-			return fz_rethrow(error, "cannot create null for empty object slot");
+		x->obj = fz_newnull();
 		return fz_okay;
 	}
 
@@ -230,10 +222,7 @@ pdf_loadobject(fz_obj **objp, pdf_xref *xref, int oid, int gen)
 	else
 	{
 		fz_warn("cannot load missing object (%d %d R), assuming null object", oid, gen);
-
-		error = fz_newnull(&xref->table[oid].obj);
-		if (error)
-			return fz_rethrow(error, "cannot create missing object (%d %d R)", oid, gen);
+		xref->table[oid].obj = fz_newnull();
 	}
 
 	return fz_okay;

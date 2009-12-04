@@ -1866,7 +1866,7 @@ void Gfx::doTilingPatternFill(GfxTilingPattern *tPat,
 			   m1, tPat->getBBox(),
 			   xi0, yi0, xi1, yi1, xstep, ystep);
   } else {
-//	doForm2(tPat->getContentStream(), tPat->getResDict(),tPat->getBBox(),xi0,yi0,xi1,yi1,m,m1,xstep,ystep);
+	//doForm2(tPat->getContentStream(), tPat->getResDict(),tPat->getBBox(),xi0,yi0,xi1,yi1,m,m1,xstep,ystep);
     for (yi = yi0; yi < yi1; ++yi) {
       for (xi = xi0; xi < xi1; ++xi) {
 	x = xi * xstep;
@@ -4144,7 +4144,6 @@ void Gfx::doForm2(Object *str, Dict *resDict,  double *bbox,int xi0,int yi0, int
 		  }
 	}
 	
-	error(-1,"Run Tiling");
 	//Run the operations
 	for (int yi = yi0; yi < yi1; ++yi) {
 		for (int xi = xi0; xi < xi1; ++xi) {
@@ -4172,7 +4171,6 @@ void Gfx::doForm2(Object *str, Dict *resDict,  double *bbox,int xi0,int yi0, int
 			out->clip(state);
 			state->clearPath();
 
-			error(-1,"Build base matrix");
 			 // set new base matrix
 			for (i = 0; i < 6; ++i) 
 				baseMatrix[i] = state->getCTM()[i];
@@ -4188,7 +4186,7 @@ void Gfx::doForm2(Object *str, Dict *resDict,  double *bbox,int xi0,int yi0, int
 			restoreState();
 		}
 	}
-	error(-1,"Delete cache");
+
 	for(int i=0;i<32;i++)
 	{
 		if(cache[i]==NULL)

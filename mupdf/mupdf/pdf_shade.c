@@ -2,7 +2,7 @@
 #include "mupdf.h"
 
 static fz_error
-pdf_loadcompositeshadefunc(fz_shade *shade, pdf_xref *xref, fz_obj *shading, fz_obj *funcref, float t0, float t1)
+pdf_loadcompositeshadefunc(fz_shade *shade, pdf_xref *xref, fz_obj *dict, fz_obj *funcref, float t0, float t1)
 {
 	fz_error error;
 	pdf_function *func;
@@ -18,7 +18,10 @@ pdf_loadcompositeshadefunc(fz_shade *shade, pdf_xref *xref, fz_obj *shading, fz_
 
 		error = pdf_evalfunction(func, &t, 1, shade->function[i], shade->cs->n);
 		if (error)
+		{
+			pdf_dropfunction(func);
 			return fz_rethrow(error, "unable to evaluate shading function at %g", t);
+		}
 	}
 
 	pdf_dropfunction(func);
@@ -27,7 +30,7 @@ pdf_loadcompositeshadefunc(fz_shade *shade, pdf_xref *xref, fz_obj *shading, fz_
 }
 
 static fz_error
-pdf_loadcomponentshadefunc(fz_shade *shade, pdf_xref *xref, fz_obj *shading, fz_obj *funcs, float t0, float t1)
+pdf_loadcomponentshadefunc(fz_shade *shade, pdf_xref *xref, fz_obj *dict, fz_obj *funcs, float t0, float t1)
 {
 	fz_error error;
 	pdf_function **func = nil;
@@ -40,11 +43,6 @@ pdf_loadcomponentshadefunc(fz_shade *shade, pdf_xref *xref, fz_obj *shading, fz_
 	}
 
 	func = fz_malloc(fz_arraylen(funcs) * sizeof(pdf_function *));
-	if (!func)
-	{
-		error = fz_rethrow(-1, "out of memory: shading function");
-		goto cleanup;
-	}
 	memset(func, 0x00, fz_arraylen(funcs) * sizeof(pdf_function *));
 
 	for (i = 0; i < fz_arraylen(funcs); i++)
@@ -101,27 +99,21 @@ cleanup:
 }
 
 fz_error
-pdf_loadshadefunction(fz_shade *shade, pdf_xref *xref, fz_obj *shading, float t0, float t1)
+pdf_loadshadefunction(fz_shade *shade, pdf_xref *xref, fz_obj *dict, float t0, float t1)
 {
 	fz_error error;
-	fz_obj *ref;
 	fz_obj *obj;
 
-	ref = fz_dictgets(shading, "Function");
-	if (!ref)
+	obj = fz_dictgets(dict, "Function");
+	if (!obj)
 		return fz_throw("shading function not found");
-
-	obj = fz_resolveindirect(ref);
 
 	shade->usefunction = 1;
 
 	if (fz_isdict(obj))
-	{
-		/* dictionary is probably a stream, send the reference instead */
-		error = pdf_loadcompositeshadefunc(shade, xref, shading, ref, t0, t1);
-	}
+		error = pdf_loadcompositeshadefunc(shade, xref, dict, obj, t0, t1);
 	else if (fz_isarray(obj))
-		error = pdf_loadcomponentshadefunc(shade, xref, shading, obj, t0, t1);
+		error = pdf_loadcomponentshadefunc(shade, xref, dict, obj, t0, t1);
 	else
 		error = fz_throw("invalid shading function");
 
@@ -151,9 +143,6 @@ loadshadedict(fz_shade **shadep, pdf_xref *xref, fz_obj *dict, fz_matrix matrix)
 	pdf_logshade("load shade dict (%d %d R) {\n", fz_tonum(dict), fz_togen(dict));
 
 	shade = fz_malloc(sizeof(fz_shade));
-	if (!shade)
-		return fz_rethrow(-1, "out of memory");
-
 	shade->refs = 1;
 	shade->usebackground = 0;
 	shade->usefunction = 0;
@@ -200,8 +189,8 @@ loadshadedict(fz_shade **shadep, pdf_xref *xref, fz_obj *dict, fz_matrix matrix)
 	{
 		shade->bbox = pdf_torect(obj);
 		pdf_logshade("bbox [%g %g %g %g]\n",
-				shade->bbox.x0, shade->bbox.y0,
-				shade->bbox.x1, shade->bbox.y1);
+			shade->bbox.x0, shade->bbox.y0,
+			shade->bbox.x1, shade->bbox.y1);
 	}
 
 	switch(type)
@@ -274,7 +263,7 @@ pdf_loadshade(fz_shade **shadep, pdf_xref *xref, fz_obj *dict)
 		{
 			mat = pdf_tomatrix(obj);
 			pdf_logshade("matrix [%g %g %g %g %g %g]\n",
-					mat.a, mat.b, mat.c, mat.d, mat.e, mat.f);
+				mat.a, mat.b, mat.c, mat.d, mat.e, mat.f);
 		}
 		else
 		{
@@ -308,12 +297,7 @@ pdf_loadshade(fz_shade **shadep, pdf_xref *xref, fz_obj *dict)
 			return fz_rethrow(error, "could not load shading dictionary");
 	}
 
-	error = pdf_storeitem(xref->store, PDF_KSHADE, dict, *shadep);
-	if (error)
-	{
-		fz_dropshade(*shadep);
-		return fz_rethrow(error, "could not put shading dictionary in store");
-	}
+	pdf_storeitem(xref->store, PDF_KSHADE, dict, *shadep);
 
 	return fz_okay;
 }

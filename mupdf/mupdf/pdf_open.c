@@ -247,14 +247,12 @@ readoldxref(fz_obj **trailerp, pdf_xref *xref, char *buf, int cap)
 		}
 
 		/* broken pdfs where size in trailer undershoots
-		   entries in xref sections */
+		entries in xref sections */
 		if ((ofs + len) > xref->cap)
 		{
 			fz_warn("broken xref section, proceeding anyway.");
 			xref->cap = ofs + len;
 			xref->table = fz_realloc(xref->table, xref->cap * sizeof(pdf_xrefentry));
-			if (!xref->table)
-				return fz_rethrow(-1, "out of memory: xref table");
 		}
 
 		if ((ofs + len) > xref->len)
@@ -365,33 +363,13 @@ readnewxref(fz_obj **trailerp, pdf_xref *xref, char *buf, int cap)
 	int oid, gen, stmofs;
 	int size, w0, w1, w2;
 	int t;
+	int i;
 
 	pdf_logxref("load new xref format\n");
 
 	error = pdf_parseindobj(&trailer, xref, xref->file, buf, cap, &oid, &gen, &stmofs);
 	if (error)
 		return fz_rethrow(error, "cannot parse compressed xref stream object");
-
-	if (oid < 0 || oid >= xref->len)
-	{
-		if (oid == xref->len && oid < xref->cap)
-		{
-		    /* allow broken pdf files that have off-by-one errors in the xref */
-		    fz_warn("object id (%d %d R) out of range (0..%d)", oid, gen, xref->len - 1);
-		    xref->len ++;
-		}
-		else
-		{
-		    fz_dropobj(trailer);
-		    return fz_throw("object id (%d %d R) out of range (0..%d)", oid, gen, xref->len - 1);
-		}
-	}
-
-	xref->table[oid].type = 'n';
-	xref->table[oid].gen = gen;
-	xref->table[oid].obj = fz_keepobj(trailer);
-	xref->table[oid].stmofs = stmofs;
-	xref->table[oid].ofs = 0;
 
 	obj = fz_dictgets(trailer, "Size");
 	if (!obj)
@@ -400,6 +378,46 @@ readnewxref(fz_obj **trailerp, pdf_xref *xref, char *buf, int cap)
 		return fz_throw("xref stream missing Size entry");
 	}
 	size = fz_toint(obj);
+
+	if (size >= xref->cap)
+	{
+		xref->cap = size + 1; /* for hack to allow broken pdf generators with off-by-one errors */
+		xref->table = fz_realloc(xref->table, xref->cap * sizeof(pdf_xrefentry));
+	}
+
+	if (size > xref->len)
+	{
+		for (i = xref->len; i < xref->cap; i++)
+		{
+			xref->table[i].ofs = 0;
+			xref->table[i].gen = 0;
+			xref->table[i].stmofs = 0;
+			xref->table[i].obj = nil;
+			xref->table[i].type = 0;
+		}
+		xref->len = size;
+	}
+
+	if (oid < 0 || oid >= xref->len)
+	{
+		if (oid == xref->len && oid < xref->cap)
+		{
+			/* allow broken pdf files that have off-by-one errors in the xref */
+			fz_warn("object id (%d %d R) out of range (0..%d)", oid, gen, xref->len - 1);
+			xref->len ++;
+		}
+		else
+		{
+			fz_dropobj(trailer);
+			return fz_throw("object id (%d %d R) out of range (0..%d)", oid, gen, xref->len - 1);
+		}
+	}
+
+	xref->table[oid].type = 'n';
+	xref->table[oid].gen = gen;
+	xref->table[oid].obj = fz_keepobj(trailer);
+	xref->table[oid].stmofs = stmofs;
+	xref->table[oid].ofs = 0;
 
 	obj = fz_dictgets(trailer, "W");
 	if (!obj) {
@@ -562,24 +580,13 @@ pdf_loadobjstm(pdf_xref *xref, int oid, int gen, char *buf, int cap)
 	pdf_logxref("  count %d\n", count);
 
 	oidbuf = fz_malloc(count * sizeof(int));
-	if (!oidbuf)
-	{
-		error = fz_rethrow(-1, "out of memory: object id buffer");
-		goto cleanupobj;
-	}
-
 	ofsbuf = fz_malloc(count * sizeof(int));
-	if (!ofsbuf)
-	{
-		error = fz_rethrow(-1, "out of memory: offset buffer");
-		goto cleanupoid;
-	}
 
 	error = pdf_openstream(&stm, xref, oid, gen);
 	if (error)
 	{
 		error = fz_rethrow(error, "cannot open object stream");
-		goto cleanupofs;
+		goto cleanupbuf;
 	}
 
 	for (i = 0; i < count; i++)
@@ -639,11 +646,9 @@ pdf_loadobjstm(pdf_xref *xref, int oid, int gen, char *buf, int cap)
 
 cleanupstm:
 	fz_dropstream(stm);
-cleanupofs:
+cleanupbuf:
 	fz_free(ofsbuf);
-cleanupoid:
 	fz_free(oidbuf);
-cleanupobj:
 	fz_dropobj(objstm);
 	return error; /* already rethrown */
 }
@@ -696,12 +701,6 @@ pdf_loadxref2(pdf_xref *xref)
 	xref->len = fz_toint(size);
 	xref->cap = xref->len + 1; /* for hack to allow broken pdf generators with off-by-one errors */
 	xref->table = fz_malloc(xref->cap * sizeof(pdf_xrefentry));
-	if (!xref->table)
-	{
-		error = fz_rethrow(-1, "out of memory: xref table");
-		goto cleanup;
-	}
-
 	for (i = 0; i < xref->cap; i++)
 	{
 		xref->table[i].ofs = 0;
@@ -726,14 +725,14 @@ pdf_loadxref2(pdf_xref *xref)
 	}
 
 	/* broken pdfs where freed objects have offset and gen set to 0
-	   but still exits */
+	but still exits */
 	for (i = 0; i < xref->len; i++)
 		if (xref->table[i].type == 'n' && xref->table[i].ofs == 0 &&
 			xref->table[i].gen == 0 && xref->table[i].obj == nil)
-		{
-			fz_warn("object (%d %d R) has invalid offset, assumed missing", i, xref->table[i].gen);
-			xref->table[i].type = 'f';
-		}
+	{
+		fz_warn("object (%d %d R) has invalid offset, assumed missing", i, xref->table[i].gen);
+		xref->table[i].type = 'f';
+	}
 
 	return fz_okay;
 

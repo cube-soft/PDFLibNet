@@ -1,6 +1,7 @@
 /*
  * Copyright 2000 Computing Research Labs, New Mexico State University
- * Copyright 2001, 2002, 2003, 2004, 2005, 2006 Francesco Zappa Nardelli
+ * Copyright 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009
+ *   Francesco Zappa Nardelli
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -280,7 +281,7 @@
 
   static FT_Error
   hash_insert( char*       key,
-               void*       data,
+               size_t      data,
                hashtable*  ht,
                FT_Memory   memory )
   {
@@ -384,8 +385,10 @@
   } _bdf_parse_t;
 
 
-#define setsbit( m, cc )  ( m[(cc) >> 3] |= (FT_Byte)( 1 << ( (cc) & 7 ) ) )
-#define sbitset( m, cc )  ( m[(cc) >> 3]  & ( 1 << ( (cc) & 7 ) ) )
+#define setsbit( m, cc ) \
+          ( m[(FT_Byte)(cc) >> 3] |= (FT_Byte)( 1 << ( (cc) & 7 ) ) )
+#define sbitset( m, cc ) \
+          ( m[(FT_Byte)(cc) >> 3]  & ( 1 << ( (cc) & 7 ) ) )
 
 
   static void
@@ -412,18 +415,18 @@
 
 
   static FT_Error
-  _bdf_list_ensure( _bdf_list_t*  list,
-                    int           num_items )
+  _bdf_list_ensure( _bdf_list_t*   list,
+                    unsigned long  num_items ) /* same as _bdf_list_t.used */
   {
     FT_Error  error = BDF_Err_Ok;
 
 
-    if ( num_items > (int)list->size )
+    if ( num_items > list->size )
     {
-      int        oldsize = list->size;
-      int        newsize = oldsize + ( oldsize >> 1 ) + 4;
-      int        bigsize = FT_INT_MAX / sizeof ( char* );
-      FT_Memory  memory  = list->memory;
+      unsigned long  oldsize = list->size; /* same as _bdf_list_t.size */
+      unsigned long  newsize = oldsize + ( oldsize >> 1 ) + 4;
+      unsigned long  bigsize = (unsigned long)( FT_INT_MAX / sizeof ( char* ) );
+      FT_Memory      memory  = list->memory;
 
 
       if ( oldsize == bigsize )
@@ -611,8 +614,8 @@
   {
     _bdf_line_func_t  cb;
     unsigned long     lineno, buf_size;
-    int               refill, bytes, hold, to_skip;
-    int               start, end, cursor, avail;
+    int               refill, hold, to_skip;
+    ptrdiff_t         bytes, start, end, cursor, avail;
     char*             buf = 0;
     FT_Memory         memory = stream->memory;
     FT_Error          error = BDF_Err_Ok;
@@ -645,8 +648,8 @@
     {
       if ( refill )
       {
-        bytes  = (int)FT_Stream_TryRead( stream, (FT_Byte*)buf + cursor,
-                                         (FT_ULong)(buf_size - cursor) );
+        bytes  = (ptrdiff_t)FT_Stream_TryRead( stream, (FT_Byte*)buf + cursor,
+                                               (FT_ULong)(buf_size - cursor) );
         avail  = cursor + bytes;
         cursor = 0;
         refill = 0;
@@ -968,7 +971,7 @@
                        int          format,
                        bdf_font_t*  font )
   {
-    unsigned long    n;
+    size_t           n;
     bdf_property_t*  p;
     FT_Memory        memory = font->memory;
     FT_Error         error = BDF_Err_Ok;
@@ -988,7 +991,9 @@
     p = font->user_props + font->nuser_props;
     FT_ZERO( p );
 
-    n = (unsigned long)( ft_strlen( name ) + 1 );
+    n = ft_strlen( name ) + 1;
+    if ( n > FT_ULONG_MAX )
+      return BDF_Err_Invalid_Argument;
 
     if ( FT_NEW_ARRAY( p->name, n ) )
       goto Exit;
@@ -1000,7 +1005,7 @@
 
     n = _num_bdf_properties + font->nuser_props;
 
-    error = hash_insert( p->name, (void *)n, &(font->proptbl), memory );
+    error = hash_insert( p->name, n, &(font->proptbl), memory );
     if ( error )
       goto Exit;
 
@@ -1015,8 +1020,8 @@
   bdf_get_property( char*        name,
                     bdf_font_t*  font )
   {
-    hashnode       hn;
-    unsigned long  propid;
+    hashnode  hn;
+    size_t    propid;
 
 
     if ( name == 0 || *name == 0 )
@@ -1025,7 +1030,7 @@
     if ( ( hn = hash_lookup( name, &(font->proptbl) ) ) == 0 )
       return 0;
 
-    propid = (unsigned long)hn->data;
+    propid = hn->data;
     if ( propid >= _num_bdf_properties )
       return font->user_props + ( propid - _num_bdf_properties );
 
@@ -1128,11 +1133,11 @@
   _bdf_set_default_spacing( bdf_font_t*     font,
                             bdf_options_t*  opts )
   {
-    unsigned long  len;
-    char           name[128];
-    _bdf_list_t    list;
-    FT_Memory      memory;
-    FT_Error       error = BDF_Err_Ok;
+    size_t       len;
+    char         name[256];
+    _bdf_list_t  list;
+    FT_Memory    memory;
+    FT_Error     error = BDF_Err_Ok;
 
 
     if ( font == 0 || font->name == 0 || font->name[0] == 0 )
@@ -1147,7 +1152,14 @@
 
     font->spacing = opts->font_spacing;
 
-    len = (unsigned long)( ft_strlen( font->name ) + 1 );
+    len = ft_strlen( font->name ) + 1;
+    /* Limit ourselves to 256 characters in the font name. */
+    if ( len >= 256 )
+    {
+      error = BDF_Err_Invalid_Argument;
+      goto Exit;
+    }
+
     FT_MEM_COPY( name, font->name, len );
 
     error = _bdf_list_split( &list, (char *)"-", name, len );
@@ -1251,9 +1263,8 @@
                      char*        name,
                      char*        value )
   {
-    unsigned long   propid;
+    size_t          propid;
     hashnode        hn;
-    int             len;
     bdf_property_t  *prop, *fp;
     FT_Memory       memory = font->memory;
     FT_Error        error = BDF_Err_Ok;
@@ -1264,7 +1275,7 @@
     {
       /* The property already exists in the font, so simply replace */
       /* the value of the property with the current value.          */
-      fp = font->props + (unsigned long)hn->data;
+      fp = font->props + hn->data;
 
       switch ( fp->format )
       {
@@ -1272,27 +1283,19 @@
         /* Delete the current atom if it exists. */
         FT_FREE( fp->value.atom );
 
-        if ( value == 0 )
-          len = 1;
-        else
-          len = ft_strlen( value ) + 1;
-
-        if ( len > 1 )
+        if ( value && value[0] != 0 )
         {
-          if ( FT_NEW_ARRAY( fp->value.atom, len ) )
+          if ( FT_STRDUP( fp->value.atom, value ) )
             goto Exit;
-          FT_MEM_COPY( fp->value.atom, value, len );
         }
-        else
-          fp->value.atom = 0;
         break;
 
       case BDF_INTEGER:
-        fp->value.int32 = _bdf_atol( value, 0, 10 );
+        fp->value.l = _bdf_atol( value, 0, 10 );
         break;
 
       case BDF_CARDINAL:
-        fp->value.card32 = _bdf_atoul( value, 0, 10 );
+        fp->value.ul = _bdf_atoul( value, 0, 10 );
         break;
 
       default:
@@ -1334,7 +1337,7 @@
       font->props_size++;
     }
 
-    propid = (unsigned long)hn->data;
+    propid = hn->data;
     if ( propid >= _num_bdf_properties )
       prop = font->user_props + ( propid - _num_bdf_properties );
     else
@@ -1349,27 +1352,20 @@
     switch ( prop->format )
     {
     case BDF_ATOM:
-      if ( value == 0 )
-        len = 1;
-      else
-        len = ft_strlen( value ) + 1;
-
-      if ( len > 1 )
+      fp->value.atom = 0;
+      if ( value != 0 && value[0] )
       {
-        if ( FT_NEW_ARRAY( fp->value.atom, len ) )
+        if ( FT_STRDUP( fp->value.atom, value ) )
           goto Exit;
-        FT_MEM_COPY( fp->value.atom, value, len );
       }
-      else
-        fp->value.atom = 0;
       break;
 
     case BDF_INTEGER:
-      fp->value.int32 = _bdf_atol( value, 0, 10 );
+      fp->value.l = _bdf_atol( value, 0, 10 );
       break;
 
     case BDF_CARDINAL:
-      fp->value.card32 = _bdf_atoul( value, 0, 10 );
+      fp->value.ul = _bdf_atoul( value, 0, 10 );
       break;
     }
 
@@ -1378,7 +1374,7 @@
     if ( ft_memcmp( name, "COMMENT", 7 ) != 0 ) {
       /* Add the property to the font property table. */
       error = hash_insert( fp->name,
-                           (void *)font->props_used,
+                           font->props_used,
                            (hashtable *)font->internal,
                            memory );
       if ( error )
@@ -1393,13 +1389,19 @@
     /* present, and the SPACING property should override the default       */
     /* spacing.                                                            */
     if ( ft_memcmp( name, "DEFAULT_CHAR", 12 ) == 0 )
-      font->default_char = fp->value.int32;
+      font->default_char = fp->value.l;
     else if ( ft_memcmp( name, "FONT_ASCENT", 11 ) == 0 )
-      font->font_ascent = fp->value.int32;
+      font->font_ascent = fp->value.l;
     else if ( ft_memcmp( name, "FONT_DESCENT", 12 ) == 0 )
-      font->font_descent = fp->value.int32;
+      font->font_descent = fp->value.l;
     else if ( ft_memcmp( name, "SPACING", 7 ) == 0 )
     {
+      if ( !fp->value.atom )
+      {
+        error = BDF_Err_Invalid_File_Format;
+        goto Exit;
+      }
+
       if ( fp->value.atom[0] == 'p' || fp->value.atom[0] == 'P' )
         font->spacing = BDF_PROPORTIONAL;
       else if ( fp->value.atom[0] == 'm' || fp->value.atom[0] == 'M' )
@@ -1482,6 +1484,14 @@
       if ( p->cnt == 0 )
         font->glyphs_size = 64;
 
+      /* Limit ourselves to 1,114,112 glyphs in the font (this is the */
+      /* number of code points available in Unicode).                 */
+      if ( p->cnt >= 1114112UL )
+      {
+        error = BDF_Err_Invalid_Argument;
+        goto Exit;
+      }
+
       if ( FT_NEW_ARRAY( font->glyphs, font->glyphs_size ) )
         goto Exit;
 
@@ -1534,6 +1544,12 @@
       _bdf_list_shift( &p->list, 1 );
 
       s = _bdf_list_join( &p->list, ' ', &slen );
+
+      if ( !s )
+      {
+        error = BDF_Err_Invalid_File_Format;
+        goto Exit;
+      }
 
       if ( FT_NEW_ARRAY( p->glyph_name, slen + 1 ) )
         goto Exit;
@@ -2030,7 +2046,7 @@
       p->memory    = 0;
 
       { /* setup */
-        unsigned long    i;
+        size_t           i;
         bdf_property_t*  prop;
 
 
@@ -2040,7 +2056,7 @@
         for ( i = 0, prop = (bdf_property_t*)_bdf_properties;
               i < _num_bdf_properties; i++, prop++ )
         {
-          error = hash_insert( prop->name, (void *)i,
+          error = hash_insert( prop->name, i,
                                &(font->proptbl), memory );
           if ( error )
             goto Exit;
@@ -2064,6 +2080,7 @@
       error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
       if ( error )
         goto Exit;
+      /* at this point, `p->font' can't be NULL */
       p->cnt = p->font->props_size = _bdf_atoul( p->list.field[1], 0, 10 );
 
       if ( FT_NEW_ARRAY( p->font->props, p->cnt ) )
@@ -2115,6 +2132,13 @@
       _bdf_list_shift( &p->list, 1 );
 
       s = _bdf_list_join( &p->list, ' ', &slen );
+
+      if ( !s )
+      {
+        error = BDF_Err_Invalid_File_Format;
+        goto Exit;
+      }
+
       if ( FT_NEW_ARRAY( p->font->name, slen + 1 ) )
         goto Exit;
       FT_MEM_COPY( p->font->name, s, slen + 1 );
@@ -2299,11 +2323,19 @@
       {
         /* The ENDFONT field was never reached or did not exist. */
         if ( !( p->flags & _BDF_GLYPHS ) )
+        {
           /* Error happened while parsing header. */
           FT_ERROR(( "bdf_load_font: " ERRMSG2, lineno ));
+          error = BDF_Err_Corrupted_Font_Header;
+          goto Exit;
+        }
         else
+        {
           /* Error happened when parsing glyphs. */
           FT_ERROR(( "bdf_load_font: " ERRMSG3, lineno ));
+          error = BDF_Err_Corrupted_Font_Glyphs;
+          goto Exit;
+        }
       }
     }
 
@@ -2442,7 +2474,7 @@
 
     hn = hash_lookup( name, (hashtable *)font->internal );
 
-    return hn ? ( font->props + (unsigned long)hn->data ) : 0;
+    return hn ? ( font->props + hn->data ) : 0;
   }
 
 

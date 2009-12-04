@@ -1,9 +1,42 @@
 #include "fitz_base.h"
 #include "fitz_stream.h"
 
-#include "filt_dctc.h"
+#include <jpeglib.h>
+
+#include <setjmp.h>
 
 typedef struct fz_dctd_s fz_dctd;
+
+struct myerrmgr
+{
+	struct jpeg_error_mgr super;
+	jmp_buf jb;
+	char msg[JMSG_LENGTH_MAX];
+};
+
+static void myerrexit(j_common_ptr cinfo)
+{
+	struct myerrmgr *err = (struct myerrmgr *)cinfo->err;
+	char msgbuf[JMSG_LENGTH_MAX];
+	err->super.format_message(cinfo, msgbuf);
+	strlcpy(err->msg, msgbuf, sizeof err->msg);
+	longjmp(err->jb, 1);
+}
+
+static void myoutmess(j_common_ptr cinfo)
+{
+	struct myerrmgr *err = (struct myerrmgr *)cinfo->err;
+	char msgbuf[JMSG_LENGTH_MAX];
+	err->super.format_message(cinfo, msgbuf);
+	fz_warn("jpeg error: %s", msgbuf);
+}
+
+static void myiniterr(struct myerrmgr *err)
+{
+	jpeg_std_error(&err->super);
+	err->super.error_exit = myerrexit;
+	err->super.output_message = myoutmess;
+}
 
 struct mysrcmgr
 {
@@ -48,10 +81,9 @@ static void myskipinput(j_decompress_ptr cinfo, long n)
 	src->super.next_input_byte = in->rp;
 }
 
-fz_error
-fz_newdctd(fz_filter **fp, fz_obj *params)
+fz_filter *
+fz_newdctd(fz_obj *params)
 {
-	fz_error err;
 	fz_obj *obj;
 	int colortransform;
 
@@ -73,11 +105,8 @@ fz_newdctd(fz_filter **fp, fz_obj *params)
 	myiniterr(&d->err);
 	d->cinfo.err = (struct jpeg_error_mgr*) &d->err;
 
-	if (setjmp(d->err.jb)) {
-		err = fz_throw("cannot decode jpeg: %s", d->err.msg);
-		fz_free(d);
-		return err;
-	}
+	if (setjmp(d->err.jb))
+		fz_warn("cannot initialise jpeg: %s", d->err.msg);
 
 	/* create decompression object. this zeroes cinfo except for err. */
 	jpeg_create_decompress(&d->cinfo);
@@ -98,7 +127,7 @@ fz_newdctd(fz_filter **fp, fz_obj *params)
 	d->cinfo.dct_method = JDCT_FASTEST;
 	d->cinfo.do_fancy_upsampling = FALSE;
 
-	return fz_okay;
+	return (fz_filter *)d;
 }
 
 void
@@ -146,79 +175,79 @@ fz_processdctd(fz_filter *filter, fz_buffer *in, fz_buffer *out)
 
 	switch (d->stage)
 	{
-		case 0:
-			i = jpeg_read_header(&d->cinfo, TRUE);
-			if (i == JPEG_SUSPENDED)
-				goto needinput;
+	case 0:
+		i = jpeg_read_header(&d->cinfo, TRUE);
+		if (i == JPEG_SUSPENDED)
+			goto needinput;
 
-			/* default value if ColorTransform is not set */
-			if (d->colortransform == -1)
-			{
-			    if (d->cinfo.num_components == 3)
+		/* default value if ColorTransform is not set */
+		if (d->colortransform == -1)
+		{
+			if (d->cinfo.num_components == 3)
 				d->colortransform = 1;
-			    else
+			else
 				d->colortransform = 0;
-			}
+		}
 
-			if (d->cinfo.saw_Adobe_marker)
-				d->colortransform = d->cinfo.Adobe_transform;
+		if (d->cinfo.saw_Adobe_marker)
+			d->colortransform = d->cinfo.Adobe_transform;
 
-			/* Guess the input colorspace, and set output colorspace accordingly */
-			switch (d->cinfo.num_components)
-			{
-				case 3:
-					if (d->colortransform)
-						d->cinfo.jpeg_color_space = JCS_YCbCr;
-					else
-						d->cinfo.jpeg_color_space = JCS_RGB;
-					break;
-				case 4:
-					if (d->colortransform)
-						d->cinfo.jpeg_color_space = JCS_YCCK;
-					else
-						d->cinfo.jpeg_color_space = JCS_CMYK;
-					break;
-			}
-
-			/* fall through */
-			d->stage = 1;
-
-		case 1:
-			b = jpeg_start_decompress(&d->cinfo);
-			if (b == FALSE)
-				goto needinput;
-
-			/* fall through */
-			d->stage = 2;
-
-		case 2:
-			stride = d->cinfo.output_width * d->cinfo.output_components;
-
-			while (d->cinfo.output_scanline < d->cinfo.output_height)
-			{
-				if (out->wp + stride > out->ep)
-					goto needoutput;
-
-				scanlines[0] = out->wp;
-
-				i = jpeg_read_scanlines(&d->cinfo, scanlines, 1);
-
-				if (i == 0)
-					goto needinput;
-
-				out->wp += stride;
-			}
-
-			/* fall through */
-			d->stage = 3;
-
+		/* Guess the input colorspace, and set output colorspace accordingly */
+		switch (d->cinfo.num_components)
+		{
 		case 3:
-			b = jpeg_finish_decompress(&d->cinfo);
-			if (b == FALSE)
+			if (d->colortransform)
+				d->cinfo.jpeg_color_space = JCS_YCbCr;
+			else
+				d->cinfo.jpeg_color_space = JCS_RGB;
+			break;
+		case 4:
+			if (d->colortransform)
+				d->cinfo.jpeg_color_space = JCS_YCCK;
+			else
+				d->cinfo.jpeg_color_space = JCS_CMYK;
+			break;
+		}
+
+		/* fall through */
+		d->stage = 1;
+
+	case 1:
+		b = jpeg_start_decompress(&d->cinfo);
+		if (b == FALSE)
+			goto needinput;
+
+		/* fall through */
+		d->stage = 2;
+
+	case 2:
+		stride = d->cinfo.output_width * d->cinfo.output_components;
+
+		while (d->cinfo.output_scanline < d->cinfo.output_height)
+		{
+			if (out->wp + stride > out->ep)
+				goto needoutput;
+
+			scanlines[0] = out->wp;
+
+			i = jpeg_read_scanlines(&d->cinfo, scanlines, 1);
+
+			if (i == 0)
 				goto needinput;
-			d->stage = 4;
-			in->rp = in->wp - d->src.super.bytes_in_buffer;
-			return fz_iodone;
+
+			out->wp += stride;
+		}
+
+		/* fall through */
+		d->stage = 3;
+
+	case 3:
+		b = jpeg_finish_decompress(&d->cinfo);
+		if (b == FALSE)
+			goto needinput;
+		d->stage = 4;
+		in->rp = in->wp - d->src.super.bytes_in_buffer;
+		return fz_iodone;
 	}
 
 needinput:

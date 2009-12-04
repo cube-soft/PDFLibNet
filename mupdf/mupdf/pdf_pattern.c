@@ -38,9 +38,6 @@ pdf_loadpattern(pdf_pattern **patp, pdf_xref *xref, fz_obj *dict)
 	pdf_logrsrc("load pattern (%d %d R) {\n", fz_tonum(dict), fz_togen(dict));
 
 	pat = fz_malloc(sizeof(pdf_pattern));
-	if (!pat)
-		return fz_rethrow(-1, "out of memory: pattern struct");
-
 	pat->refs = 1;
 	pat->tree = nil;
 	pat->ismask = fz_toint(fz_dictgets(dict, "PaintType")) == 2;
@@ -55,8 +52,8 @@ pdf_loadpattern(pdf_pattern **patp, pdf_xref *xref, fz_obj *dict)
 	pat->bbox = pdf_torect(obj);
 
 	pdf_logrsrc("bbox [%g %g %g %g]\n",
-			pat->bbox.x0, pat->bbox.y0,
-			pat->bbox.x1, pat->bbox.y1);
+		pat->bbox.x0, pat->bbox.y0,
+		pat->bbox.x1, pat->bbox.y1);
 
 	obj = fz_dictgets(dict, "Matrix");
 	if (obj)
@@ -65,17 +62,12 @@ pdf_loadpattern(pdf_pattern **patp, pdf_xref *xref, fz_obj *dict)
 		pat->matrix = fz_identity();
 
 	pdf_logrsrc("matrix [%g %g %g %g %g %g]\n",
-			pat->matrix.a, pat->matrix.b,
-			pat->matrix.c, pat->matrix.d,
-			pat->matrix.e, pat->matrix.f);
+		pat->matrix.a, pat->matrix.b,
+		pat->matrix.c, pat->matrix.d,
+		pat->matrix.e, pat->matrix.f);
 
 	/* Store pattern now, to avoid possible recursion if objects refer back to this one */
-	error = pdf_storeitem(xref->store, PDF_KPATTERN, dict, pat);
-	if (error)
-	{
-		pdf_droppattern(pat);
-		return fz_rethrow(error, "cannot store pattern resource");
-	}
+	pdf_storeitem(xref->store, PDF_KPATTERN, dict, pat);
 
 	/*
 	 * Locate resources
@@ -127,14 +119,6 @@ pdf_loadpattern(pdf_pattern **patp, pdf_xref *xref, fz_obj *dict)
 
 	fz_dropstream(stm);
 	pdf_dropcsi(csi);
-
-	pdf_logrsrc("optimize tree\n");
-	error = fz_optimizetree(pat->tree);
-	if (error)
-	{
-		error = fz_rethrow(error, "cannot optimize pattern tree");
-		goto cleanup;
-	}
 
 	pdf_logrsrc("}\n");
 

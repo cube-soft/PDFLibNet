@@ -13,9 +13,6 @@ fz_newfont(void)
 	fz_font *font;
 
 	font = fz_malloc(sizeof(fz_font));
-	if (!font)
-		return nil;
-
 	font->refs = 1;
 	strcpy(font->name, "<unknown>");
 
@@ -25,6 +22,7 @@ fz_newfont(void)
 
 	font->t3matrix = fz_identity();
 	font->t3procs = nil;
+	font->t3widths = nil;
 
 	font->bbox.x0 = 0;
 	font->bbox.y0 = 0;
@@ -54,7 +52,13 @@ fz_dropfont(fz_font *font)
 			for (i = 0; i < 256; i++)
 				if (font->t3procs[i])
 					fz_droptree(font->t3procs[i]);
+			{ /* HACK: make sure the static pixmap is freed through a dummy call */
+				fz_glyph glyph; fz_matrix tmr = { 0 };
+				font->t3procs[0] = nil;
+				fz_rendert3glyph(&glyph, font, 0, tmr);
+			}
 			fz_free(font->t3procs);
+			fz_free(font->t3widths);
 		}
 
 		if (font->ftface)
@@ -167,8 +171,6 @@ fz_newfontfromfile(fz_font **fontp, char *path, int index)
 		return fz_rethrow(error, "cannot init freetype library");
 
 	font = fz_newfont();
-	if (!font)
-		return fz_rethrow(-1, "out of memory: font struct");
 
 	fterr = FT_New_Face(fz_ftlib, path, index, (FT_Face*)&font->ftface);
 	if (fterr)
@@ -193,8 +195,6 @@ fz_newfontfrombuffer(fz_font **fontp, unsigned char *data, int len, int index)
 		return fz_rethrow(error, "cannot init freetype library");
 
 	font = fz_newfont();
-	if (!font)
-		return fz_rethrow(-1, "out of memory: font struct");
 
 	fterr = FT_New_Memory_Face(fz_ftlib, data, len, index, (FT_Face*)&font->ftface);
 	if (fterr)
@@ -233,7 +233,7 @@ fz_renderftglyph(fz_glyph *glyph, fz_font *font, int gid, fz_matrix trm)
 			return fz_warn("freetype setting character size: %s", ft_errorstring(fterr));
 
 		fterr = FT_Load_Glyph(font->ftface, gid,
-				FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP | FT_LOAD_IGNORE_TRANSFORM);
+			FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP | FT_LOAD_IGNORE_TRANSFORM);
 		if (fterr)
 			return fz_throw("freetype failed to load glyph: %s", ft_errorstring(fterr));
 
@@ -261,7 +261,7 @@ fz_renderftglyph(fz_glyph *glyph, fz_font *font, int gid, fz_matrix trm)
 	 * into FT_Set_Char_Size instead
 	 */
 
-	m.xx = trm.a * 64;      /* should be 65536 */
+	m.xx = trm.a * 64; /* should be 65536 */
 	m.yx = trm.b * 64;
 	m.xy = trm.c * 64;
 	m.yy = trm.d * 64;
@@ -275,30 +275,30 @@ fz_renderftglyph(fz_glyph *glyph, fz_font *font, int gid, fz_matrix trm)
 
 	if (font->fthint)
 	{
-	    /* Enable hinting, but keep the huge char size so that
-	     * it is hinted for a character. This will in effect nullify
-	     * the effect of grid fitting. This form of hinting should
-	     * only be used for DynaLab and similar tricky TrueType fonts,
-	     * so that we get the correct outline shape.
-	     */
+		/* Enable hinting, but keep the huge char size so that
+		 * it is hinted for a character. This will in effect nullify
+		 * the effect of grid fitting. This form of hinting should
+		 * only be used for DynaLab and similar tricky TrueType fonts,
+		 * so that we get the correct outline shape.
+		 */
 #ifdef USE_HINTING
-	    /* If you really want grid fitting, enable this code. */
-	    float scale = fz_matrixexpansion(trm);
-	    m.xx = trm.a * 65536 / scale;
-	    m.xy = trm.b * 65536 / scale;
-	    m.yx = trm.c * 65536 / scale;
-	    m.yy = trm.d * 65536 / scale;
-	    v.x = 0;
-	    v.y = 0;
+		/* If you really want grid fitting, enable this code. */
+		float scale = fz_matrixexpansion(trm);
+		m.xx = trm.a * 65536 / scale;
+		m.xy = trm.b * 65536 / scale;
+		m.yx = trm.c * 65536 / scale;
+		m.yy = trm.d * 65536 / scale;
+		v.x = 0;
+		v.y = 0;
 
-	    fterr = FT_Set_Char_Size(face, 64 * scale, 64 * scale, 72, 72);
-	    if (fterr)
-		    fz_warn("freetype setting character size: %s", ft_errorstring(fterr));
-	    FT_Set_Transform(face, &m, &v);
+		fterr = FT_Set_Char_Size(face, 64 * scale, 64 * scale, 72, 72);
+		if (fterr)
+			fz_warn("freetype setting character size: %s", ft_errorstring(fterr));
+		FT_Set_Transform(face, &m, &v);
 #endif
-	    fterr = FT_Load_Glyph(face, gid, FT_LOAD_NO_BITMAP);
-	    if (fterr)
-		fz_warn("freetype load glyph (gid %d): %s", gid, ft_errorstring(fterr));
+		fterr = FT_Load_Glyph(face, gid, FT_LOAD_NO_BITMAP);
+		if (fterr)
+			fz_warn("freetype load glyph (gid %d): %s", gid, ft_errorstring(fterr));
 	}
 	else
 	{
@@ -336,31 +336,17 @@ fz_renderftglyph(fz_glyph *glyph, fz_font *font, int gid, fz_matrix trm)
  * Type 3 fonts...
  */
 
-fz_error
-fz_newtype3font(fz_font **fontp, char *name, fz_matrix matrix)
+fz_font *
+fz_newtype3font(char *name, fz_matrix matrix)
 {
 	fz_font *font;
 	int i;
 
 	font = fz_newfont();
-	if (!font)
-		return fz_rethrow(-1, "out of memory: font struct");
-
 	font->t3procs = fz_malloc(sizeof(fz_tree*) * 256);
-	if (!font->t3procs)
-	{
-		fz_free(font);
-		return fz_rethrow(-1, "out of memory: type3 font charproc array");
-	}
-
 	font->t3widths = fz_malloc(sizeof(float) * 256);
-	if (!font->t3widths)
-	{
-		fz_free(font->t3procs);
-		fz_free(font);
-		return fz_rethrow(-1, "out of memory: type3 font widths array");
-	}
 
+	strlcpy(font->name, name, sizeof(font->name));
 	font->t3matrix = matrix;
 	for (i = 0; i < 256; i++)
 	{
@@ -368,10 +354,7 @@ fz_newtype3font(fz_font **fontp, char *name, fz_matrix matrix)
 		font->t3widths[i] = 0;
 	}
 
-	strlcpy(font->name, name, sizeof(font->name));
-
-	*fontp = font;
-	return fz_okay;
+	return font;
 }
 
 /* XXX UGLY HACK XXX */
@@ -442,13 +425,13 @@ fz_debugfont(fz_font *font)
 	if (font->t3procs)
 	{
 		printf("  type3 matrix [%g %g %g %g]\n",
-				font->t3matrix.a, font->t3matrix.b,
-				font->t3matrix.c, font->t3matrix.d);
+			font->t3matrix.a, font->t3matrix.b,
+			font->t3matrix.c, font->t3matrix.d);
 	}
 
 	printf("  bbox [%d %d %d %d]\n",
-			font->bbox.x0, font->bbox.y0,
-			font->bbox.x1, font->bbox.y1);
+		font->bbox.x0, font->bbox.y0,
+		font->bbox.x1, font->bbox.y1);
 
 	printf("}\n");
 }

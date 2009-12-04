@@ -33,6 +33,7 @@ namespace PDFViewer
             this.txtFileName = new System.Windows.Forms.TextBox();
             this.cmdChoseFile = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.optPrintCurrent = new System.Windows.Forms.RadioButton();
             this.udTopage = new System.Windows.Forms.NumericUpDown();
             this.udFromPage = new System.Windows.Forms.NumericUpDown();
             this.optFromPage = new System.Windows.Forms.RadioButton();
@@ -48,7 +49,6 @@ namespace PDFViewer
             this.btnExport = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.dlgSave = new System.Windows.Forms.SaveFileDialog();
-            this.optPrintCurrent = new System.Windows.Forms.RadioButton();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.udTopage)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.udFromPage)).BeginInit();
@@ -58,24 +58,38 @@ namespace PDFViewer
             // 
             // label1
             // 
+            this.label1.AccessibleDescription = null;
+            this.label1.AccessibleName = null;
             resources.ApplyResources(this.label1, "label1");
+            this.label1.Font = null;
             this.label1.Name = "label1";
             // 
             // txtFileName
             // 
+            this.txtFileName.AccessibleDescription = null;
+            this.txtFileName.AccessibleName = null;
             resources.ApplyResources(this.txtFileName, "txtFileName");
+            this.txtFileName.BackgroundImage = null;
+            this.txtFileName.Font = null;
             this.txtFileName.Name = "txtFileName";
             // 
             // cmdChoseFile
             // 
+            this.cmdChoseFile.AccessibleDescription = null;
+            this.cmdChoseFile.AccessibleName = null;
             resources.ApplyResources(this.cmdChoseFile, "cmdChoseFile");
+            this.cmdChoseFile.BackgroundImage = null;
+            this.cmdChoseFile.Font = null;
             this.cmdChoseFile.Name = "cmdChoseFile";
             this.cmdChoseFile.UseVisualStyleBackColor = true;
             this.cmdChoseFile.Click += new System.EventHandler(this.cmdChoseFile_Click);
             // 
             // groupBox1
             // 
+            this.groupBox1.AccessibleDescription = null;
+            this.groupBox1.AccessibleName = null;
             resources.ApplyResources(this.groupBox1, "groupBox1");
+            this.groupBox1.BackgroundImage = null;
             this.groupBox1.Controls.Add(this.optPrintCurrent);
             this.groupBox1.Controls.Add(this.udTopage);
             this.groupBox1.Controls.Add(this.udFromPage);
@@ -88,12 +102,26 @@ namespace PDFViewer
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.udResolution);
             this.groupBox1.Controls.Add(this.label2);
+            this.groupBox1.Font = null;
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.TabStop = false;
             // 
+            // optPrintCurrent
+            // 
+            this.optPrintCurrent.AccessibleDescription = null;
+            this.optPrintCurrent.AccessibleName = null;
+            resources.ApplyResources(this.optPrintCurrent, "optPrintCurrent");
+            this.optPrintCurrent.BackgroundImage = null;
+            this.optPrintCurrent.Font = null;
+            this.optPrintCurrent.Name = "optPrintCurrent";
+            this.optPrintCurrent.UseVisualStyleBackColor = true;
+            // 
             // udTopage
             // 
+            this.udTopage.AccessibleDescription = null;
+            this.udTopage.AccessibleName = null;
             resources.ApplyResources(this.udTopage, "udTopage");
+            this.udTopage.Font = null;
             this.udTopage.Minimum = new decimal(new int[] {
             1,
             0,
@@ -108,7 +136,10 @@ namespace PDFViewer
             // 
             // udFromPage
             // 
+            this.udFromPage.AccessibleDescription = null;
+            this.udFromPage.AccessibleName = null;
             resources.ApplyResources(this.udFromPage, "udFromPage");
+            this.udFromPage.Font = null;
             this.udFromPage.Minimum = new decimal(new int[] {
             1,
             0,
@@ -123,15 +154,23 @@ namespace PDFViewer
             // 
             // optFromPage
             // 
+            this.optFromPage.AccessibleDescription = null;
+            this.optFromPage.AccessibleName = null;
             resources.ApplyResources(this.optFromPage, "optFromPage");
+            this.optFromPage.BackgroundImage = null;
+            this.optFromPage.Font = null;
             this.optFromPage.Name = "optFromPage";
             this.optFromPage.UseVisualStyleBackColor = true;
             this.optFromPage.CheckedChanged += new System.EventHandler(this.optFromPage_CheckedChanged);
             // 
             // optPrintAll
             // 
-            this.optPrintAll.Checked = true;
+            this.optPrintAll.AccessibleDescription = null;
+            this.optPrintAll.AccessibleName = null;
             resources.ApplyResources(this.optPrintAll, "optPrintAll");
+            this.optPrintAll.BackgroundImage = null;
+            this.optPrintAll.Checked = true;
+            this.optPrintAll.Font = null;
             this.optPrintAll.Name = "optPrintAll";
             this.optPrintAll.TabStop = true;
             this.optPrintAll.UseVisualStyleBackColor = true;
@@ -139,17 +178,26 @@ namespace PDFViewer
             // 
             // label7
             // 
+            this.label7.AccessibleDescription = null;
+            this.label7.AccessibleName = null;
             resources.ApplyResources(this.label7, "label7");
+            this.label7.Font = null;
             this.label7.Name = "label7";
             // 
             // label5
             // 
+            this.label5.AccessibleDescription = null;
+            this.label5.AccessibleName = null;
             resources.ApplyResources(this.label5, "label5");
+            this.label5.Font = null;
             this.label5.Name = "label5";
             // 
             // udQuality
             // 
+            this.udQuality.AccessibleDescription = null;
+            this.udQuality.AccessibleName = null;
             resources.ApplyResources(this.udQuality, "udQuality");
+            this.udQuality.Font = null;
             this.udQuality.Minimum = new decimal(new int[] {
             25,
             0,
@@ -164,17 +212,26 @@ namespace PDFViewer
             // 
             // label4
             // 
+            this.label4.AccessibleDescription = null;
+            this.label4.AccessibleName = null;
             resources.ApplyResources(this.label4, "label4");
+            this.label4.Font = null;
             this.label4.Name = "label4";
             // 
             // label3
             // 
+            this.label3.AccessibleDescription = null;
+            this.label3.AccessibleName = null;
             resources.ApplyResources(this.label3, "label3");
+            this.label3.Font = null;
             this.label3.Name = "label3";
             // 
             // udResolution
             // 
+            this.udResolution.AccessibleDescription = null;
+            this.udResolution.AccessibleName = null;
             resources.ApplyResources(this.udResolution, "udResolution");
+            this.udResolution.Font = null;
             this.udResolution.Maximum = new decimal(new int[] {
             1000,
             0,
@@ -194,25 +251,40 @@ namespace PDFViewer
             // 
             // label2
             // 
+            this.label2.AccessibleDescription = null;
+            this.label2.AccessibleName = null;
             resources.ApplyResources(this.label2, "label2");
+            this.label2.Font = null;
             this.label2.Name = "label2";
             // 
             // pgBar
             // 
+            this.pgBar.AccessibleDescription = null;
+            this.pgBar.AccessibleName = null;
             resources.ApplyResources(this.pgBar, "pgBar");
+            this.pgBar.BackgroundImage = null;
+            this.pgBar.Font = null;
             this.pgBar.Name = "pgBar";
             // 
             // btnExport
             // 
+            this.btnExport.AccessibleDescription = null;
+            this.btnExport.AccessibleName = null;
             resources.ApplyResources(this.btnExport, "btnExport");
+            this.btnExport.BackgroundImage = null;
+            this.btnExport.Font = null;
             this.btnExport.Name = "btnExport";
             this.btnExport.UseVisualStyleBackColor = true;
             this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
             // 
             // btnCancel
             // 
+            this.btnCancel.AccessibleDescription = null;
+            this.btnCancel.AccessibleName = null;
             resources.ApplyResources(this.btnCancel, "btnCancel");
+            this.btnCancel.BackgroundImage = null;
             this.btnCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            this.btnCancel.Font = null;
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
@@ -221,17 +293,14 @@ namespace PDFViewer
             // 
             resources.ApplyResources(this.dlgSave, "dlgSave");
             // 
-            // optPrintCurrent
-            // 
-            resources.ApplyResources(this.optPrintCurrent, "optPrintCurrent");
-            this.optPrintCurrent.Name = "optPrintCurrent";
-            this.optPrintCurrent.UseVisualStyleBackColor = true;
-            // 
             // frmExportJpg
             // 
             this.AcceptButton = this.btnExport;
+            this.AccessibleDescription = null;
+            this.AccessibleName = null;
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.BackgroundImage = null;
             this.CancelButton = this.btnCancel;
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnExport);
@@ -240,6 +309,8 @@ namespace PDFViewer
             this.Controls.Add(this.cmdChoseFile);
             this.Controls.Add(this.txtFileName);
             this.Controls.Add(this.label1);
+            this.Font = null;
+            this.Icon = null;
             this.Name = "frmExportJpg";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmExportJpg_FormClosing);
             this.groupBox1.ResumeLayout(false);

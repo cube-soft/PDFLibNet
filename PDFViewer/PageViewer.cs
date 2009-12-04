@@ -762,7 +762,7 @@ namespace PDFViewer
             if (MouseInPage(pos))
             {
                 _pointCurrent = e.Location; //Update current Point
-                e.Location.Offset(Margin.Top, Margin.Bottom);
+               //e.Location.Offset(Margin.Top, Margin.Bottom);
                 base.OnMouseMove(e);
             }
         }

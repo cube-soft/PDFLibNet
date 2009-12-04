@@ -4,7 +4,7 @@
 /*                                                                         */
 /*    Load the metrics tables common to TTF and OTF fonts (body).          */
 /*                                                                         */
-/*  Copyright 2006, 2007 by                                                */
+/*  Copyright 2006, 2007, 2008, 2009 by                                    */
 /*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
 /*                                                                         */
 /*  This file is part of the FreeType project, and may only be used,       */
@@ -60,7 +60,7 @@
   /* <Return>                                                              */
   /*    FreeType error code.  0 means success.                             */
   /*                                                                       */
-#if !defined FT_CONFIG_OPTION_OLD_INTERNALS
+#ifndef FT_CONFIG_OPTION_OLD_INTERNALS
 
   FT_LOCAL_DEF( FT_Error )
   tt_face_load_hmtx( TT_Face    face,
@@ -97,7 +97,7 @@
     return error;
   }
 
-#else /* !OPTIMIZE_MEMORY || OLD_INTERNALS */
+#else /* !FT_CONFIG_OPTION_OLD_INTERNALS */
 
   FT_LOCAL_DEF( FT_Error )
   tt_face_load_hmtx( TT_Face    face,
@@ -110,40 +110,48 @@
     FT_ULong   table_len;
     FT_Long    num_shorts, num_longs, num_shorts_checked;
 
-    TT_LongMetrics *   longs;
+    TT_LongMetrics*    longs;
     TT_ShortMetrics**  shorts;
     FT_Byte*           p;
 
 
     if ( vertical )
     {
+      void*   lm = &face->vertical.long_metrics;
+      void**  sm = &face->vertical.short_metrics;
+
+
       error = face->goto_table( face, TTAG_vmtx, stream, &table_len );
       if ( error )
         goto Fail;
 
       num_longs = face->vertical.number_Of_VMetrics;
       if ( (FT_ULong)num_longs > table_len / 4 )
-        num_longs = (FT_Long)(table_len / 4);
+        num_longs = (FT_Long)( table_len / 4 );
 
       face->vertical.number_Of_VMetrics = 0;
 
-      longs  = (TT_LongMetrics *)&face->vertical.long_metrics;
-      shorts = (TT_ShortMetrics**)&face->vertical.short_metrics;
+      longs  = (TT_LongMetrics*)lm;
+      shorts = (TT_ShortMetrics**)sm;
     }
     else
     {
+      void*   lm = &face->horizontal.long_metrics;
+      void**  sm = &face->horizontal.short_metrics;
+
+
       error = face->goto_table( face, TTAG_hmtx, stream, &table_len );
       if ( error )
         goto Fail;
 
       num_longs = face->horizontal.number_Of_HMetrics;
       if ( (FT_ULong)num_longs > table_len / 4 )
-        num_longs = (FT_Long)(table_len / 4);
+        num_longs = (FT_Long)( table_len / 4 );
 
       face->horizontal.number_Of_HMetrics = 0;
 
-      longs  = (TT_LongMetrics *)&face->horizontal.long_metrics;
-      shorts = (TT_ShortMetrics**)&face->horizontal.short_metrics;
+      longs  = (TT_LongMetrics*)lm;
+      shorts = (TT_ShortMetrics**)sm;
     }
 
     /* never trust derived values */
@@ -153,7 +161,9 @@
 
     if ( num_shorts < 0 )
     {
-      FT_ERROR(( "%cmtx has more metrics than glyphs.\n" ));
+      FT_TRACE0(( "tt_face_load_hmtx:"
+                  " %cmtx has more metrics than glyphs.\n",
+                  vertical ? "v" : "h" ));
 
       /* Adobe simply ignores this problem.  So we shall do the same. */
 #if 0
@@ -221,7 +231,7 @@
     return error;
   }
 
-#endif /* !OPTIMIZE_MEMORY || OLD_INTERNALS */
+#endif /* !FT_CONFIG_OPTION_OLD_INTERNALS */
 
 
   /*************************************************************************/
@@ -279,11 +289,14 @@
 
     if ( vertical )
     {
+      void  *v = &face->vertical;
+
+
       error = face->goto_table( face, TTAG_vhea, stream, 0 );
       if ( error )
         goto Fail;
 
-      header = (TT_HoriHeader*)&face->vertical;
+      header = (TT_HoriHeader*)v;
     }
     else
     {
@@ -330,7 +343,7 @@
   /*                                                                       */
   /*    advance :: The advance width resp. advance height.                 */
   /*                                                                       */
-#if !defined FT_CONFIG_OPTION_OLD_INTERNALS
+#ifndef FT_CONFIG_OPTION_OLD_INTERNALS
 
   FT_LOCAL_DEF( FT_Error )
   tt_face_get_metrics( TT_Face     face,
@@ -348,7 +361,10 @@
 
     if ( vertical )
     {
-      header     = (TT_HoriHeader*)&face->vertical;
+      void*  v = &face->vertical;
+
+
+      header     = (TT_HoriHeader*)v;
       table_pos  = face->vert_metrics_offset;
       table_size = face->vert_metrics_size;
     }
@@ -406,7 +422,7 @@
     return SFNT_Err_Ok;
   }
 
-#else /* OLD_INTERNALS */
+#else /* !FT_CONFIG_OPTION_OLD_INTERNALS */
 
   FT_LOCAL_DEF( FT_Error )
   tt_face_get_metrics( TT_Face     face,
@@ -415,8 +431,10 @@
                        FT_Short*   abearing,
                        FT_UShort*  aadvance )
   {
-    TT_HoriHeader*  header = vertical ? (TT_HoriHeader*)&face->vertical
-                                      :                 &face->horizontal;
+    void*           v = &face->vertical;
+    void*           h = &face->horizontal;
+    TT_HoriHeader*  header = vertical ? (TT_HoriHeader*)v
+                                      : (TT_HoriHeader*)h;
     TT_LongMetrics  longs_m;
     FT_UShort       k = header->number_Of_HMetrics;
 
@@ -444,7 +462,7 @@
     return SFNT_Err_Ok;
   }
 
-#endif /* !OPTIMIZE_MEMORY || OLD_INTERNALS */
+#endif /* !FT_CONFIG_OPTION_OLD_INTERNALS */
 
 
 /* END */

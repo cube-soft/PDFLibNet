@@ -216,7 +216,7 @@ pdf_newfontdesc(void)
 
 	fontdesc->dhmtx.lo = 0x0000;
 	fontdesc->dhmtx.hi = 0xFFFF;
-	fontdesc->dhmtx.w = 0;
+	fontdesc->dhmtx.w = 1000;
 
 	fontdesc->dvmtx.lo = 0x0000;
 	fontdesc->dvmtx.hi = 0xFFFF;
@@ -237,10 +237,10 @@ static fz_error
 loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 {
 	fz_error error;
-	fz_obj *descriptor = nil;
-	fz_obj *encoding = nil;
-	fz_obj *widths = nil;
-	unsigned short *etable = nil;
+	fz_obj *descriptor;
+	fz_obj *encoding;
+	fz_obj *widths;
+	unsigned short *etable;
 	pdf_fontdesc *fontdesc;
 	fz_irect bbox;
 	FT_Face face;
@@ -310,7 +310,10 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 
 		if (kind == TYPE1)
 		{
-			if (test->platform_id == 7)
+			/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=664 */
+			if (test->platform_id == 3 && test->encoding_id == 1)
+				cmap = test;
+			if (test->platform_id == 7 && test->encoding_id == 2)
 				cmap = test;
 		}
 
@@ -571,6 +574,8 @@ loadcidfont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict, fz_obj *enco
 	char collection[256];
 	char *basefont;
 	int i, k, fterr;
+	fz_obj *obj;
+	int dw;
 
 	/*
 	 * Get font name and CID collection
@@ -580,7 +585,6 @@ loadcidfont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict, fz_obj *enco
 
 	{
 		fz_obj *cidinfo;
-		fz_obj *obj;
 		char tmpstr[64];
 		int tmplen;
 
@@ -731,8 +735,11 @@ loadcidfont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict, fz_obj *enco
 	/*
 	 * Horizontal
 	 */
-
-	pdf_setdefaulthmtx(fontdesc, fz_toint(fz_dictgets(dict, "DW")));
+	dw = 1000;
+	obj = fz_dictgets(dict, "DW");
+	if (obj)
+		dw = fz_toint(obj);
+	pdf_setdefaulthmtx(fontdesc, dw);
 
 	widths = fz_dictgets(dict, "W");
 	if (widths)

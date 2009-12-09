@@ -424,10 +424,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\fitz\filt_faxe.c"
-				>
-			</File>
-			<File
 				RelativePath=".\fitz\filt_faxe.h"
 				>
 			</File>

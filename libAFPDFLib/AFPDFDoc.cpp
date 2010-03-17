@@ -5,11 +5,11 @@
 #include "StreamCallback.h"
 //#include "InfoOutputDev.h"
 //#include "GFXOutputDev.h"
-#include "gfxdevice.h"
+/*#include "gfxdevice.h"
 #include "devices/swf.h"
 #include "devices/rescale.h"
 #include "pdf.h"
-#include "args.h"
+#include "args.h"*/
 
 
 	//------DECLARATIONS	
@@ -737,6 +737,20 @@
 		StreamCallback *str = new StreamCallback((READFROMSTREAM)callback,fullLenght,0,gFalse,0,&obj);
 		m_PDFDoc = new PDFDoc(str); //,new GString(user_password),new GString(owner_password));
 		m_LastOpenedStream=str;
+		/*
+		if (m_PDFDoc->isOk()) {
+		   Catalog *cat = m_PDFDoc->getCatalog();
+		   int pages = cat->getNumPages();
+		   for (int i = 1; i<= pages; i++)
+		   {
+			  Page *page = cat->getPage(i);
+			  Object obj;              
+			  Object *annots = page->getAnnots(&obj);    
+			  Annots *annots1 = new Annots(m_PDFDoc->getXRef(), cat, annots); // Here annots1 is always 000000
+			  obj.free();
+			  int numanots = annots1->getNumAnnots();
+		   }
+		}*/
 		//Esperamos a que se carge correctamente, o que ocurra un error
 		while (!m_PDFDoc->isOk()) 
 		{
@@ -835,9 +849,11 @@
 		
 		//Intentamos abrir el documento sin clave
 		m_PDFDoc = new PDFDoc(new GString(FileName), NULL,NULL);		
+
 		//Esperamos a que se carge correctamente, o que ocurra un error
 		while (!m_PDFDoc->isOk()) 
 		{
+
 			//En caso de que este encriptado con clave
 			if (m_PDFDoc->getErrorCode() == errEncrypted)
 			{
@@ -2507,7 +2523,6 @@
 	}
 
 	wchar_t * AFPDFDoc::getAuthor(){
-		this->ExportToSWF("C:\\swf1.swf", "C:\\Users\\Antonio\\Documents\\Visual Studio 2005\\Projects\\pdfviewer-win32\\swftools\\swftools-0.9.0\\swfs\\rfxview.swf",1,this->GetPageCount(),1,85);
 		return ::getDocInfo("Author",m_PDFDoc);
 	}
 		
@@ -3070,7 +3085,7 @@
 
 	bool AFPDFDoc::ExportToSWF(char *fileName,char *swfViewer,int fromPage, int toPage,int zoomtowidth,int jpegQuality)
 	{
-		double zoom=1;
+		/*double zoom=1;
 		double multiply=1.0;
 		char pagerange[255];
 		sprintf(pagerange,"%d-%d",fromPage,toPage);

@@ -534,14 +534,12 @@ namespace PDFViewer
                     fs.Close();
                     fs = null;
                 }
-                //Does not supported by MuPDF.
-                //fs = new System.IO.FileStream(filename, System.IO.FileMode.Open);
-                //return pdfDoc.LoadPDF(fs);
-                bool bRet =  pdfDoc.LoadPDF(filename);
-                tsbUseMuPDF.Checked = pdfDoc.UseMuPDF;
-                return bRet;
-                
-                
+                //Does not supported by MuPDF.                
+                //fs = new System.IO.FileStream(filename, System.IO.FileMode.Open);                
+                //return pdfDoc.LoadPDF(fs);                
+                bool bRet =  pdfDoc.LoadPDF(filename);               
+                tsbUseMuPDF.Checked = pdfDoc.UseMuPDF;                
+                return bRet;                
             }
             catch (System.Security.SecurityException)
             {
@@ -856,6 +854,14 @@ namespace PDFViewer
                         else if (saveFileDialog1.FileName.EndsWith(".html"))
                         {
                             //_pdfDoc.ExportHtml(saveFileDialog1.FileName, 1, _pdfDoc.PageCount,false,false,true);
+                        }
+                        else if (saveFileDialog1.FileName.EndsWith(".eps"))
+                        {
+                            //_pdfDoc.ExportEPS(saveFileDialog1.FileName, 1, _pdfDoc.PageCount);
+                        }
+                        else if (saveFileDialog1.FileName.EndsWith(".swf"))
+                        {
+                            //_pdfDoc.ExportSWF(saveFileDialog1.FileName, 1, _pdfDoc.PageCount);
                         }
                     }
                 }

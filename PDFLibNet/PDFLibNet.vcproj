@@ -173,7 +173,7 @@
 				SupportUnloadOfDelayLoadedDLL="false"
 				TargetMachine="1"
 				KeyFile="PDFLibNet.snk"
-				CLRThreadAttribute="0"
+				CLRThreadAttribute="1"
 				CLRUnmanagedCodeCheck="false"
 			/>
 			<Tool
@@ -237,6 +237,14 @@
 			<File
 				RelativePath=".\AssemblyInfo.cpp"
 				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						Detect64BitPortabilityProblems="true"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\LinkDest.cpp"

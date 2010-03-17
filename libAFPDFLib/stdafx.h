@@ -53,4 +53,4 @@
 #include "UnicodeMap.h"
 #include "PDFDocEncoding.h"
 #include "GMutex.h"
-
+#include "Annot.h"

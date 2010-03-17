@@ -58,7 +58,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;..\xpdfWin\xpdf&quot;;&quot;..\xpdfWin\goo&quot;;&quot;..\xpdfWin\fofi&quot;;&quot;..\xpdfWin\splash&quot;;&quot;..\freetype-2.3.1\include\freetype&quot;;&quot;..\xpdfWin\pdf2html&quot;;"
+				AdditionalIncludeDirectories="&quot;..\xpdfWin\xpdf&quot;;&quot;..\xpdfWin\goo&quot;;&quot;..\xpdfWin\fofi&quot;;&quot;..\xpdfWin\splash&quot;;&quot;..\freetype-2.3.1\include\freetype&quot;;&quot;..\swftools\swftools-0.9.0\lib\pdf&quot;;&quot;..\swftools\swftools-0.9.0\lib&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;"
 				MinimalRebuild="false"
 				ExceptionHandling="1"
@@ -154,7 +154,7 @@
 				OmitFramePointers="false"
 				EnableFiberSafeOptimizations="false"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;..\xpdfWin\xpdf&quot;;&quot;..\xpdfWin\goo&quot;;&quot;..\xpdfWin\fofi&quot;;&quot;..\xpdfWin\splash&quot;;&quot;..\freetype-2.3.1\include\freetype&quot;;&quot;..\jpg&quot;;&quot;..\xpdfWin\pdf2html&quot;"
+				AdditionalIncludeDirectories="&quot;..\xpdfWin\xpdf&quot;;&quot;..\xpdfWin\goo&quot;;&quot;..\xpdfWin\fofi&quot;;&quot;..\xpdfWin\splash&quot;;&quot;..\freetype-2.3.1\include\freetype&quot;;&quot;..\swftools\swftools-0.9.0\lib\pdf&quot;;&quot;..\swftools\swftools-0.9.0\lib&quot;"
 				PreprocessorDefinitions="WIN32;_WINDOWS"
 				RuntimeLibrary="2"
 				TreatWChar_tAsBuiltInType="true"

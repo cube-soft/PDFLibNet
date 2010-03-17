@@ -784,10 +784,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\jbig2dec\pbm2png.c"
-				>
-			</File>
-			<File
 				RelativePath=".\jbig2dec\sha1.c"
 				>
 			</File>

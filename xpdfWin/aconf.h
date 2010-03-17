@@ -1,3 +1,4 @@
+#pragma error(disable:C2440)
 /*
  * aconf-win32.h
  *
@@ -117,4 +118,5 @@
  */
 #undef SPLASH_CMYK
 
+#define HAVE_ZLIB
 #endif

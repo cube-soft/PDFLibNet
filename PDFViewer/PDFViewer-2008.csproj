@@ -10,7 +10,8 @@
     <RootNamespace>PDFViewer</RootNamespace>
     <AssemblyName>PDFViewer</AssemblyName>
     <SignAssembly>false</SignAssembly>
-    <AssemblyOriginatorKeyFile>PDFLibNet.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
@@ -20,7 +21,7 @@
     <ManifestCertificateThumbprint>EC0783C1615F593143CE8CD99FCDE4A2AFCECB9E</ManifestCertificateThumbprint>
     <ManifestKeyFile>PDFViewer-2008_TemporaryKey.pfx</ManifestKeyFile>
     <GenerateManifests>true</GenerateManifests>
-    <SignManifests>true</SignManifests>
+    <SignManifests>false</SignManifests>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -126,10 +127,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="frmExportJpg.es-MX.resx">
-      <DependentUpon>frmExportJpg.cs</DependentUpon>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
     <EmbeddedResource Include="frmExportJpg.es.resx">
       <SubType>Designer</SubType>
       <DependentUpon>frmExportJpg.cs</DependentUpon>
@@ -276,8 +273,6 @@
     <None Include="Resources\Save.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PDFLibNet.snk" />
-    <None Include="PDFViewer-2008_TemporaryKey.pfx" />
     <None Include="Resources\RefreshDocView.bmp" />
   </ItemGroup>
   <ItemGroup>

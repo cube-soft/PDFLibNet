@@ -197,7 +197,7 @@ public:
   virtual GBool getVectorAntialias();
   virtual void setVectorAntialias(GBool vaa);
 #endif
-
+void doUpdateFont(GfxState *state);
 private:
 	GBool _needNonText;
   void setupScreenParams(double hDPI, double vDPI);
@@ -207,7 +207,7 @@ private:
   SplashPattern *getColor(GfxGray gray, GfxRGB *rgb);
 #endif
   SplashPath *convertPath(GfxState *state, GfxPath *path);
-  void doUpdateFont(GfxState *state);
+  
   void drawType3Glyph(T3FontCache *t3Font,
 		      T3FontCacheTag *tag, Guchar *data);
   static GBool imageMaskSrc(void *data, SplashColorPtr line);

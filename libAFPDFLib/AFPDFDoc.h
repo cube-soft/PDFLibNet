@@ -158,7 +158,7 @@ public:
 	int SaveJpg(char *fileName,float renderDPI,int fromPage, int toPage, int quality, int waitProc);
 	int SaveTxt(char *fileName,int firstPage, int lastPage, bool htmlMeta,bool physLayout, bool rawOrder);
 	//int SaveHtml(char *outFileName, int firstPage, int lastPage, bool noFrames, bool nomerge, bool complexmode);
-
+	bool ExportToSWF(char *fileName,char *swfViewer,int fromPage, int toPage,int zoomtowidth,int jpegQuality);
 	void CancelJpgSave();
 	//Returns true if exists a background thread of jpg export is running
 	bool JpgIsBusy();

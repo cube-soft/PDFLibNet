@@ -40,14 +40,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;xpdf&quot;;&quot;splash&quot;;&quot;goo&quot;;&quot;fofi&quot;;&quot;..\freetype-2.3.1\include&quot;"
+				AdditionalIncludeDirectories="&quot;xpdf&quot;;&quot;splash&quot;;&quot;goo&quot;;&quot;fofi&quot;;&quot;..\freetype-2.3.1\include&quot;;&quot;..\zlib&quot;;&quot;..\jpeg&quot;"
 				PreprocessorDefinitions="WIN32"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="0"
 				RuntimeLibrary="3"
+				DisableLanguageExtensions="false"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="true"
 				DebugInformationFormat="3"
+				CompileAs="2"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -61,7 +63,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
-				AdditionalDependencies="..\bin\freetype231_D.lib"
+				AdditionalDependencies="..\bin\freetype231_D.lib ..\zlib\zlib.lib ..\swftools\swftools-0.9.0\lib\as3\as3.lib ..\swftools\swftools-0.9.0\lib\action\action.lib"
 				OutputFile="..\bin\$(ProjectName)_D.lib"
 			/>
 			<Tool
@@ -109,7 +111,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				WholeProgramOptimization="true"
-				AdditionalIncludeDirectories="&quot;xpdf&quot;;&quot;splash&quot;;&quot;goo&quot;;&quot;fofi&quot;;&quot;..\freetype-2.3.1\include&quot;"
+				AdditionalIncludeDirectories="&quot;xpdf&quot;;&quot;splash&quot;;&quot;goo&quot;;&quot;fofi&quot;;&quot;..\freetype-2.3.1\include&quot;;&quot;..\zlib&quot;;&quot;..\jpeg&quot;"
 				PreprocessorDefinitions="_WIN32;WIN32"
 				RuntimeLibrary="2"
 				WarningLevel="3"
@@ -129,8 +131,10 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
-				AdditionalDependencies="..\bin\freetype231.lib"
+				AdditionalOptions="/c"
+				AdditionalDependencies="..\bin\freetype231.lib ..\zlib\zlib.lib ..\swftools\swftools-0.9.0\lib\as3\as3.lib ..\swftools\swftools-0.9.0\lib\action\action.lib"
 				OutputFile="..\bin\$(ProjectName).lib"
+				AdditionalLibraryDirectories=""
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -613,6 +617,381 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="pdf2swf"
+				>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\bitio.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\pdf\BitmapOutputDev.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\pdf\cmyk.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\config.h"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\drawer.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\pdf\fonts.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\pdf\FullBitmapOutputDev.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\gfxfont.cc"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\pdf\GFXOutputDev.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\gfxpoly.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\gfxtools.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\pdf\InfoOutputDev.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\log.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\MD5.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\mem.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\devices\ops.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\os.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\pdf\pdf.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\png.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\devices\polyops.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\q.cc"
+					>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							OpenMP="true"
+							Detect64BitPortabilityProblems="true"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\devices\record.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\devices\render.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\devices\rescale.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\rfxswf.cc"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\devices\swf.cc"
+					>
+				</File>
+				<Filter
+					Name="modules"
+					>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfaction.cc"
+						>
+						<FileConfiguration
+							Name="Debug|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+								CompileAs="1"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\$(InputName)1.obj"
+								XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+								CompileAs="1"
+							/>
+						</FileConfiguration>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfbits.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfbutton.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfcgi.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfdraw.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfdump.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swffilter.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swffont.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfobject.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfrender.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfshape.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swfsound.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swftext.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\modules\swftools.cc"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="art"
+					>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_affine.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_alphagamma.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_bpath.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_gray_svp.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_misc.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_pixbuf.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rect.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rect_svp.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rect_uta.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_render.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_render_gradient.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_render_mask.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_render_svp.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgb.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgb_a_affine.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgb_affine.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgb_affine_private.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgb_bitmap_affine.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgb_pixbuf_affine.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgb_rgba_affine.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgb_svp.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_rgba.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_svp.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_svp_intersect.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_svp_ops.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_svp_point.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_svp_render_aa.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_svp_vpath.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_svp_vpath_stroke.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_svp_wind.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_uta.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_uta_ops.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_uta_rect.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_uta_svp.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_uta_vpath.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_vpath.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_vpath_bpath.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_vpath_dash.cc"
+						>
+					</File>
+					<File
+						RelativePath="..\swftools\swftools-0.9.0\lib\art\art_vpath_svp.cc"
+						>
+					</File>
+				</Filter>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -827,6 +1206,34 @@
 				RelativePath=".\xpdf\XRef.h"
 				>
 			</File>
+			<Filter
+				Name="pdf2swf"
+				>
+				<File
+					RelativePath="..\swftools\swftools-0.8.1\lib\pdf\aconf.h"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.8.1\lib\pdf\cmyk.h"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.8.1\lib\pdf\GFXOutputDev.h"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.8.1\lib\pdf\InfoOutputDev.h"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.9.0\lib\MD5.h"
+					>
+				</File>
+				<File
+					RelativePath="..\swftools\swftools-0.8.1\lib\pdf\pdf.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<File
 			RelativePath=".\aconf-linux.h"

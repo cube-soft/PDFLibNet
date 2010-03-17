@@ -3,6 +3,14 @@
 #include "jpeg.h"
 #include "error.h"
 #include "StreamCallback.h"
+//#include "InfoOutputDev.h"
+//#include "GFXOutputDev.h"
+#include "gfxdevice.h"
+#include "devices/swf.h"
+#include "devices/rescale.h"
+#include "pdf.h"
+#include "args.h"
+
 
 	//------DECLARATIONS	
 	#define			FIND_DPI			72
@@ -2499,6 +2507,7 @@
 	}
 
 	wchar_t * AFPDFDoc::getAuthor(){
+		this->ExportToSWF("C:\\swf1.swf", "C:\\Users\\Antonio\\Documents\\Visual Studio 2005\\Projects\\pdfviewer-win32\\swftools\\swftools-0.9.0\\swfs\\rfxview.swf",1,this->GetPageCount(),1,85);
 		return ::getDocInfo("Author",m_PDFDoc);
 	}
 		
@@ -3057,3 +3066,91 @@
 
 	bool AFPDFDoc::getNeedNonText(){ return _needNonText; }
 	void AFPDFDoc::setNeedNonText(bool needs) { _needNonText = needs; }
+
+
+	bool AFPDFDoc::ExportToSWF(char *fileName,char *swfViewer,int fromPage, int toPage,int zoomtowidth,int jpegQuality)
+	{
+		double zoom=1;
+		double multiply=1.0;
+		char pagerange[255];
+		sprintf(pagerange,"%d-%d",fromPage,toPage);
+		gfxsource_t *driver = gfxsource_pdf_create();
+		driver->set_parameter(driver, "pages", pagerange);
+		driver->set_parameter(driver,"viewer",swfViewer);
+		gfxdocument_t* pdf = driver->open(driver, fileName);
+		
+		int pagenum = 0;
+		int frame = 1;
+		int pagenr;
+	    
+		for(pagenr = 1; pagenr <= pdf->num_pages; pagenr++) 
+		{
+			if(is_in_range(pagenr, pagerange)) {
+				char mapping[80];
+				sprintf(mapping, "%d:%d", pagenr, frame);
+				pdf->set_parameter(pdf, "pagemap", mapping);
+				pagenum++;
+			}
+			if(pagenr == pdf->num_pages && pagenum>1) {
+				pagenum = 0;
+				frame++;
+			}
+		}
+
+		pagenum = 0;
+		gfxdevice_t *out;
+		gfxdevice_t swf;
+		gfxdevice_t wrap;
+		gfxdevice_t rescale;
+		
+		gfxdevice_swf_init(&swf);
+		out=&swf;
+		/* set up filter chain */
+		/*if(flatten) {
+			gfxdevice_removeclippings_init(&wrap, &swf);
+			out = &wrap;
+		}
+		if(maxwidth || maxheight) {
+			gfxdevice_rescale_init(&rescale, out, 1024, 800, 0);
+			out = &rescale;
+		}*/
+		/*
+
+		InfoOutputDev *infoOut = new InfoOutputDev(m_PDFDoc->getXRef());
+		GFXOutputDev *gfxOut = new GFXOutputDev(infoOut,m_PDFDoc);
+
+		if(zoomtowidth && m_PDFDoc->getNumPages()) {
+			Page*page = m_PDFDoc->getCatalog()->getPage(1);
+			PDFRectangle *r = page->getCropBox();
+			double width_before = r->x2 - r->x1;
+			zoom = 72.0 * zoomtowidth / width_before;
+			//msg("<notice> Rendering at %f DPI. (Page width at 72 DPI: %f, target width: %d)", zoom, width_before, zoomtowidth);
+		}
+
+		gfxdevice_t* middev=0;
+		middev = (gfxdevice_t*)malloc(sizeof(gfxdevice_t));
+		gfxdevice_rescale_init(middev, 0x00000000, 0, 0, 1.0 / multiply);
+		middev->setparameter(middev, "protect", "1");
+		gfxOut->setDevice(middev);
+
+		for(int i=fromPage;i<=toPage;i++)
+		{
+			//Load Page Info
+			m_PDFDoc->displayPage((OutputDev *)infoOut,i,1/zoom,1/zoom,0,true,false,false);
+			m_PDFDoc->processLinks((OutputDev *)infoOut,i);
+			infoOut->endPage();
+			//Render page
+			m_PDFDoc->displayPage((OutputDev *)gfxOut,i,zoom,zoom,0,true,false,false);
+			m_PDFDoc->processLinks((OutputDev *)gfxOut,i);
+			gfxOut->endPage();	
+		}
+
+		gfxOut->setDevice(0);
+
+//		free(middev);
+
+		delete infoOut;
+		delete gfxOut;
+		*/
+		return true;
+	}

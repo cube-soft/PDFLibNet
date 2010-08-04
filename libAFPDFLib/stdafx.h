@@ -35,7 +35,9 @@
 #include <string.h>
 #include <wchar.h> 
 #include <tchar.h>
-#include <atlstr.h>
+
+#include <string>
+typedef std::basic_string<char> string_type;
 
 #include "pdfdoc.h"
 #include "splashoutputdev.h"

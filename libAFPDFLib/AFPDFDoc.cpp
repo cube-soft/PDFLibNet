@@ -2041,7 +2041,7 @@
 	{
 		
 
-		CString strResult;
+		string_type strResult;
 		char version[32];
 		if(m_PDFDoc){
 			sprintf(version,"%f",m_PDFDoc->getPDFVersion());
@@ -2588,7 +2588,7 @@
 
 	int AFPDFDoc::SaveJpg(char *fileName,float renderDPI,int fromPage, int toPage, int quality, int waitProc)
 	{
-		CString errmsg;
+		string_type errmsg;
 		DWORD waitRes=0;
 		//If the current rendered page is the same requested
 		if(renderDPI ==  this->m_renderDPI
@@ -2630,7 +2630,7 @@
 			bmi.bmiColors[0].rgbRed = 0;
 			bmi.bmiColors[0].rgbReserved = 0;
 			
-			int ret = JpegFromDib((HANDLE)m_splashOut->GetDataPtr(),&bmi,quality,CString(fileName),&errmsg);
+			int ret = JpegFromDib((HANDLE)m_splashOut->GetDataPtr(),&bmi,quality,string_type(fileName),errmsg);
 			if(this->m_ExportProgressHandle != 0){
 				if(this->m_ExportProgressHandle(1,1) !=0){
 				}
@@ -2698,9 +2698,8 @@
 		
 		SplashOutputDev	*splashOut=NULL;
 		int eError=0;
-		CString errMessage;
-		CString fileName(exp->fileName);
-		char *filenameBuffer[1024];
+		string_type errMessage;
+		string_type fileName(exp->fileName);
 
 		if(doc!=NULL){
 			SplashColor paperColor;
@@ -2747,9 +2746,8 @@
 			
 					bmi.bmiHeader.biWidth = splashOut->getBitmap()->getWidth();
 					bmi.bmiHeader.biHeight = splashOut->getBitmap()->getHeight();
-
-					sprintf((char *)filenameBuffer,exp->fileName,page);
-					if(JpegFromDib((HANDLE)splashOut->getBitmap()->getDataPtr(),&bmi,exp->quality,CString((char *)filenameBuffer),&errMessage)!=0){
+					
+					if(JpegFromDib((HANDLE)splashOut->getBitmap()->getDataPtr(),&bmi,exp->quality,fileName,errMessage)!=0){
 						eError=3;
 						break;
 					}

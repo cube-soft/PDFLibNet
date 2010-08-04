@@ -88,8 +88,8 @@ private:
 	//SplashOutputDev	*m_splashOutThread;
 	Outline *m_Outline;
 	PageMemory *m_Bitmap;
-	CString m_OwnerPassword;
-	CString m_UserPassword;
+	string_type m_OwnerPassword;
+	string_type m_UserPassword;
 	CRect m_bbox;
 	CRect m_sliceBox;
 	double __x0;

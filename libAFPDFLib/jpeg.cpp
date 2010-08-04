@@ -13,24 +13,22 @@
 //
 //IMPORTANT: The function assumes 3 color components per pixel.
 /////////////////////////////////////////////////////////////////////////////
-int JpegFromDib(HANDLE     hDib,  //Handle to RAW data
-				 LPBITMAPINFO lpbi,    
-                 int        nQuality, //JPEG quality (0-100)
-                 CString    csJpeg,   //Pathname to jpeg file
-                 CString*   pcsMsg)   //Error msg to return
+int JpegFromDib(HANDLE                 hDib,     //Handle to RAW data
+				 LPBITMAPINFO          lpbi,     
+                 int                   nQuality, //JPEG quality (0-100)
+                 const string_type&    csJpeg,   //Pathname to jpeg file
+                 string_type&          pcsMsg)   //Error msg to return
 {
     //Basic sanity checks...
     if (nQuality < 0 || nQuality > 100 ||
         hDib   == NULL ||
-        pcsMsg == NULL ||
-        csJpeg == "")
+        csJpeg.empty())
     {
-        if (pcsMsg != NULL)
-            *pcsMsg = "Invalid input data";
+        pcsMsg = _T("Invalid input data");
         return 30001;
     }
 
-    *pcsMsg = "";
+    pcsMsg.erase();
     byte *buf2 = 0;
 
     //Use libjpeg functions to write scanlines to disk in JPEG format
@@ -45,15 +43,14 @@ int JpegFromDib(HANDLE     hDib,  //Handle to RAW data
 
     jpeg_create_compress(&cinfo);
 	USES_CONVERSION;
-    if ((pOutFile = fopen(csJpeg.GetBuffer(), "wb")) == NULL)
+    if ((pOutFile = fopen(csJpeg.c_str(), "wb")) == NULL)
     {
-        *pcsMsg = "Cannot open ";
-		*pcsMsg += csJpeg;
-		csJpeg.ReleaseBuffer();
+        pcsMsg = "Cannot open ";
+		pcsMsg += csJpeg;
         jpeg_destroy_compress(&cinfo);
         return 30002;
     }
-	csJpeg.ReleaseBuffer();
+    
 	//Redirect error out for jpeg
     jpeg_stdio_dest(&cinfo, pOutFile);
     cinfo.image_width      = lpbi->bmiHeader.biWidth;  //Image width and height, in pixels
@@ -100,7 +97,7 @@ int JpegFromDib(HANDLE     hDib,  //Handle to RAW data
 
     jpeg_destroy_compress(&cinfo); //Free resources
 
-    if (*pcsMsg != "")
+    if (!pcsMsg.empty())
         return 30000;
 
     else
@@ -123,15 +120,14 @@ BOOL DibToSamps(HANDLE                      hDib,
                 int                         nSampsPerRow,
                 struct jpeg_compress_struct cinfo,
                 JSAMPARRAY                  jsmpPixels,
-                CString*                    pcsMsg,
+                string_type&                pcsMsg,
 				LPSTR						lpBits)
 {
    //Sanity...
    if (hDib == NULL    ||
-     nSampsPerRow <= 0 || pcsMsg == NULL)
+     nSampsPerRow <= 0)
    {
-     if (pcsMsg !=NULL)
-        *pcsMsg="Invalid input data";
+     pcsMsg = "Invalid input data";
      return FALSE;
    }
 
@@ -162,7 +158,7 @@ BOOL DibToSamps(HANDLE                      hDib,
          break;
 
       default:
-         *pcsMsg = "Invalid bitmap bit count";
+         pcsMsg = "Invalid bitmap bit count";
          return FALSE; //Unsupported format
    }
 

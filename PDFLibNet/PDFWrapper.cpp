@@ -87,7 +87,7 @@ namespace PDFLibNet{
 			for(int i=1; i<=this->PageCount; ++i)
 				_pages.Add(i,gcnew PDFPage(_pdfDoc,i));
 
-			PDFLoadCompeted();
+			PDFLoadCompleted();
 		}catch(System::AccessViolationException ^e){
 			throw gcnew System::AccessViolationException("Something is wrong with the file");
 		}finally{
@@ -120,7 +120,7 @@ namespace PDFLibNet{
 			for(int i=1; i<=this->PageCount; ++i)
 				_pages.Add(i,gcnew PDFPage(_pdfDoc,i));
 
-			PDFLoadCompeted();
+			PDFLoadCompleted();
 		}catch(System::AccessViolationException ^e){
 			throw gcnew System::AccessViolationException("Something is wrong with the file");
 		}finally{
@@ -137,7 +137,8 @@ namespace PDFLibNet{
 		return FindText(sText,iPage,SearchOrder,bCaseSensitive,bBackward,bMarkAll,bWholeDoc,true,false);
 	}
 	long PDFWrapper::FindText(String ^sText, Int32 iPage, PDFSearchOrder SearchOrder, Boolean bCaseSensitive, Boolean bBackward, Boolean bMarkAll, Boolean bWholeDoc, Boolean bWholeWord, Boolean stopOnFirstPageResults){
-		IntPtr ptr = Marshal::StringToCoTaskMemUni(sText);
+		//IntPtr ptr = Marshal::StringToCoTaskMemUni(sText);
+		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(sText);
 		wchar_t *singleByte= (wchar_t*)ptr.ToPointer();
 
 		try{

@@ -457,7 +457,7 @@ namespace PDFLibNet {
 		}
 
 
-		event PDFLoadCompletedHandler ^PDFLoadCompeted;
+		event PDFLoadCompletedHandler ^PDFLoadCompleted;
 		event PDFLoadBeginHandler ^PDFLoadBegin;
 		
 		

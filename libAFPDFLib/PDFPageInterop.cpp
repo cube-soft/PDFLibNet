@@ -115,6 +115,7 @@ int PDFPageInterop::getPage()
 //Extract selected text
 wchar_t *PDFPageInterop::extractText()
 {
+#ifdef PDFLIBNET_ORIGINAL
 	CString str;
 	DynArray<pdfPageSelection> *arr =(DynArray<pdfPageSelection> *)this->_selectionArray;
 	char *buf;
@@ -133,6 +134,9 @@ wchar_t *PDFPageInterop::extractText()
 		}
 	}
 	return str.AllocSysString();
+#else
+	return EmptyChar;
+#endif
 }
 wchar_t *PDFPageInterop::extractText(int xMin, int yMin, int xMax, int yMax) //Extract text from coordinates
 {
@@ -285,8 +289,10 @@ static void WriteToGString(void *stream,char *str, int len)
 }
 static void WriteToCString(void *stream,char *str, int len)
 {
+#ifdef PDFLIBNET_ORIGINAL
 	CString *gstr =(CString *)stream;
 	gstr->Append(str);
+#endif
 }
 	
 void PDFPageInterop::getTextStream(void *stream){
@@ -302,7 +308,7 @@ void PDFPageInterop::getTextStream(void *stream){
 wchar_t *PDFPageInterop::getText(){
 	AFPDFDoc *doc = (AFPDFDoc *)_pdfDoc;
 	GString *s1 = new GString();
-	CString *s2 = new CString();
+	//CString *s2 = new CString();
 
 	globalParams->setTextEncoding("UTF-8");
 	UnicodeMap *map=globalParams->getTextEncoding();

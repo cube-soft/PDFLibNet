@@ -4,6 +4,8 @@ extern "C"
 #include "..\jpeg\jpeglib.h"
 }
 
+#define USES_CONVERSION ;
+
 BOOL JpegFromDib(HANDLE             hDib,
                  LPBITMAPINFO       lpbi,     //Handle to DIB
                  int                nQuality, //JPEG quality (0-100)

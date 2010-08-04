@@ -13,12 +13,12 @@
 
 
 	//------DECLARATIONS	
-	#define			FIND_DPI			72
-	#define			PRINT_DPI			150
-	#define			SPACE_X				16
-	#define			SPACE_Y				16
-	#define			MAX(a,b)			a>b?a:b			
-	#define			IFZERO(a,b)			a==0?b:a;
+#define			FIND_DPI			72
+#define			PRINT_DPI			150
+#define			SPACE_X				16
+#define			SPACE_Y				16
+#define			MAX(a,b)			a>b?a:b			
+#define			IFZERO(a,b)			a==0?b:a;
 	
 	static wchar_t		EmptyChar[1]						={'\0'};
 	
@@ -348,6 +348,7 @@
 	}
 	static wchar_t	*	getDicString(Dict *infoDict,char *key,UnicodeMap *uMap)
 	{
+#ifdef PDFLIBNET_ORIGINAL
 		Object obj;
 		GString *s1;
 		GBool isUnicode;
@@ -389,6 +390,7 @@
 			}
 
 		}
+#endif
 		return EmptyChar;
 		
 	}
@@ -540,7 +542,6 @@
 	, _mupdf(0)
 #endif
 	, _useMuPDF(false)
-
 	{
 		
 		// GMutex m;
@@ -661,23 +662,24 @@
 			if (pdfDoc->getErrorCode() == errEncrypted)
 			{
 				//Si no se especifico clave salimos
-				if(m_OwnerPassword.GetLength()<=0 && m_UserPassword.GetLength()<=0) {
+				if(m_OwnerPassword.size()<=0 && m_UserPassword.size()<=0) {
 					delete pdfDoc;
 					pdfDoc=NULL;
 				}else{
 					//Si no se especifico una de las claves, usamos la misma para ambos
-					if(m_UserPassword.GetLength()<=0){
+					if(m_UserPassword.size()<=0){
 						m_UserPassword=m_OwnerPassword;
-					}else if(m_OwnerPassword.GetLength()<=0){
+					}else if(m_OwnerPassword.size()<=0){
 						m_OwnerPassword = m_UserPassword;
 					}				
 					//Intentamos abrir con clave
 					pdfDoc = new PDFDoc(new GString(FileName), 
-							new GString(m_OwnerPassword.GetBuffer()), 
-							new GString(m_UserPassword.GetBuffer()));
+							new GString(const_cast<char*>(m_OwnerPassword.c_str())), 
+							new GString(const_cast<char*>(m_UserPassword.c_str())));
+#ifdef PDFLIBNET_ORIGINAL
 					m_OwnerPassword.ReleaseBuffer();
 					m_UserPassword.ReleaseBuffer();
-
+#endif
 				}
 			} 
 			if (!pdfDoc->isOk())
@@ -758,23 +760,25 @@
 			if (m_PDFDoc->getErrorCode() == errEncrypted)
 			{
 				//Si no se especifico clave salimos
-				if(m_OwnerPassword.GetLength()<=0 && m_UserPassword.GetLength()<=0) {
+				if(m_OwnerPassword.size()<=0 && m_UserPassword.size()<=0) {
 					delete m_PDFDoc;
 					m_PDFDoc=NULL;
 					return errEncrypted;
 				}else{
 					//Si no se especifico una de las claves, usamos la misma para ambos
-					if(m_UserPassword.GetLength()<=0){
+					if(m_UserPassword.size()<=0){
 						m_UserPassword=m_OwnerPassword;
-					}else if(m_OwnerPassword.GetLength()<=0){
+					}else if(m_OwnerPassword.size()<=0){
 						m_OwnerPassword = m_UserPassword;
 					}				
 					//Intentamos abrir con clave
 					m_PDFDoc = new PDFDoc(str, 
-							new GString(m_OwnerPassword.GetBuffer()), 
-							new GString(m_UserPassword.GetBuffer()));
+							new GString(const_cast<char*>(m_OwnerPassword.c_str())), 
+							new GString(const_cast<char*>(m_UserPassword.c_str())));
+#ifdef PDFLIBNET_ORIGINAL
 					m_OwnerPassword.ReleaseBuffer();
 					m_UserPassword.ReleaseBuffer();
+#endif
 				}
 			} 
 			if (!m_PDFDoc->isOk())
@@ -858,23 +862,25 @@
 			if (m_PDFDoc->getErrorCode() == errEncrypted)
 			{
 				//Si no se especifico clave salimos
-				if(m_OwnerPassword.GetLength()<=0 && m_UserPassword.GetLength()<=0) {
+				if(m_OwnerPassword.size()<=0 && m_UserPassword.size()<=0) {
 					delete m_PDFDoc;
 					m_PDFDoc=NULL;
 					return errEncrypted;
 				}else{
 					//Si no se especifico una de las claves, usamos la misma para ambos
-					if(m_UserPassword.GetLength()<=0){
+					if(m_UserPassword.size()<=0){
 						m_UserPassword=m_OwnerPassword;
-					}else if(m_OwnerPassword.GetLength()<=0){
+					}else if(m_OwnerPassword.size()<=0){
 						m_OwnerPassword = m_UserPassword;
 					}				
 					//Intentamos abrir con clave
 					m_PDFDoc = new PDFDoc(new GString(FileName), 
-							new GString(m_OwnerPassword.GetBuffer()), 
-							new GString(m_UserPassword.GetBuffer()));
+							new GString(const_cast<char*>(m_OwnerPassword.c_str())), 
+							new GString(const_cast<char*>(m_UserPassword.c_str())));
+#ifdef PDFLIBNET_ORIGINAL
 					m_OwnerPassword.ReleaseBuffer();
 					m_UserPassword.ReleaseBuffer();
+#endif
 				}
 			} 
 			if (!m_PDFDoc->isOk())
@@ -1523,12 +1529,14 @@
 #ifdef _MUPDF
 		if(_mupdf == NULL){
 			_mupdf = new mupdfEngine();
-			if(this->_mupdf->LoadFile(this->m_LastOpenedFile.getCString(),m_OwnerPassword.GetBuffer(),m_UserPassword.GetBuffer())){
+			if(this->_mupdf->LoadFile(this->m_LastOpenedFile.getCString(),const_cast<char*>(m_OwnerPassword.c_str()),const_cast<char*>(m_UserPassword.c_str()))){
 				delete _mupdf;
 				_mupdf=NULL;
 			}
+#ifdef PDFLIBNET_ORIGINAL
 			m_OwnerPassword.ReleaseBuffer();
 			m_UserPassword.ReleaseBuffer();
+#endif
 		}
 		return _mupdf!=NULL;
 #else
@@ -2039,8 +2047,7 @@
 
 	wchar_t *AFPDFDoc::GetPDFVersion(void)
 	{
-		
-
+#if PDFLIBNET_ORIGINAL
 		string_type strResult;
 		char version[32];
 		if(m_PDFDoc){
@@ -2048,6 +2055,9 @@
 			strResult=version;
 		}
 		return strResult.AllocSysString();
+#else
+		return EmptyChar;
+#endif
 	}
 
 	long AFPDFDoc::FindText(const wchar_t *sText, long iPage, long SearchOrder, bool bCaseSensitive, bool bBackward, bool bMarkAll, bool bWholeDoc, bool bWholeWord, bool stopOnFirstPageResults)
@@ -2060,9 +2070,14 @@
 		GBool rc, startAtTop, startAtLast, backward;
 		Unicode * ucstring;
 		TextOutputDev FindPage(NULL, gTrue, gFalse, gFalse);
-
+		
+#ifdef PDFLIBNET_ORIGINAL
 		CString theString(sText);
 		int length = theString.GetLength();
+#else
+		std::basic_string<wchar_t> theString(sText);
+		int length = theString.size();
+#endif
 		
 		//Tratar de reservar la cadena
 		ucstring = GetUnicodeString(sText, length);
@@ -2176,8 +2191,13 @@
 		Unicode * ucstring;
 		TextOutputDev FindPage(NULL, gTrue, gFalse, gFalse);
 
+#ifdef PDFLIBNET_ORIGINAL
 		CString theString(sText);
 		int length = theString.GetLength();
+#else
+		std::basic_string<wchar_t> theString(sText);
+		int length = theString.size();
+#endif
 		
 		//Tratar de reservar la cadena
 		ucstring = GetUnicodeString(sText, length);
@@ -2275,8 +2295,13 @@
 		Unicode * ucstring;
 		TextOutputDev FindPage(NULL, gTrue, gFalse, gFalse);
 
+#ifdef PDFLIBNET_ORIGINAL
 		CString theString(sText);
 		int length = theString.GetLength();
+#else
+		std::basic_string<wchar_t> theString(sText);
+		int length = theString.size();
+#endif
 		
 		//Tratar de reservar la cadena
 		ucstring = GetUnicodeString(sText, length);
@@ -2393,8 +2418,13 @@
 		Unicode * ucstring;
 		TextOutputDev FindPage(NULL, gTrue, gFalse, gFalse);
 
+#ifdef PDFLIBNET_ORIGINAL
 		CString theString(sText);
 		int length = theString.GetLength();
+#else
+		std::basic_string<wchar_t> theString(sText);
+		int length = theString.size();
+#endif
 		
 		//Tratar de reservar la cadena
 		ucstring = GetUnicodeString(sText, length);
@@ -2539,18 +2569,26 @@
 		return ::getDocInfo("Producer",m_PDFDoc);
 	}
 	char * AFPDFDoc::getCreationDate(){
+#ifdef PDFLIBNET_ORIGINAL
 		wchar_t * s = getDocInfo("CreationDate",m_PDFDoc);
 		char *datetime = new char[256];
 		USES_CONVERSION;
 		parseDateTime(datetime,W2A(s));
 		return datetime;
+#else
+		return NULL;
+#endif
 	}
 	char * AFPDFDoc::getLastModifiedDate(){
+#ifdef PDFLIBNET_ORIGINAL
 		wchar_t *s = getDocInfo("LastModifiedDate",m_PDFDoc);
 		char *datetime=new char[256];
 		USES_CONVERSION;
 		parseDateTime(datetime,W2A(s));
 		return datetime;
+#else
+		return NULL;
+#endif
 	}
 
 	Links *AFPDFDoc::GetLinksPage(long iPage)

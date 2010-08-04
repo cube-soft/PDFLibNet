@@ -17,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="..\bin\zlib_D.lib"
+			OutputDirectory="..\bin\x86\Debug\"
 			IntermediateDirectory=".\Win32_LIB_Debug"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -50,7 +50,7 @@
 				AssemblerListingLocation=".\Win32_LIB_Debug/"
 				ObjectFile=".\Win32_LIB_Debug/"
 				ProgramDataBaseFileName=".\Win32_LIB_Debug/"
-				WarningLevel="3"
+				WarningLevel="0"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
 			/>
@@ -67,7 +67,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\bin\zlib_D.lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -90,12 +90,13 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="..\bin\zlib.lib"
+			OutputDirectory="..\bin\x86\Release\"
 			IntermediateDirectory=".\Win32_LIB_Release"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="false"
+			WholeProgramOptimization="1"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -117,6 +118,7 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -125,7 +127,7 @@
 				AssemblerListingLocation=".\Win32_LIB_Release/"
 				ObjectFile=".\Win32_LIB_Release/"
 				ProgramDataBaseFileName=".\Win32_LIB_Release/"
-				WarningLevel="3"
+				WarningLevel="0"
 				SuppressStartupBanner="true"
 			/>
 			<Tool
@@ -141,7 +143,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="..\bin\zlib.lib"
+				LinkLibraryDependencies="false"
 				SuppressStartupBanner="true"
 			/>
 			<Tool

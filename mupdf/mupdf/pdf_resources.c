@@ -61,7 +61,9 @@ preloadcolorspace(pdf_xref *xref, fz_obj *ref)
 
 	pdf_logrsrc("rsrc colorspace %s\n", colorspace->name);
 
-	error = pdf_storeitem(xref->store, PDF_KCOLORSPACE, ref, colorspace);
+	/*error = pdf_storeitem(xref->store, PDF_KCOLORSPACE, ref, colorspace);*/
+	error = 0;
+	pdf_storeitem(xref->store, PDF_KCOLORSPACE, ref, colorspace);
 	fz_dropcolorspace(colorspace); /* we did this just to fill the store, no need to hold on to it */
 	if (error)
 		return fz_rethrow(error, "cannot store colorspace resource");
@@ -263,7 +265,9 @@ copyresolved(fz_obj **outp, pdf_xref *xref, fz_obj *dict)
 		val = fz_dictgetval(dict, i);
 		obj = fz_resolveindirect(val);
 
-		error = fz_dictput(copy, key, obj);
+		/*error = fz_dictput(copy, key, obj);*/
+		fz_dictput(copy, key, obj);
+		error = 0;
 		if (error)
 		{
 		    fz_dropobj(copy);
@@ -316,7 +320,10 @@ pdf_loadresources(fz_obj **rdbp, pdf_xref *xref, fz_obj *orig)
 			fz_dropobj(copy);
 			return fz_rethrow(error, "cannot resolve indirect objects");
 		}
-		error = fz_dictputs(copy, "ExtGState", new);
+
+		/*error = fz_dictputs(copy, "ExtGState", new);*/
+		fz_dictputs(copy, "ExtGState", new);
+		error = 0;
 		fz_dropobj(new);
 		if (error)
 		{

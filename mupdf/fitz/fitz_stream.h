@@ -243,6 +243,7 @@ void fz_unchainpipeline(fz_filter *pipe, fz_filter **oldfp, fz_buffer **oldbp);
 /* stop and reverse! special case needed for postscript only */
 void fz_pushbackahxd(fz_filter *filter, fz_buffer *in, fz_buffer *out, int n);
 
+#ifdef MUPDF_OLD_DECLARATIONS
 fz_filter * fz_newnullfilter(int len);
 fz_filter * fz_newcopyfilter();
 fz_filter * fz_newarc4filter(unsigned char *key, unsigned keylen);
@@ -257,6 +258,7 @@ fz_filter * fz_newlzwd(fz_obj *param);
 fz_filter * fz_newpredictd(fz_obj *param);
 fz_filter * fz_newjbig2d(fz_obj *param);
 fz_filter * fz_newjpxd(fz_obj *param);
+#endif
 
 fz_error fz_setjbig2dglobalstream(fz_filter *filter, unsigned char *buf, int len);
 

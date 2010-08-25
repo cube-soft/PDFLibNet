@@ -338,10 +338,6 @@
 			RelativePath=".\app.config"
 			>
 		</File>
-		<File
-			RelativePath=".\PDFLibNet.snk"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

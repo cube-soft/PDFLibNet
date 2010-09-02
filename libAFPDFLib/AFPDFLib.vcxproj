@@ -247,7 +247,7 @@
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <WholeProgramOptimization>true</WholeProgramOptimization>
-      <AdditionalIncludeDirectories>..\xpdfWin\xpdf;..\xpdfWin\goo;..\xpdfWin\fofi;..\xpdfWin\splash;..\freetype-2.4.1\include\freetype;..\jpg;..\xpdfWin\pdf2html;..\mupdf\mupdf;..\mupdf;..\mupdf\fitz;..\mupdf\fitzdraw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\freetype-2.4.1\include\freetype;..\jpg;..\xpdfWin\pdf2html;..\mupdf\mupdf;..\mupdf;..\mupdf\fitz;..\mupdf\fitzdraw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32; _WINDOWS; _MUPDF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>

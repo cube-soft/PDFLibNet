@@ -82,7 +82,7 @@
 				FixedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
-				KeyFile="PDFLibNet.snk"
+				KeyFile=""
 				CLRThreadAttribute="2"
 				CLRUnmanagedCodeCheck="false"
 			/>
@@ -174,7 +174,7 @@
 				DataExecutionPrevention="0"
 				SupportUnloadOfDelayLoadedDLL="false"
 				TargetMachine="1"
-				KeyFile="PDFLibNet.snk"
+				KeyFile=""
 				CLRThreadAttribute="0"
 				CLRUnmanagedCodeCheck="false"
 			/>

@@ -1,0 +1,9 @@
+*.pdb
+*.idb
+*.obj
+*.exe
+*.suo
+*.user
+*.ncb
+bin/
+obj/

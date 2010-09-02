@@ -873,6 +873,7 @@ lookupwindowsfont(char *fontname, char **fontpath, int *index)
 static fz_error
 lookupcidfont(pdf_fontdesc *font, int csi, int kind, char **fontpath, int *index)
 {
+//	{char a[1024];sprintf(a,"csi:%d\nkink:%d",csi,kind);MessageBox( NULL, a, NULL, MB_OK );}
 	if (MINCHO == kind) {
 		switch (csi) {
 			case CNS:

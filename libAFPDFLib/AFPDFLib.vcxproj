@@ -1,0 +1,334 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug no MuPDF|Win32">
+      <Configuration>Debug no MuPDF</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release no MuPDF|Win32">
+      <Configuration>Release no MuPDF</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{8BDE8E0A-4F7C-4671-AF23-2B077A385AFD}</ProjectGuid>
+    <RootNamespace>AFPDFLib</RootNamespace>
+    <Keyword>MFCDLLProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release no MuPDF|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug no MuPDF|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <CharacterSet>MultiByte</CharacterSet>
+    <CLRSupport>false</CLRSupport>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release no MuPDF|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug no MuPDF|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug no MuPDF|Win32'">..\bin\x86\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug no MuPDF|Win32'">Debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release no MuPDF|Win32'">..\bin\x86\Release</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release no MuPDF|Win32'">Release\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\bin\x86\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\bin\x86\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug no MuPDF|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <TypeLibraryName>
+      </TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+      <DllDataFileName>
+      </DllDataFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\xpdfWin\xpdf;..\xpdfWin\goo;..\xpdfWin\fofi;..\xpdfWin\splash;..\freetype-2.4.1\include\freetype;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ExpandAttributedSource>true</ExpandAttributedSource>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0c0a</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies>$(OutDir)\xpdf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
+    </Lib>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release no MuPDF|Win32'">
+    <Midl>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <WarningLevel>2</WarningLevel>
+      <WarnAsError>true</WarnAsError>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <TypeLibraryName>$(IntDir)$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\xpdfWin\xpdf;..\xpdfWin\goo;..\xpdfWin\fofi;..\xpdfWin\splash;..\freetype-2.4.1\include\freetype;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <ProgramDataBaseFileName>$(IntDir)AFPDFLib.pdb</ProgramDataBaseFileName>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0c0a</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies>$(OutDir)\xpdf.lib;$(OutDir)\libjpeg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
+      <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;nafxcw.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+    </Lib>
+    <PostBuildEvent>
+      <Message>Performing registration</Message>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateTypeLibrary>false</GenerateTypeLibrary>
+      <TypeLibraryName>
+      </TypeLibraryName>
+      <HeaderFileName>
+      </HeaderFileName>
+      <DllDataFileName>
+      </DllDataFileName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\xpdfWin\xpdf;..\xpdfWin\goo;..\xpdfWin\fofi;..\xpdfWin\splash;..\freetype-2.4.1\include\freetype;..\xpdfWin\pdf2html;..\mupdf\mupdf;..\mupdf;..\mupdf\fitz;..\mupdf\fitzdraw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_MUPDF;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ExpandAttributedSource>true</ExpandAttributedSource>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ShowIncludes>false</ShowIncludes>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0c0a</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies>$(OutDir)\xpdf.lib;$(OutDir)\mupdf.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
+    </Lib>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <WarningLevel>2</WarningLevel>
+      <WarnAsError>true</WarnAsError>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <GenerateTypeLibrary>true</GenerateTypeLibrary>
+      <TypeLibraryName>$(IntDir)$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\freetype-2.4.1\include\freetype;..\jpg;..\xpdfWin\pdf2html;..\mupdf\mupdf;..\mupdf;..\mupdf\fitz;..\mupdf\fitzdraw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32; _WINDOWS; _MUPDF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
+      <ProgramDataBaseFileName>$(IntDir)AFPDFLib.pdb</ProgramDataBaseFileName>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>Cdecl</CallingConvention>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0c0a</Culture>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
+      <IgnoreSpecificDefaultLibraries>libc.lib;libcmt.lib;nafxcw.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
+    </Lib>
+    <PostBuildEvent>
+      <Message>Performing registration</Message>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AFPDFDoc.cpp" />
+    <ClCompile Include="AFPDFDocInterop.cpp" />
+    <ClCompile Include="AnnotInterop.cpp" />
+    <ClCompile Include="AuxOutputDev.cpp" />
+    <ClCompile Include="DynArray.cpp" />
+    <ClCompile Include="globals.cpp" />
+    <ClCompile Include="ImagesMemoryOutputDev.cpp" />
+    <ClCompile Include="jpeg.cpp" />
+    <ClCompile Include="LinkDestInterop.cpp">
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyAndSourceCode</AssemblerOutput>
+    </ClCompile>
+    <ClCompile Include="LinkInterop.cpp" />
+    <ClCompile Include="mupdfEngine.cpp" />
+    <ClCompile Include="OutlineItemA.cpp" />
+    <ClCompile Include="OutlineItemInterop.cpp" />
+    <ClCompile Include="PageLinksInterop.cpp" />
+    <ClCompile Include="PageMemory.cpp" />
+    <ClCompile Include="PDFPageInterop.cpp" />
+    <ClCompile Include="SearchResultInterop.cpp" />
+    <ClCompile Include="StreamCallback.cpp" />
+    <ClCompile Include="XPDFParamsInterop.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AFPDFDoc.h" />
+    <ClInclude Include="AFPDFDocInterop.h" />
+    <ClInclude Include="AnnotInterop.h" />
+    <ClInclude Include="AuxOutputDev.h" />
+    <ClInclude Include="CRect.h" />
+    <ClInclude Include="DynArray.h" />
+    <ClInclude Include="globals.h" />
+    <ClInclude Include="ImagesMemoryOutputDev.h" />
+    <ClInclude Include="jpeg.h" />
+    <ClInclude Include="LinkDestInterop.h" />
+    <ClInclude Include="LinkInterop.h" />
+    <ClInclude Include="mupdfEngine.h" />
+    <ClInclude Include="OutlineItemA.h" />
+    <ClInclude Include="OutlineItemInterop.h" />
+    <ClInclude Include="PageLinksInterop.h" />
+    <ClInclude Include="PageMemory.h" />
+    <ClInclude Include="PDFPageInterop.h" />
+    <ClInclude Include="Queue.h" />
+    <ClInclude Include="SearchResultInterop.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StreamCallback.h" />
+    <ClInclude Include="XPDFParamsInterop.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
+</Project>

@@ -952,6 +952,10 @@
 				>
 			</File>
 		</Filter>
+		<File
+			RelativePath="..\libAFPDFLib\AFPDFLib-2008.vcproj"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>

@@ -873,7 +873,7 @@ lookupwindowsfont(char *fontname, char **fontpath, int *index)
 static fz_error
 lookupcidfont(pdf_fontdesc *font, int csi, int kind, char **fontpath, int *index)
 {
-//	{char a[1024];sprintf(a,"csi:%d\nkink:%d",csi,kind);MessageBox( NULL, a, NULL, MB_OK );}
+	{char a[1024];sprintf(a,"csi:%d\nkink:%d",csi,kind);MessageBox( NULL, a, NULL, MB_OK );}
 	if (MINCHO == kind) {
 		switch (csi) {
 			case CNS:
@@ -1102,6 +1102,8 @@ static fz_error loadwindowsfont(pdf_fontdesc *font, char *fontname)
 	error = fz_newfontfromfile(&font->font, file, index);
 	if (error)
 		return fz_rethrow(error, "cannot load freetype font from a file %s", file);
+	/* it's a substitute font: override the metrics */
+	font->font->ftsubstitute = 1;
 	return fz_okay;
 }
 

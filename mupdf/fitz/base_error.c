@@ -7,7 +7,7 @@ static int fz_errorclear = 1;
 static void
 fz_printerror(int type, const char *file, int line, const char *func, char *msg)
 {
-	char buf[100];
+	char buf[1024];
 	int len;
 
 	snprintf(buf, sizeof buf, "%c %s:%d: %s(): %s", type, file, line, func, msg);

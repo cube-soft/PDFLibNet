@@ -274,7 +274,7 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="$(OutDir)\zlib.lib $(OutDir)\libjpeg.lib $(OutDir)\freetype.lib $(OutDir)\xpdf.lib $(OutDir)\mupdf.lib $(OutDir)\mapsfonts.lib"
+				AdditionalDependencies="$(OutDir)\zlib.lib $(OutDir)\libjpeg.lib $(OutDir)\freetype.lib $(OutDir)\xpdf.lib $(OutDir)\mupdf.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -368,7 +368,7 @@
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
 				AdditionalOptions="/IGNORE:4006"
-				AdditionalDependencies="$(OutDir)\zlib.lib $(OutDir)\libjpeg.lib $(OutDir)\freetype.lib $(OutDir)\xpdf.lib $(OutDir)\mupdf.lib $(OutDir)\mapsfonts.lib"
+				AdditionalDependencies="$(OutDir)\zlib.lib $(OutDir)\libjpeg.lib $(OutDir)\freetype.lib $(OutDir)\xpdf.lib $(OutDir)\mupdf.lib"
 				IgnoreDefaultLibraryNames="libc.lib;libcmt.lib;nafxcw.lib"
 			/>
 			<Tool

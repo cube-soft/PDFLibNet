@@ -535,7 +535,7 @@
 	, m_PageRenderedByThread(0)
 	, m_sliceBox(0,0,0,0)
 	, m_LastOpenedStream(0)
-	, m_QueuedThumbs(15)
+	, m_QueuedThumbs(1024)
 	, m_renderThumbs(0)
 	, m_thumbOut(0)
 #ifdef _MUPDF
@@ -1251,6 +1251,18 @@
 		return false;
 	}
 
+	bool AFPDFDoc::CancelThumbRender( void )
+	{
+		return m_QueuedThumbs.clearall( CancelThumbRenderCallback );
+	}
+
+	void AFPDFDoc::CancelThumbRenderCallback( void *param )
+	{
+		threadParamThumb *p = (threadParamThumb *)param;
+		p->finishNotify( p->pageToRender, false );
+		delete p;
+	}
+
 	long AFPDFDoc::DrawPage(int page, long hdc, int width, int height, double dpi,bool bThread, void *callback, bool bAntialising)
 	{
 		//Establecemos el color del papel
@@ -1437,10 +1449,10 @@
 				bmpMem=0;
 				bSuccess=true;
 			}
-			if(param->finishNotify)
-				 param->finishNotify(page,bSuccess);
 			if(param){
 				param->que->delQueue.Delete(0);
+				if(param->finishNotify)
+					 param->finishNotify(page,bSuccess);
 				delete param;
 				param=0;
 			}

@@ -174,6 +174,10 @@ namespace PDFLibNet {
 		bool RenderPage(IntPtr handler, System::Boolean bForce);
 		bool RenderPage(IntPtr handler, System::Boolean bForce, System::Boolean bEnableThread);
 		
+		bool CancelThumbProcess( void ) {
+			return _pdfDoc->CancelThumbRender();
+		}
+
 		bool DrawPageHDC(IntPtr hdc);
 
 		void FitToWidth(IntPtr handler);

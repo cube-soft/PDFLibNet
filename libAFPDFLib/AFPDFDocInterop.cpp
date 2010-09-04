@@ -298,6 +298,11 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 		return doc->ThumbInQueue(page);
 	}
 
+	bool AFPDFDocInterop::CancelThumbRender( void ) {
+		AFPDFDoc *doc =((AFPDFDoc *)_ptr);
+		return doc->CancelThumbRender();
+	}
+
 	bool AFPDFDocInterop::GetSupportsMuPDF()
 	{
 		AFPDFDoc *doc =((AFPDFDoc *)_ptr);

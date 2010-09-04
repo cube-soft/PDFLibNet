@@ -50,6 +50,7 @@ private:
 	void RemoveFromCache(int page);
 	void AddBitmapCache(PageMemory *bmp, int page);
 	int RenderThreadFinished(AuxOutputDev *out,int page, bool enablePreRender);
+	static void CancelThumbRenderCallback( void * );
 protected:
 	long m_PageToRenderByThread;
 	long m_LastPageRenderedByThread;
@@ -124,6 +125,7 @@ public:
 	}
 	long DrawPage(int page,long hdc, int width, int height, double dpi,bool bThread, void *callback, bool bAntialising);
 	bool ThumbInQueue(int page);
+	bool CancelThumbRender( void );
 	long LoadFromStream(void *callback,long fullLenght, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password, char *owner_password);
 	long LoadFromFile(char *FileName, char *user_password);

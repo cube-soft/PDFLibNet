@@ -24,6 +24,7 @@ public:
 	long RenderPageThread(long lhWnd, bool bForce);
 	long DrawPage(int page, long hdc, int width, int height, double pdi, bool bThread, void *callback, bool bAntialising);
 	bool ThumbInQueue(int page);
+	bool CancelThumbRender( void );
 	void SetUserPassword(char *pass);
 	void SetOwnerPassword(char *pass);
 	void SetSliceBox(int x, int y, int w, int h);

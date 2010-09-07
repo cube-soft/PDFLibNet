@@ -1178,30 +1178,30 @@
 					m_PageHeight = m_Bitmap->Height;
 				}
 				
-				//prerender next page
-				PageMemory *nextBmp =GetBitmapCache(m_CurrentPage+1);
-				if ((nextBmp==0 || (nextBmp && nextBmp->getRenderDPI() != m_renderDPI)) && 
-					(enableThread && m_CurrentPage+1 <= m_PDFDoc->getNumPages()))
-				{
-					m_PageToRenderByThread = m_CurrentPage+1;
+				////prerender next page
+				//PageMemory *nextBmp =GetBitmapCache(m_CurrentPage+1);
+				//if ((nextBmp==0 || (nextBmp && nextBmp->getRenderDPI() != m_renderDPI)) && 
+				//	(enableThread && m_CurrentPage+1 <= m_PDFDoc->getNumPages()))
+				//{
+				//	m_PageToRenderByThread = m_CurrentPage+1;
 
-					if(m_splashOut>0){
-						delete m_splashOut;
-						m_splashOut=0;
-					}
-					threadParam *tp = new threadParam(this, m_PageToRenderByThread);
-					tp->out=new AuxOutputDev(new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias()));
-					tp->out->startDoc(m_PDFDoc->getXRef());
-					tp->out->clearModRegion();
-					tp->enablePreRender=false;
-					ResetEvent(this->hRenderFinished);
+				//	if(m_splashOut>0){
+				//		delete m_splashOut;
+				//		m_splashOut=0;
+				//	}
+				//	threadParam *tp = new threadParam(this, m_PageToRenderByThread);
+				//	tp->out=new AuxOutputDev(new SplashOutputDev(splashModeBGR8, 4, gFalse, paperColor,gTrue,globalParams->getAntialias()));
+				//	tp->out->startDoc(m_PDFDoc->getXRef());
+				//	tp->out->clearModRegion();
+				//	tp->enablePreRender=false;
+				//	ResetEvent(this->hRenderFinished);
 
-					InterlockedExchange(&this->g_lLocker,0);
-					m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID)tp,CREATE_SUSPENDED,0);
-					//SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
-					ResumeThread(m_renderingThread);
-					
-				}else
+				//	InterlockedExchange(&this->g_lLocker,0);
+				//	m_renderingThread = CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThread,(LPVOID)tp,CREATE_SUSPENDED,0);
+				//	//SetThreadPriority(m_renderingThread,THREAD_PRIORITY_BELOW_NORMAL);
+				//	ResumeThread(m_renderingThread);
+				//	
+				//}else
 					m_renderingThread=0;
 				
 				m_LastRenderDPI = m_renderDPI;

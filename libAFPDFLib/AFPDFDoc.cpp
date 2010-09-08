@@ -1307,7 +1307,6 @@
 		}else{
 			PDFDoc *doc;
 			double renderDPI=18;
-			PageMemory *bmpMem=0;
 			int page=0;
 			bool render=true;
 			doc=(PDFDoc *)tp->doc;
@@ -1347,27 +1346,35 @@
 					p->display(tp->out->getSplash(),renderDPI, renderDPI, 0,
 									gFalse, gTrue, gFalse,doc->getCatalog() /*,
 										callbackAbortDisplay,pdfDoc*/);
-
-
-					int bmWidth = tp->out->GetWidth();
-					int bmHeight = tp->out->GetHeight();					
-
-					PageMemory *bmpMem = new PageMemory();
-					bmpMem->Create(tp->hDC,bmWidth,bmHeight,renderDPI, tp->out->getDefCTM(),tp->out->getDefICTM());	
-
-					//********START DIB
-					bmpMem->SetDimensions(bmWidth,bmHeight,renderDPI);
-					bmpMem->SetDIBits(tp->hDC,(void *)tp->out->GetDataPtr());
-
-					bmpMem->Draw(tp->hDC,0,0,bmWidth,bmHeight,0,0);
-					
-					bmpMem->Dispose();
-					delete bmpMem;
-					delete tp;
-					bmpMem=0;
-					return 0;
+					tp->out->SetDataPtr(tp->out->getSplash()->getBitmap()->getDataPtr());
+						tp->out->setDefCTM(tp->out->getSplash()->getDefCTM());
+						tp->out->setDefICTM(tp->out->getSplash()->getDefICTM());
+						tp->out->setSize(tp->out->getSplash()->getBitmapWidth(),tp->out->getSplash()->getBitmapHeight());
 				}
-			}				
+			}
+
+
+			int bmWidth = tp->out->GetWidth();
+			int bmHeight = tp->out->GetHeight();					
+
+			PageMemory *bmpMem = new PageMemory();
+			bmpMem->Create(tp->hDC,bmWidth,bmHeight,renderDPI, tp->out->getDefCTM(),tp->out->getDefICTM());	
+
+			//********START DIB
+			bmpMem->SetDimensions(bmWidth,bmHeight,renderDPI);
+			bmpMem->SetDIBits(tp->hDC,(void *)tp->out->GetDataPtr());
+
+			bmpMem->Draw(tp->hDC,0,0,bmWidth,bmHeight,0,0);
+			
+			bmpMem->Dispose();
+			delete bmpMem;
+
+			if( tp->finishNotify )
+				tp->finishNotify( page, true );
+
+			delete tp;
+
+			return 0;
 		}
 		
 		return -1;

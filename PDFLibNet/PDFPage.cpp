@@ -95,7 +95,7 @@ namespace PDFLibNet
 			_thumbG = System::Drawing::Graphics::FromImage(_thumbNail);
 			_thumbG->Clear(System::Drawing::Color::White);
 			_thumbHdc = _thumbG->GetHdc();
-			if(_pdfDoc->DrawPage(_pageNumber,_thumbHdc.ToInt32(),width,height,0,true,ptrCallBack,false)!=0)
+			if(_pdfDoc->DrawPage(_pageNumber,_thumbHdc.ToInt32(),width,height,0,false,ptrCallBack,false)!=0)
 			{
 				_thumbHdc=IntPtr::Zero;
 				_thumbG=nullptr;

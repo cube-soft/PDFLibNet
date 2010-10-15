@@ -159,6 +159,7 @@ namespace PDFLibNet
 		System::Drawing::Bitmap ^GetBitmap(System::Int32 width, System::Int32 height, System::Boolean antialias);
 		System::Drawing::Bitmap ^GetBitmap(System::Double dpi, System::Boolean antialias);
 		System::Drawing::Bitmap ^GetBitmap(System::Double dpi);
+
 		/*///<summary>
 		///Calculate the proportional Height
 		///</summary>

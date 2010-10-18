@@ -11,7 +11,7 @@ PUBLIC	?gStreamMutex@@3U_RTL_CRITICAL_SECTION@@A	; gStreamMutex
 	ALIGN	4
 
 ?gStreamMutex@@3U_RTL_CRITICAL_SECTION@@A DB 018H DUP (?) ; gStreamMutex
-	ORG $+280108
+	ORG $+280164
 __bad_alloc_Message DD FLAT:??_C@_0P@GHFPNOJB@bad?5allocation?$AA@
 PUBLIC	?InitGlobals@@YAXXZ				; InitGlobals
 ; Function compile flags: /Ogtpy

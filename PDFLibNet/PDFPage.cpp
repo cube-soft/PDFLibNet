@@ -117,7 +117,7 @@ namespace PDFLibNet
 		System::Drawing::Graphics ^g = System::Drawing::Graphics::FromImage(bmp);
 				g->Clear(System::Drawing::Color::White);
 		System::IntPtr hdc = g->GetHdc();
-		double dpi = 72*width/this->Width*72/254;
+		//double dpi = 72 * width / this->Width;
 		if(_pdfDoc->DrawPage(_pageNumber,hdc.ToInt32(),width,height,0,false,0,true)!=0) {
 			g->ReleaseHdc();
 			delete g;

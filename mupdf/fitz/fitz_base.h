@@ -2,9 +2,6 @@
  * Include the basic standard libc headers.
  */
 
-#ifndef _FITZ_BASE_H_
-#define _FITZ_BASE_H_
-
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
@@ -69,10 +66,12 @@ extern int gettimeofday(struct timeval *tv, struct timezone *tz);
 
 #define __func__ __FUNCTION__
 
-#define snprintf _snprintf
-
 #if _MSC_VER < 1500
 #define vsnprintf _vsnprintf
+#endif
+
+#ifndef snprintf
+#define snprintf _snprintf
 #endif
 
 #ifndef isnan
@@ -327,7 +326,4 @@ fz_error fz_scalepixmap(fz_pixmap **dstp, fz_pixmap *src, int xdenom, int ydenom
 fz_error fz_newscaledpixmap(fz_pixmap **dstp, int w, int h, int n, int xdenom, int ydenom);
 fz_error fz_scalepixmaptile(fz_pixmap *dstp, int xoffs, int yoffs,
 	fz_pixmap *tile, int xdenom, int ydenom);
-
-#endif
-
 

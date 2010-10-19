@@ -48,7 +48,6 @@ readstartxref(pdf_xref *xref)
 		return fz_rethrow(error, "cannot seek to end of file");
 
 	t = MAX(0, fz_tell(xref->file) - ((int)sizeof buf));
-LookForEOF:
 	error = fz_seek(xref->file, t, 0);
 	if (error)
 		return fz_rethrow(error, "cannot seek to offset %d", t);
@@ -56,16 +55,6 @@ LookForEOF:
 	error = fz_read(&n, xref->file, buf, sizeof buf);
 	if (error)
 		return fz_rethrow(error, "cannot read from file");
-
-	/* make sure that the buffer ends with "%%EOF" before looking for "startxref" */
-	/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=719 */
-	for (i = n - 5; i >= 0 && memcmp(buf + i, "%%EOF", 5) != 0; i--);
-	if (i < n - 5 && t > 0)
-	{
-		t = MAX(0, (t + i + 5) - ((int)sizeof buf));
-		goto LookForEOF;
-	}
-	n = i;
 
 	for (i = n - 9; i >= 0; i--)
 	{
@@ -93,6 +82,7 @@ readoldtrailer(pdf_xref *xref, char *buf, int cap)
 	int ofs, len;
 	char *s;
 	int n;
+	int t;
 	pdf_token_e tok;
 	int c;
 
@@ -103,15 +93,6 @@ readoldtrailer(pdf_xref *xref, char *buf, int cap)
 		return fz_rethrow(error, "cannot read xref marker");
 	if (strncmp(buf, "xref", 4) != 0)
 		return fz_throw("cannot find xref marker");
-
-	/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=543 */
-	/* broken pdfs where 'ofs len' is not on a separate line */
-	if (strlen(buf) != 4)
-	{
-		error = fz_seek(xref->file, 4 - strlen(buf), 1);
-		if (error)
-			return fz_rethrow(error, "cannot seek in file");
-	}
 
 	while (1)
 	{
@@ -137,8 +118,11 @@ readoldtrailer(pdf_xref *xref, char *buf, int cap)
 				return fz_rethrow(error, "cannot seek in file");
 		}
 
-		/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=543 */
-		error = fz_seek(xref->file, 20 * len, 1);
+		t = fz_tell(xref->file);
+		if (t < 0)
+			return fz_throw("cannot tell in file");
+
+		error = fz_seek(xref->file, t + 20 * len, 0);
 		if (error)
 			return fz_rethrow(error, "cannot seek in file");
 	}
@@ -238,15 +222,6 @@ readoldxref(fz_obj **trailerp, pdf_xref *xref, char *buf, int cap)
 		return fz_rethrow(error, "cannot read xref marker");
 	if (strncmp(buf, "xref", 4) != 0)
 		return fz_throw("cannot find xref marker");
-
-	/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=543 */
-	/* broken pdfs where 'ofs len' is not on a separate line */
-	if (strlen(buf) != 4)
-	{
-		error = fz_seek(xref->file, 4 - strlen(buf), 1);
-		if (error)
-			return fz_rethrow(error, "cannot seek in file");
-	}
 
 	while (1)
 	{
@@ -682,22 +657,14 @@ cleanupbuf:
  * open and load xref tables from pdf
  */
 
-fz_error
-pdf_loadxref(pdf_xref *xref, char *filename)
+static fz_error
+pdf_loadxref2(pdf_xref *xref)
 {
 	fz_error error;
 	fz_obj *size;
 	int i;
 
 	char buf[65536];	/* yeowch! */
-
-	pdf_logxref("loadxref '%s' %p\n", filename, xref);
-
-	error = fz_openrfile(&xref->file, filename);
-	if (error)
-	{
-		return fz_rethrow(error, "cannot open file: '%s'", filename);
-	}
 
 	error = loadversion(xref);
 	if (error)
@@ -776,4 +743,31 @@ cleanup:
 	xref->table = nil;
 	return error;
 }
+
+fz_error
+pdf_loadxref(pdf_xref *xref, char *filename)
+{
+	fz_error error;    
+	pdf_logxref("loadxref '%s' %p\n", filename, xref);
+
+	error = fz_openrfile(&xref->file, filename);
+	if (error)
+	{
+		return fz_rethrow(error, "cannot open file: '%s'", filename);
+	}
+	return pdf_loadxref2(xref);
+}
+
+#ifdef WIN32
+fz_error
+pdf_loadxrefw(pdf_xref *xref, wchar_t *filename)
+{
+	fz_error error = fz_openrfilew(&xref->file, filename);
+	if (error)
+	{
+		return fz_rethrow(error, "cannot open file");
+	}
+	return pdf_loadxref2(xref);
+}
+#endif
 

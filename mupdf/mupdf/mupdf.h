@@ -147,6 +147,18 @@ struct pdf_xrefentry_s
 pdf_xref * pdf_newxref(void);
 fz_error pdf_repairxref(pdf_xref *, char *filename);
 fz_error pdf_loadxref(pdf_xref *, char *filename);
+#ifdef WIN32
+#include <wchar.h>
+fz_error pdf_loadxrefw(pdf_xref *xref, wchar_t *filename);
+fz_error pdf_repairxrefw(pdf_xref *xref, wchar_t *filename);
+#ifdef _UNICODE
+#define pdf_loadxreft pdf_loadxrefw
+#define pdf_repairxreft pdf_repairxrefw
+#else
+#define pdf_loadxreft pdf_loadxref
+#define pdf_repairxreft pdf_repairxref
+#endif
+#endif
 fz_error pdf_initxref(pdf_xref *);
 fz_error pdf_decryptxref(pdf_xref *);
 
@@ -390,8 +402,7 @@ fz_error pdf_loadsystemcmap(pdf_cmap **cmapp, char *name);
  */
 
 void pdf_loadencoding(char **estrings, char *encoding);
-int pdf_lookupagl(char *name);
-char **pdf_lookupaglnames(int ucs);
+int pdf_lookupagl(char *name, int *ucsbuf, int ucscap);
 
 extern const unsigned short pdf_docencoding[256];
 extern const char * const pdf_macroman[256];

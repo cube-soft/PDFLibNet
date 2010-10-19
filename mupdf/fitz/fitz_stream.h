@@ -4,9 +4,6 @@
  * Used by the filter library and the mupdf parser.
  */
 
-#ifndef _FITZ_STREAM_H_
-#define _FITZ_STREAM_H_
-
 typedef struct pdf_xref_s pdf_xref; /* this file is about to be merged with mupdf */
 
 typedef struct fz_obj_s fz_obj;
@@ -246,6 +243,7 @@ void fz_unchainpipeline(fz_filter *pipe, fz_filter **oldfp, fz_buffer **oldbp);
 /* stop and reverse! special case needed for postscript only */
 void fz_pushbackahxd(fz_filter *filter, fz_buffer *in, fz_buffer *out, int n);
 
+#ifdef MUPDF_OLD_DECLARATIONS
 fz_filter * fz_newnullfilter(int len);
 fz_filter * fz_newcopyfilter();
 fz_filter * fz_newarc4filter(unsigned char *key, unsigned keylen);
@@ -260,6 +258,7 @@ fz_filter * fz_newlzwd(fz_obj *param);
 fz_filter * fz_newpredictd(fz_obj *param);
 fz_filter * fz_newjbig2d(fz_obj *param);
 fz_filter * fz_newjpxd(fz_obj *param);
+#endif
 
 fz_error fz_setjbig2dglobalstream(fz_filter *filter, unsigned char *buf, int len);
 
@@ -350,6 +349,11 @@ struct fz_stream_s
  */
 
 fz_error fz_openrfile(fz_stream **stmp, char *filename);
+#ifdef WIN32
+#include <wchar.h>
+fz_error fz_openrfilew(fz_stream **stmp, wchar_t *path);
+#endif
+
 fz_stream * fz_openrmemory(unsigned char *mem, int len);
 fz_stream * fz_openrbuffer(fz_buffer *buf);
 fz_stream * fz_openrfilter(fz_filter *flt, fz_stream *chain);
@@ -412,4 +416,3 @@ static inline int fz_peekbyte(fz_stream *stm)
 
 #endif
 
-#endif

@@ -756,21 +756,17 @@ rendermask(fz_renderer *gc, fz_masknode *mask, fz_matrix ctm)
 	{
 		if (fz_issolidnode(color))
 		{
-			/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=794 */
-			if (!gc->maskonly)
-			{
-				fz_solidnode *solid = (fz_solidnode*)color;
+			fz_solidnode *solid = (fz_solidnode*)color;
 
-				fz_convertcolor(solid->cs, solid->samples, gc->model, rgb);
-				gc->argb[0] = solid->a * 255;
-				gc->argb[1] = rgb[0] * solid->a * 255;
-				gc->argb[2] = rgb[1] * solid->a * 255;
-				gc->argb[3] = rgb[2] * solid->a * 255;
-				gc->argb[4] = rgb[0] * 255;
-				gc->argb[5] = rgb[1] * 255;
-				gc->argb[6] = rgb[2] * 255;
-				gc->flag |= FRGB;
-			}
+			fz_convertcolor(solid->cs, solid->samples, gc->model, rgb);
+			gc->argb[0] = solid->a * 255;
+			gc->argb[1] = rgb[0] * solid->a * 255;
+			gc->argb[2] = rgb[1] * solid->a * 255;
+			gc->argb[3] = rgb[2] * solid->a * 255;
+			gc->argb[4] = rgb[0] * 255;
+			gc->argb[5] = rgb[1] * 255;
+			gc->argb[6] = rgb[2] * 255;
+			gc->flag |= FRGB;
 
 			/* we know these can handle the FRGB shortcut */
 			if (fz_ispathnode(shape))
@@ -838,6 +834,9 @@ rendermask(fz_renderer *gc, fz_masknode *mask, fz_matrix ctm)
 			clip.y0 = MAX(colorpix->y, shapepix->y);
 			clip.x1 = MIN(colorpix->x+colorpix->w, shapepix->x+shapepix->w);
 			clip.y1 = MIN(colorpix->y+colorpix->h, shapepix->y+shapepix->h);
+			/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=653 */
+			if (clip.x0 > clip.x1) clip.x1 = clip.x0;
+			if (clip.y0 > clip.y1) clip.y1 = clip.y0;
 			error = fz_newpixmapwithrect(&gc->dest, clip, colorpix->n);
 			if (error)
 				goto cleanup;

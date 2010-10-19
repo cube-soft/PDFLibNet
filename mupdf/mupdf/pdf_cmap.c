@@ -376,9 +376,7 @@ pdf_lookupcmap(pdf_cmap *cmap, int cpt)
 			if (cmap->ranges[m].flag == PDF_CMAP_TABLE)
 				return cmap->table[i];
 			if (cmap->ranges[m].flag == PDF_CMAP_MULTI)
-				/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=788 */
-				/* allow callers to detect that this was a multi-character mapping */
-				return -2 - cmap->ranges[m].offset;
+				return -1;
 			return i;
 		}
 	}

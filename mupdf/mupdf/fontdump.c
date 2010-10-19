@@ -70,25 +70,16 @@ main(int argc, char **argv)
 			p ++;
 		}
 
-		fseek(fi, 0, SEEK_END);
-		len = ftell(fi);
-		fseek(fi, 0, SEEK_SET);
+		fprintf(fo, "const unsigned char pdf_font_%s_buf[] = {\n", name);
 
-		fprintf(fo, "const unsigned int pdf_font_%s_len = %d;\n", name, len);
+		len = hexdump(fo, fi);
 
-		fprintf(fo, "#ifdef __linux__\n");
-		fprintf(fo, "asm(\".globl pdf_font_%s_buf\");\n", name);
-		fprintf(fo, "asm(\".balign 8\");\n");
-		fprintf(fo, "asm(\"pdf_font_%s_buf:\");\n", name);
-		fprintf(fo, "asm(\".incbin \\\"%s\\\"\");\n", argv[i]);
-		fprintf(fo, "#else\n");
-		fprintf(fo, "const unsigned char pdf_font_%s_buf[%d] = {\n", name, len);
-		hexdump(fo, fi);
 		fprintf(fo, "};\n");
-		fprintf(fo, "#endif\n");
+		fprintf(fo, "const unsigned int pdf_font_%s_len = %d;\n", name, len);
 
 		fclose(fi);
 	}
 
 	return 0;
 }
+

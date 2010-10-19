@@ -1,22 +1,9 @@
 #include "fitz.h"
 #include "mupdf.h"
 
-#ifndef WIN32
-/* TODO: should build freetype from sources in unix/mac build as well */
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_XFREE86_H
-#else
-/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=687 */
-/* for accessing to the internal Type 1 specific structures (for extracting the embedded encoding table) */
-#define FT2_BUILD_LIBRARY
-#include <ft2build.h>
-#include FT_FREETYPE_H
-#include FT_XFREE86_H
-
-#include FT_INTERNAL_INTERNAL_H
-#include FT_INTERNAL_TYPE1_TYPES_H
-#endif
 
 static char *basefontnames[14][7] =
 {
@@ -105,49 +92,6 @@ static int ftcharindex(FT_Face face, int cid)
 		gid = FT_Get_Char_Index(face, 0xf000 + cid);
 	return gid;
 }
-
-/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=687 */
-/* extract the Type 1 font's embedded encoding table */
-#ifdef WIN32
-static int ftloadt1encoding(FT_Face face, char **estrings)
-{
-	T1_Encoding encoding;
-	T1_Font font;
-	int i;
-
-	/* not (yet) implemented for CFF and CID fonts */
-	if (strcmp(FT_Get_X11_Font_Format(face), "Type 1") != 0)
-		return 0;
-
-	font = &((T1_Face)face)->type1;
-	switch (font->encoding_type)
-	{
-	case T1_ENCODING_TYPE_STANDARD:
-		pdf_loadencoding(estrings, "StandardEncoding");
-		return 1;
-	case T1_ENCODING_TYPE_ISOLATIN1:
-		pdf_loadencoding(estrings, "WinAnsiEncoding");
-		return 1;
-	case T1_ENCODING_TYPE_EXPERT:
-		pdf_loadencoding(estrings, "MacExpertEncoding");
-		return 1;
-	case T1_ENCODING_TYPE_ARRAY:
-		encoding = &font->encoding;
-		if (encoding->code_first == encoding->code_last)
-			break;
-		assert(encoding->code_first < encoding->code_last && encoding->code_last <= 256);
-		for (i = encoding->code_first; i < encoding->code_last; i++)
-			estrings[i] = encoding->char_name[i];
-		return 1;
-	}
-	return 0;
-}
-#else
-static int ftloadt1encoding(FT_Face face, char **estrings)
-{
-  return 0;
-}
-#endif
 
 static inline int ftcidtogid(pdf_fontdesc *fontdesc, int cid)
 {
@@ -296,7 +240,7 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 	fz_obj *descriptor;
 	fz_obj *encoding;
 	fz_obj *widths;
-	unsigned short *etable = nil;
+	unsigned short *etable;
 	pdf_fontdesc *fontdesc;
 	fz_irect bbox;
 	FT_Face face;
@@ -325,7 +269,7 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 	pdf_logfont("basefont1 %s\n", fontname);
 
 	descriptor = fz_dictgets(dict, "FontDescriptor");
-	if (descriptor) /* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=664 */
+	if (descriptor && basefont == fontname)
 		error = pdf_loadfontdescriptor(fontdesc, xref, descriptor, nil);
 	else
 		error = pdf_loadbuiltinfont(fontdesc, fontname);
@@ -366,7 +310,10 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 
 		if (kind == TYPE1)
 		{
-			if (test->platform_id == 7)
+			/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=664 */
+			if (test->platform_id == 3 && test->encoding_id == 1)
+				cmap = test;
+			if (test->platform_id == 7 && test->encoding_id == 2)
 				cmap = test;
 		}
 
@@ -396,9 +343,6 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 	}
 
 	encoding = fz_dictgets(dict, "Encoding");
-	/* ignore invalid Encoding names; cf. http://code.google.com/p/sumatrapdf/issues/detail?id=771 */
-	if (fz_isname(encoding) && !strstr(fz_toname(encoding), "Encoding"))
-		encoding = nil;
 	if (encoding && !(kind == TRUETYPE && symbolic))
 	{
 		if (fz_isname(encoding))
@@ -413,10 +357,8 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 				pdf_loadencoding(estrings, fz_toname(base));
 			else if (!fontdesc->isembedded)
 				pdf_loadencoding(estrings, "StandardEncoding");
-			/* cf. http://bugs.ghostscript.com/show_bug.cgi?id=690615 and http://code.google.com/p/sumatrapdf/issues/detail?id=687 */
-			/* try to extract an encoding from the font or synthesize a likely one */
-			/* note: FT_Get_Name_Index fails for symbolic CFF fonts, so let them be encoded by index */
-			else if (!fontdesc->encoding && !ftloadt1encoding(face, estrings) && !(symbolic && !strcmp(FT_Get_X11_Font_Format(face), "CFF")))
+			/* cf. http://bugs.ghostscript.com/show_bug.cgi?id=690615 */
+			else if (!fontdesc->encoding && !symbolic)
 				pdf_loadencoding(estrings, "StandardEncoding");
 
 			diff = fz_dictgets(encoding, "Differences");
@@ -443,21 +385,7 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 			for (i = 0; i < 256; i++)
 			{
 				if (estrings[i])
-				{
 					etable[i] = FT_Get_Name_Index(face, estrings[i]);
-					if (etable[i] == 0)
-					{
-						int aglcode = pdf_lookupagl(estrings[i]);
-						char **aglnames = pdf_lookupaglnames(aglcode);
-						while (*aglnames)
-						{
-							etable[i] = FT_Get_Name_Index(face, *aglnames);
-							if (etable[i])
-								break;
-							aglnames++;
-						}
-					}
-				}
 				else
 					etable[i] = ftcharindex(face, i);
 			}
@@ -473,11 +401,13 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 				{
 					if (estrings[i])
 					{
-						int aglcode = pdf_lookupagl(estrings[i]);
-						if (!aglcode)
+						int aglbuf[256];
+						int aglnum;
+						aglnum = pdf_lookupagl(estrings[i], aglbuf, nelem(aglbuf));
+						if (aglnum != 1)
 							etable[i] = FT_Get_Name_Index(face, estrings[i]);
 						else
-							etable[i] = ftcharindex(face, aglcode);
+							etable[i] = ftcharindex(face, aglbuf[0]);
 					}
 					else
 						etable[i] = ftcharindex(face, i);
@@ -544,12 +474,6 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 					estrings[i] = ebuffer[i];
 			}
 		}
-
-		/* Load a default encoding for TrueType fonts with a charmap */
-		/* (this is likely not quite correct, though...) */
-		/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=779 */
-		if (!FT_HAS_GLYPH_NAMES(face) && face->charmap && kind == TRUETYPE)
-			pdf_loadencoding(estrings, "WinAnsiEncoding");
 
 		/* Load encoding Differences nonetheless, when they're available */
 		/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=115 */
@@ -628,7 +552,7 @@ loadsimplefont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict)
 cleanup:
 	/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=487 */
 	if (etable != fontdesc->cidtogid)
-		fz_free(etable);
+                fz_free(etable);
 	pdf_dropfont(fontdesc);
 	return fz_rethrow(error, "cannot load simple font");
 }
@@ -641,7 +565,7 @@ static fz_error
 loadcidfont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict, fz_obj *encoding, fz_obj *tounicode)
 {
 	fz_error error;
-	fz_obj *widths;
+	fz_obj *widths = nil;
 	fz_obj *descriptor;
 	pdf_fontdesc *fontdesc;
 	FT_Face face;
@@ -908,6 +832,8 @@ loadcidfont(pdf_fontdesc **fontdescp, pdf_xref *xref, fz_obj *dict, fz_obj *enco
 	return fz_okay;
 
 cleanup:
+	if (widths)
+		fz_dropobj(widths);
 	fz_dropfont(fontdesc->font);
 	fz_free(fontdesc);
 	return fz_rethrow(error, "cannot load cid font");

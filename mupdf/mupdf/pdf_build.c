@@ -1,7 +1,5 @@
 #include "fitz.h"
 #include "mupdf.h"
-#include <ft2build.h>
-#include FT_FREETYPE_H
 
 void
 pdf_initgstate(pdf_gstate *gs)
@@ -873,7 +871,7 @@ showglyph(pdf_csi *csi, int cid)
 	pdf_hmtx h;
 	pdf_vmtx v;
 	int gid;
-	int ucs[8] = { 1, -1 }; /* len, characters... */
+	int ucs;
 
 	tsm.a = gstate->size * gstate->scale;
 	tsm.b = 0;
@@ -883,30 +881,13 @@ showglyph(pdf_csi *csi, int cid)
 	tsm.f = gstate->rise;
 
 	if (fontdesc->tounicode)
-		ucs[1] = pdf_lookupcmap(fontdesc->tounicode, cid);
-	if (ucs[1] < -1)
-	{
-		/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=788 */
-		/* prepare to add multiple characters (e.g. a ligature) */
-		int j, offset = -ucs[1] - 2;
-		ucs[0] = fontdesc->tounicode->table[offset];
-		for (j = 1; j <= ucs[0]; j++)
-			ucs[j] = fontdesc->tounicode->table[offset + j];
-	}
-	/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=787 */
-	/* fall back to ncidtoucs if the char wasn't in tounicode */
-	if (ucs[1] < 0 && cid < fontdesc->ncidtoucs)
-		ucs[1] = fontdesc->cidtoucs[cid];
-	if (ucs[1] < 0)
-		ucs[1] = '?';
+		ucs = pdf_lookupcmap(fontdesc->tounicode, cid);
+	else if (cid < fontdesc->ncidtoucs)
+		ucs = fontdesc->cidtoucs[cid];
+	else
+		ucs = '?';
 
 	gid = pdf_fontcidtogid(fontdesc, cid);
-	/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=855 */
-	/* some chinese fonts only ship the similarly looking 0x2026 */
-	if (gid == 0 && ucs[1] == 0x22ef && fontdesc->font->ftface)
-	{
-		gid = FT_Get_Char_Index(fontdesc->font->ftface, 0x2026);
-	}
 
 	if (fontdesc->wmode == 1)
 	{

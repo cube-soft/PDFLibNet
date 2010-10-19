@@ -266,20 +266,11 @@ runinlineimage(pdf_csi *csi, pdf_xref *xref, fz_obj *rdb, fz_stream *file, fz_ob
 	if (error)
 		return fz_rethrow(error, "cannot load inline image");
 
-FindEndImageMarker:
 	error = pdf_lex(&tok, file, buf, sizeof buf, &len);
 	if (error)
 	{
 		fz_dropimage((fz_image*)img);
 		return fz_rethrow(error, "syntax error after inline image");
-	}
-
-	/* apparently Adobe Reader silently ignores trailing garbage */
-	/* (this might even still be too conservative in what we tolerate) */
-	if (tok == PDF_TKEYWORD && strcmp("EI", buf))
-	{
-		fz_warn("ignoring garbage after inline image");
-		goto FindEndImageMarker;
 	}
 
 	if (tok != PDF_TKEYWORD || strcmp("EI", buf))
@@ -883,10 +874,9 @@ Lsetcolor:
 				return fz_throw("cannot find Font dictionary");
 
 			obj = fz_dictget(dict, csi->stack[0]);
-			/* lacking a font, just fall back to any font, so that we can go on */
 			/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=424 */
-			if (!obj && (obj = fz_dictgetval(dict, 0)))
-				fz_warn("cannot find font resource: %s; substituting with: %s", fz_toname(csi->stack[0]), fz_toname(fz_dictgetkey(dict, 0)));
+			if (!obj && dict->u.d.len > 0)
+				obj = dict->u.d.items[0].v; // Just fall back to any font, so that we can go on
 			if (!obj)
 				return fz_throw("cannot find font resource: %s", fz_toname(csi->stack[0]));
 
@@ -1400,15 +1390,6 @@ pdf_runcsi(pdf_csi *csi, pdf_xref *xref, fz_obj *rdb, fz_stream *file)
 			{
 				return fz_okay;
 			}
-			else if (tok == PDF_TKEYWORD && (!strcmp(buf, "Tc") || !strcmp(buf, "Tw")) && fz_arraylen(csi->array) > 0)
-			{
-				/* cf. http://code.google.com/p/sumatrapdf/issues/detail?id=916  */
-				/* According to the PDF reference, only strings and numbers are  */
-				/* allowed inside TJ array arguments; nonetheless some producers */
-				/* seem to include Tc and Tw commands inside them. Ignore these  */
-				/* for now (and consider respecting them for later).             */
-				fz_dropobj(csi->array->u.a.items[--csi->array->u.a.len]);
-			}
 			else
 			{
 				clearstack(csi);
@@ -1471,17 +1452,13 @@ pdf_runcsi(pdf_csi *csi, pdf_xref *xref, fz_obj *rdb, fz_stream *file)
 			if (!strcmp(buf, "BI"))
 			{
 				fz_obj *obj;
-				int ch;
 
 				error = pdf_parsedict(&obj, xref, file, buf, sizeof buf);
 				if (error)
 					return fz_rethrow(error, "cannot parse inline image dictionary");
 
 				/* read whitespace after ID keyword */
-				ch = fz_readbyte(file);
-				if (ch == '\r')
-					if (fz_peekbyte(file) == '\n')
-						fz_readbyte(file);
+				fz_readbyte(file);
 				error = fz_readerror(file);
 				if (error)
 					return fz_rethrow(error, "cannot parse whitespace before inline image");

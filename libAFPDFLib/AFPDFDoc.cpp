@@ -1287,9 +1287,10 @@
 		threadParamThumb *tp=new threadParamThumb((HDC)hdc,out,doc,page,&m_QueuedThumbs,callback);
 		//Calculate DPI
 		if(width >0 && height >0 && dpi==0){
-			double ow = doc->getPageCropWidth(page); //Original size at 72 dpi
-			//double oh = doc->getPageCropHeight(page);
-			dpi =  72.0*width/ow; //Same DPI for width and height
+			int rot = doc->getPageRotate(page);
+			double ow = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
+				doc->getPageCropHeight(page) : doc->getPageCropWidth(page); //Original size at 72 dpi
+			dpi =  72.0 * width / ow; //Same DPI for width and height
 		}
 		tp->renderDPI = IFZERO(dpi,18);
 		tp->pdfDoc = this;
@@ -1812,18 +1813,15 @@
 			::GetClientRect((HWND)lhWnd, &clientArea);
 			double height = clientArea.bottom-clientArea.top;
 			double width = clientArea.right-clientArea.left;
-			double contentHeight = 0;
-			if (m_Rotation==0||m_Rotation==180){
+			int rot = m_PDFDoc->getPageRotate(m_CurrentPage);
+
+			double contentHeight = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
+				contentHeight = m_PDFDoc->getPageCropWidth(m_CurrentPage) :
 				contentHeight = m_PDFDoc->getPageCropHeight(m_CurrentPage);
-			} else {
-				contentHeight = m_PDFDoc->getPageCropWidth(m_CurrentPage);
-			}
-			double contentWidth = 0;
-			if (m_Rotation==0||m_Rotation==180){
+
+			double contentWidth = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
+				contentWidth = m_PDFDoc->getPageCropHeight(m_CurrentPage) :
 				contentWidth = m_PDFDoc->getPageCropWidth(m_CurrentPage);
-			} else {
-				contentWidth = m_PDFDoc->getPageCropHeight(m_CurrentPage);
-			}
 
 			m_renderDPI = 72.0/contentWidth*width;
 			//Now we know the required DPI if there weren't any scrollbars
@@ -1862,18 +1860,15 @@
 			::GetClientRect((HWND)lhWnd,&clientArea);
 			double height = clientArea.bottom-clientArea.top;
 			double width = clientArea.right-clientArea.left;
-			double contentHeight = 0;
-			if (m_Rotation==0||m_Rotation==180){
+
+			int rot = m_PDFDoc->getPageRotate(m_CurrentPage);
+			double contentHeight = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
+				contentHeight = m_PDFDoc->getPageCropWidth(m_CurrentPage) :
 				contentHeight = m_PDFDoc->getPageCropHeight(m_CurrentPage);
-			} else {
-				contentHeight = m_PDFDoc->getPageCropWidth(m_CurrentPage);
-			}
-			double contentWidth = 0;
-			if (m_Rotation==0||m_Rotation==180){
+			
+			double contentWidth = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
+				contentWidth = m_PDFDoc->getPageCropHeight(m_CurrentPage) :
 				contentWidth = m_PDFDoc->getPageCropWidth(m_CurrentPage);
-			} else {
-				contentWidth = m_PDFDoc->getPageCropHeight(m_CurrentPage);
-			}
 
 			m_renderDPI = 72.0/contentHeight*height;
 			//Now we know the required DPI if there weren't any scrollbars

@@ -5,5 +5,7 @@
 *.suo
 *.user
 *.ncb
+*.sdf
 bin/
 obj/
+ipch/

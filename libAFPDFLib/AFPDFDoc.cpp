@@ -1294,6 +1294,7 @@
 		}
 		tp->renderDPI = IFZERO(dpi,18);
 		tp->pdfDoc = this;
+
 		if(bThread){
 			if(m_renderThumbs==0){
 				m_renderThumbs = ::CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)AFPDFDoc::RenderingThreadThumb,(LPVOID)&m_QueuedThumbs,CREATE_SUSPENDED,0);
@@ -1320,24 +1321,27 @@
 					if(LoadFromMuPDF())
 					{
 						fz_pixmap *im = _mupdf->display(tp->out,page,m_Rotation,renderDPI/72,callbackAbortDisplay,this);
-						tp->out->SetDataPtr((void *)im->samples);
-						tp->out->setSize(im->w,im->h);
-						tp->out->setPixmap(im);
-						Page *p = doc->getCatalog()->getPage(page);
-						double ctm[6];
-						double ictm[6];
-						p->getDefaultCTM(ctm,renderDPI,renderDPI,m_Rotation,gFalse,gTrue);
-						tp->out->setDefCTM(ctm);
-						//Invert CTM
-						double det = 1 / (ctm[0] * ctm[3] - ctm[1] * ctm[2]);
-						ictm[0] = ctm[3] * det;
-						ictm[1] = -ctm[1] * det;
-						ictm[2] = -ctm[2] * det;
-						ictm[3] = ctm[0] * det;
-						ictm[4] = (ctm[2] * ctm[5] - ctm[3] * ctm[4]) * det;
-						ictm[5] = (ctm[1] * ctm[4] - ctm[0] * ctm[5]) * det;
-						tp->out->setDefICTM(ictm);
-						render =false;
+						if (im == NULL) render = true; // re-render by xPDF.
+						else {
+							tp->out->SetDataPtr((void *)im->samples);
+							tp->out->setSize(im->w,im->h);
+							tp->out->setPixmap(im);
+							Page *p = doc->getCatalog()->getPage(page);
+							double ctm[6];
+							double ictm[6];
+							p->getDefaultCTM(ctm,renderDPI,renderDPI,m_Rotation,gFalse,gTrue);
+							tp->out->setDefCTM(ctm);
+							//Invert CTM
+							double det = 1 / (ctm[0] * ctm[3] - ctm[1] * ctm[2]);
+							ictm[0] = ctm[3] * det;
+							ictm[1] = -ctm[1] * det;
+							ictm[2] = -ctm[2] * det;
+							ictm[3] = ctm[0] * det;
+							ictm[4] = (ctm[2] * ctm[5] - ctm[3] * ctm[4]) * det;
+							ictm[5] = (ctm[1] * ctm[4] - ctm[0] * ctm[5]) * det;
+							tp->out->setDefICTM(ictm);
+							render = false;
+						}
 					}
 				}
 #endif			
@@ -1353,7 +1357,6 @@
 						tp->out->setSize(tp->out->getSplash()->getBitmapWidth(),tp->out->getSplash()->getBitmapHeight());
 				}
 			}
-
 
 			int bmWidth = tp->out->GetWidth();
 			int bmHeight = tp->out->GetHeight();					

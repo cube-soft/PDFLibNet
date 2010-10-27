@@ -203,6 +203,14 @@ namespace PDFLibNet{
 		return 0;
 	}
 
+	void PDFWrapper::PreserveSearchResults() {
+		_pdfDoc->PreserveSearchResults();
+	}
+
+	void PDFWrapper::RecoverSearchResults() {
+		_pdfDoc->RecoverSearchResults();
+	}
+
 	long  PDFWrapper::PrintToFile(String ^fileName, Int32 fromPage, Int32 toPage)
 	{
 		IntPtr ptr = Marshal::StringToCoTaskMemAnsi(fileName);

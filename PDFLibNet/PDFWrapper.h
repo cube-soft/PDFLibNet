@@ -201,6 +201,9 @@ namespace PDFLibNet {
 		long FindFirst(String ^sText,PDFSearchOrder SearchOrder, Boolean Backward, Boolean bWholeWord);
 		long FindNext(String ^sText);
 		long FindPrevious(String ^sText);
+		void PreserveSearchResults();
+		void RecoverSearchResults();
+
 		long PrintToFile(String ^fileName, Int32 fromPage, Int32 toPage);
 		System::Collections::Generic::List<PageLink ^> ^GetLinks(int iPage);
 
@@ -430,6 +433,10 @@ namespace PDFLibNet {
 						_searchResults->Add(gcnew PDFSearchResult(sr[i].Page,sr[i].x0,sr[i].y0,sr[i].x1,sr[i].y1));
 				}
 				return _searchResults;
+			}
+
+			void set(System::Collections::Generic::List<PDFSearchResult ^> ^) {
+
 			}
 
 		}

@@ -152,6 +152,14 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	 return ((AFPDFDoc *)_ptr)->GetSearchCount();
  }
 
+ void AFPDFDocInterop::PreserveSearchResults() {
+	 ((AFPDFDoc *)_ptr)->PreserveSearchResults();
+ }
+
+ void AFPDFDocInterop::RecoverSearchResults() {
+	 ((AFPDFDoc *)_ptr)->RecoverSearchResults();
+ }
+
  long AFPDFDocInterop::PrintToFile(const char *fileName,int fromPage,int toPage){
 	 return ((AFPDFDoc *)_ptr)->PrintToFile(fileName,fromPage,toPage);
  }

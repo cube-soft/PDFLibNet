@@ -2404,6 +2404,16 @@
 		return m_Selection.ToArray();
 	}
 
+	void AFPDFDoc::PreserveSearchResults() {
+		m_SelectionPrev.RemoveAll();
+		for (int i = 0; i < m_Selection.GetCount(); ++i) m_SelectionPrev.Add(m_Selection[i]);
+	}
+
+	void AFPDFDoc::RecoverSearchResults() {
+		m_Selection.RemoveAll();
+		for (int i = 0; i < m_SelectionPrev.GetCount(); ++i) m_Selection.Add(m_SelectionPrev[i]);
+	}
+
 	long AFPDFDoc::GetSearchCount(){
 		return m_Selection.GetCount();
 	}

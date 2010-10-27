@@ -81,6 +81,7 @@ private:
 	HANDLE m_renderThumbs;
 	Queue m_QueuedThumbs;
 	DynArray<CPDFSearchResult> m_Selection;
+	DynArray<CPDFSearchResult> m_SelectionPrev;
 	PDFDoc *m_PDFDoc;
 	SplashOutputDev *m_thumbOut;
 	Links *_pageLinks;
@@ -206,6 +207,8 @@ public:
 	void SetSearchCaseSensitive(bool newVal);
 	long PrintToFile(LPCTSTR fileName, int fromPage, int toPage);
 	CPDFSearchResult *GetSearchResults();
+	void PreserveSearchResults();
+	void RecoverSearchResults();
 	long GetSearchCount();
 	int findpage(int num, int gen){ return m_PDFDoc->findPage(num,gen);	}
 	void Dispose();

@@ -101,6 +101,8 @@ public:
 
 	SearchResultInterop *GetSearchResults();
 	long GetSearchCount();
+	void PreserveSearchResults();
+	void RecoverSearchResults();
 
 	void cvtUserToDev(double ux, double uy, int *dx, int *dy);
 	void cvtDevToUser(double ux, double uy, double *dx, double *dy);

@@ -683,7 +683,10 @@ loadsimilarcjkfont(pdf_fontdesc *font, int ros, int kind)
 		{
 		case CNS: return pdf_loadsystemfont(font, "MingLiU", nil);
 		case GB: return pdf_loadsystemfont(font, "SimSun", nil);
-		case Japan: return pdf_loadsystemfont(font, "MS-Mincho", nil);
+		case Japan:
+			if (font->flags & FD_FIXED) return pdf_loadsystemfont(font, "MS-Mincho", nil);
+			else return pdf_loadsystemfont(font, "MS-PMincho", nil);
+			break;
 		case Korea: return pdf_loadsystemfont(font, "Batang", nil);
 		}
 		break;
@@ -695,7 +698,9 @@ loadsimilarcjkfont(pdf_fontdesc *font, int ros, int kind)
 			if (fz_okay == pdf_loadsystemfont(font, "KaiTi", nil))
 				return fz_okay;
 			return pdf_loadsystemfont(font, "KaiTi_GB2312", nil);
-		case Japan: return pdf_loadsystemfont(font, "MS-Gothic", nil);
+		case Japan:
+			if (font->flags & FD_FIXED) return pdf_loadsystemfont(font, "MS-Gothic", nil);
+			else return pdf_loadsystemfont(font, "MS-PGothic", nil);
 		case Korea: return pdf_loadsystemfont(font, "Gulim", nil);
 		}
 		break;

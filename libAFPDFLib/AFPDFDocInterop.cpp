@@ -164,6 +164,10 @@ void AFPDFDocInterop::SetSearchCaseSensitive(bool newVal){
 	 return ((AFPDFDoc *)_ptr)->PrintToFile(fileName,fromPage,toPage);
  }
 
+ bool AFPDFDocInterop::NoEmbedFontExists() {
+	 return ((AFPDFDoc *)_ptr)->NoEmbedFontExists();
+ }
+
  double AFPDFDocInterop::GetZoom(){
 	return  (double)((AFPDFDoc *)_ptr)->GetRenderDPI();	 
  }

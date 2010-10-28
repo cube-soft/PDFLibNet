@@ -205,6 +205,7 @@ namespace PDFLibNet {
 		void RecoverSearchResults();
 
 		long PrintToFile(String ^fileName, Int32 fromPage, Int32 toPage);
+		bool NoEmbedFontExists();
 		System::Collections::Generic::List<PageLink ^> ^GetLinks(int iPage);
 
 		PointF PointUserToDev(PointF point);

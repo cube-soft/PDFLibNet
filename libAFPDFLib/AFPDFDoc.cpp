@@ -2433,6 +2433,41 @@
 		return 0;
 	}
 
+	bool AFPDFDoc::NoEmbedFontExists() {
+		PDFDoc* doc = m_PDFDoc;
+		if (doc == NULL) return false;
+
+		for (int pg = 1; pg <= doc->getNumPages(); ++pg) {
+			Page* page = doc->getCatalog()->getPage(pg);
+			Dict* resDict = NULL;
+			if ((resDict = page->getResourceDict())) {
+				if (NoEmbedFontExists(resDict, doc)) return true;
+			}
+			
+			Object obj1, obj2;
+			Annots* annots = new Annots(doc->getXRef(), doc->getCatalog(), page->getAnnots(&obj1));
+			obj1.free();
+			for (int i = 0; i < annots->getNumAnnots(); ++i) {
+				if (annots->getAnnot(i)->getAppearance(&obj1)->isStream()) {
+					obj1.streamGetDict()->lookup("Resources", &obj2);
+					if (obj2.isDict()) {
+						if (NoEmbedFontExists(obj2.getDict(), doc)) {
+							obj2.free();
+							obj1.free();
+							delete annots;
+							return true;
+						}
+					}
+					obj2.free();
+				}
+				obj1.free();
+			}
+			delete annots;
+		}
+		
+		return false;
+	}
+
 	long AFPDFDoc::FindFirst(const wchar_t *sText, long SearchOrder, bool Backward, bool WholeWord)
 	{
 		
@@ -3231,4 +3266,73 @@
 		delete gfxOut;
 		*/
 		return true;
+	}
+
+	bool AFPDFDoc::IsEmbed(GfxFont *font, PDFDoc *doc) {
+		Ref fontRef = *font->getID();
+		Ref embRef;
+		GBool emb;
+		
+		if (font->getType() == fontType1 || font->getType() == fontType3) emb = gTrue;
+		else emb = font->getEmbeddedFontID(&embRef);
+		return (emb == gTrue);
+	}
+
+	bool AFPDFDoc::NoEmbedFontExists(Dict *resDict, PDFDoc *doc) {
+		// scan the fonts in this resource dictionary
+		GfxFontDict* gfxFontDict = NULL;
+		Object obj1, obj2;
+		resDict->lookupNF("Font", &obj1);
+		if (obj1.isRef()) {
+			obj1.fetch(doc->getXRef(), &obj2);
+			if (obj2.isDict()) {
+				Ref r = obj1.getRef();
+				gfxFontDict = new GfxFontDict(doc->getXRef(), &r, obj2.getDict());
+			}
+			obj2.free();
+		} else if (obj1.isDict()) {
+			gfxFontDict = new GfxFontDict(doc->getXRef(), NULL, obj1.getDict());
+		}
+		
+		if (gfxFontDict) {
+			for (int i = 0; i < gfxFontDict->getNumFonts(); ++i) {
+				GfxFont* font = NULL;
+				if ((font = gfxFontDict->getFont(i))) {
+					if (!IsEmbed(font, doc)) {
+						delete gfxFontDict;
+						obj1.free();
+						return true;
+					}
+				}
+				else return true; // Error is treated as "Not embeded font"
+			}
+			delete gfxFontDict;
+		}
+		obj1.free();
+		
+		// recursively scan any resource dictionaries in objects in this
+		// resource dictionary
+		Object xObjDict, xObj, resObj;
+		resDict->lookup("XObject", &xObjDict);
+		if (xObjDict.isDict()) {
+			for (int i = 0; i < xObjDict.dictGetLength(); ++i) {
+				xObjDict.dictGetVal(i, &xObj);
+				if (xObj.isStream()) {
+					xObj.streamGetDict()->lookup("Resources", &resObj);
+					if (resObj.isDict()) {
+						if (NoEmbedFontExists(resObj.getDict(), doc)) {
+							resObj.free();
+							xObj.free();
+							xObjDict.free();
+							return true;
+						}
+					}
+					resObj.free();
+				}
+				xObj.free();
+			}
+		}
+		xObjDict.free();
+		
+		return false;
 	}

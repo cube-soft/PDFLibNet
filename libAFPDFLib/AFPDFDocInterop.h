@@ -98,6 +98,7 @@ public:
 	double GetZoom();
 	void SetZoom(double newValue);
 	long PrintToFile(const char *fileName,int fromPage,int toPage);
+	bool NoEmbedFontExists();
 
 	SearchResultInterop *GetSearchResults();
 	long GetSearchCount();

@@ -233,6 +233,10 @@ namespace PDFLibNet{
 		return 0;
 	}
 
+	bool PDFWrapper::NoEmbedFontExists() {
+		return _pdfDoc->NoEmbedFontExists();
+	}
+
 	System::Collections::Generic::List<PageLink ^> ^PDFWrapper::GetLinks(int iPage)
 	{
 		PageLinkCollection<PageLink ^> ^col;

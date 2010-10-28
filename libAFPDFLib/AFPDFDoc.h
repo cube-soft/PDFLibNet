@@ -51,6 +51,9 @@ private:
 	void AddBitmapCache(PageMemory *bmp, int page);
 	int RenderThreadFinished(AuxOutputDev *out,int page, bool enablePreRender);
 	static void CancelThumbRenderCallback( void * );
+	bool NoEmbedFontExists(Dict *resDict, PDFDoc *doc);
+	bool IsEmbed(GfxFont *font, PDFDoc *doc);
+
 protected:
 	long m_PageToRenderByThread;
 	long m_LastPageRenderedByThread;
@@ -206,6 +209,7 @@ public:
 	bool GetSearchCaseSensitive(void);
 	void SetSearchCaseSensitive(bool newVal);
 	long PrintToFile(LPCTSTR fileName, int fromPage, int toPage);
+	bool NoEmbedFontExists();
 	CPDFSearchResult *GetSearchResults();
 	void PreserveSearchResults();
 	void RecoverSearchResults();

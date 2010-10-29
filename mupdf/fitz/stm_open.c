@@ -63,6 +63,8 @@ fz_dropstream(fz_stream *stm)
 }
 
 #ifdef WIN32
+#ifdef SUMATRA_PDF // SumatraPDF's original code
+
 #include <windows.h>
 
 static int open_utf8(char *utf8path, int oflag, int pmode)
@@ -94,7 +96,31 @@ static int open_utf8(char *utf8path, int oflag, int pmode)
 
 /* redefine open(...) below, as the path is supposed to be UTF-8 */
 #define open(path, oflag, pmode) open_utf8(path, oflag, pmode);
-#endif
+
+#else // PDFLibNet's code
+
+fz_error fz_openrfilew(fz_stream **stmp, wchar_t *path)
+{
+	fz_stream *stm;
+
+	stm = newstm(FZ_SFILE);
+
+	stm->buffer = fz_newbuffer(FZ_BUFSIZE);
+
+	stm->file = _wopen(path, O_BINARY | O_RDONLY, 0666);
+	if (stm->file < 0)
+	{
+		fz_dropbuffer(stm->buffer);
+		fz_free(stm);
+		return fz_throw("syserr: open '%s': %s", path, strerror(errno));
+	}
+
+	*stmp = stm;
+	return fz_okay;
+}
+
+#endif // SUMATRA_PDF
+#endif // WIN32
 
 fz_error fz_openrfile(fz_stream **stmp, char *path)
 {

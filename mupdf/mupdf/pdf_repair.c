@@ -136,6 +136,8 @@ atobjend:
 	return fz_okay;
 }
 
+#ifdef SUMATRA_PDF // SumatraPDF's original code
+
 fz_error
 pdf_repairxref(pdf_xref *xref, char *filename)
 {
@@ -332,3 +334,221 @@ cleanup:
 	return error; /* already rethrown */
 }
 
+#else // PDFLibeNet's code
+
+static fz_error
+pdf_repairxref2(pdf_xref *xref, fz_stream *file)
+{
+	fz_error error;
+
+	struct entry *list = nil;
+	int listlen;
+	int listcap;
+	int maxoid = 0;
+
+	char buf[65536];
+
+	int oid = 0;
+	int gen = 0;
+	int tmpofs, oidofs = 0, genofs = 0;
+	int isroot, rootoid = 0, rootgen = 0;
+	int isinfo, infooid = 0, infogen = 0;
+	int stmlen, stmofs = 0;
+	pdf_token_e tok;
+	int len;
+	int next;
+	int i;
+
+	xref->file = file;
+
+	/* TODO: extract version */
+
+	listlen = 0;
+	listcap = 1024;
+	list = fz_malloc(listcap * sizeof(struct entry));
+
+	while (1)
+	{
+		tmpofs = fz_tell(file);
+		if (tmpofs < 0)
+		{
+			error = fz_throw("cannot tell in file");
+			goto cleanup;
+		}
+
+		error = pdf_lex(&tok, file, buf, sizeof buf, &len);
+		if (error)
+		{
+			error = fz_rethrow(error, "cannot scan for objects");
+			goto cleanup;
+		}
+
+		if (tok == PDF_TINT)
+		{
+			oidofs = genofs;
+			oid = gen;
+			genofs = tmpofs;
+			gen = atoi(buf);
+		}
+
+		if (tok == PDF_TOBJ)
+		{
+			error = fz_repairobj(file, buf, sizeof buf, &stmofs, &stmlen, &isroot, &isinfo);
+			if (error)
+			{
+				error = fz_rethrow(error, "cannot parse object (%d %d R)", oid, gen);
+				goto cleanup;
+			}
+
+			if (isroot) {
+				pdf_logxref("found catalog: (%d %d R)\n", oid, gen);
+				rootoid = oid;
+				rootgen = gen;
+			}
+
+			if (isinfo) {
+				pdf_logxref("found info: (%d %d R)\n", oid, gen);
+				infooid = oid;
+				infogen = gen;
+			}
+
+			if (listlen + 1 == listcap)
+			{
+				listcap = (listcap * 3) / 2;
+				list = fz_realloc(list, listcap * sizeof(struct entry));
+			}
+
+			pdf_logxref("found object: (%d %d R)\n", oid, gen);
+
+			list[listlen].oid = oid;
+			list[listlen].gen = gen;
+			list[listlen].ofs = oidofs;
+			list[listlen].stmofs = stmofs;
+			list[listlen].stmlen = stmlen;
+			listlen ++;
+
+			if (oid > maxoid)
+				maxoid = oid;
+		}
+
+		if (tok == PDF_TERROR)
+			fz_readbyte(file);
+
+		if (tok == PDF_TEOF)
+			break;
+	}
+
+	if (rootoid == 0)
+	{
+		error = fz_throw("cannot find catalog object");
+		goto cleanup;
+	}
+
+	error = fz_packobj(&xref->trailer, xref,
+		"<< /Size %i /Root %r >>",
+		maxoid + 1, rootoid, rootgen);
+	if (error)
+	{
+		error = fz_rethrow(error, "cannot create new trailer");
+		goto cleanup;
+	}
+
+	xref->len = maxoid + 1;
+	xref->cap = xref->len;
+	xref->table = fz_malloc(xref->cap * sizeof(pdf_xrefentry));
+
+	xref->table[0].type = 'f';
+	xref->table[0].ofs = 0;
+	xref->table[0].gen = 65535;
+	xref->table[0].stmofs = 0;
+	xref->table[0].obj = nil;
+
+	for (i = 1; i < xref->len; i++)
+	{
+		xref->table[i].type = 'f';
+		xref->table[i].ofs = 0;
+		xref->table[i].gen = 0;
+		xref->table[i].stmofs = 0;
+		xref->table[i].obj = nil;
+	}
+
+	for (i = 0; i < listlen; i++)
+	{
+		xref->table[list[i].oid].type = 'n';
+		xref->table[list[i].oid].ofs = list[i].ofs;
+		xref->table[list[i].oid].gen = list[i].gen;
+
+		xref->table[list[i].oid].stmofs = list[i].stmofs;
+
+		/* corrected stream length */
+		if (list[i].stmlen >= 0)
+		{
+			fz_obj *dict, *length;
+
+			pdf_logxref("correct stream length %d %d = %d\n",
+				list[i].oid, list[i].gen, list[i].stmlen);
+
+			error = pdf_loadobject(&dict, xref, list[i].oid, list[i].gen);
+			if (error)
+			{
+				error = fz_rethrow(error, "cannot load stream object");
+				goto cleanup;
+			}
+
+			length = fz_newint(list[i].stmlen);
+			fz_dictputs(dict, "Length", length);
+			fz_dropobj(length);
+
+			fz_dropobj(dict);
+		}
+	}
+
+	next = 0;
+	for (i = xref->len - 1; i >= 0; i--)
+	{
+		if (xref->table[i].type == 'f')
+		{
+			xref->table[i].ofs = next;
+			if (xref->table[i].gen < 65535)
+				xref->table[i].gen ++;
+			next = i;
+		}
+	}
+
+	fz_free(list);
+	return fz_okay;
+
+cleanup:
+	fz_dropstream(file);
+	xref->file = nil; /* don't keep the stale pointer */
+	fz_free(list);
+	return error; /* already rethrown */
+}
+
+fz_error
+pdf_repairxref(pdf_xref *xref, char *filename)
+{
+	fz_error error;
+	fz_stream *file;
+	error = fz_openrfile(&file, filename);
+	if (error)
+		return fz_rethrow(error, "cannot open file '%s'", filename);
+	pdf_logxref("repairxref '%s' %p\n", filename, xref);
+	return pdf_repairxref2(xref, file);
+}
+
+#ifdef WIN32
+fz_error
+pdf_repairxrefw(pdf_xref *xref, wchar_t *filename)
+{
+	fz_error error;
+	fz_stream *file;
+	error = fz_openrfilew(&file, filename);
+	if (error)
+		return fz_rethrow(error, "cannot open file");
+	pdf_logxref("repairxref %p\n", xref);
+	return pdf_repairxref2(xref, file);
+}
+#endif
+
+#endif // SUMATRA_PDF

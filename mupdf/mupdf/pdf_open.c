@@ -681,6 +681,7 @@ cleanupbuf:
 /*
  * open and load xref tables from pdf
  */
+#ifdef SUMATRA_PDF // SumatraPDF's original code
 
 fz_error
 pdf_loadxref(pdf_xref *xref, char *filename)
@@ -777,3 +778,120 @@ cleanup:
 	return error;
 }
 
+#else // PDFLibNet's code
+
+static fz_error
+pdf_loadxref2(pdf_xref *xref)
+{
+	fz_error error;
+	fz_obj *size;
+	int i;
+
+	char buf[65536];	/* yeowch! */
+
+	error = loadversion(xref);
+	if (error)
+	{
+		error = fz_rethrow(error, "cannot read version marker");
+		goto cleanup;
+	}
+
+	error = readstartxref(xref);
+	if (error)
+	{
+		error = fz_rethrow(error, "cannot read startxref");
+		goto cleanup;
+	}
+
+	error = readtrailer(xref, buf, sizeof buf);
+	if (error)
+	{
+		error = fz_rethrow(error, "cannot read trailer");
+		goto cleanup;
+	}
+
+	size = fz_dictgets(xref->trailer, "Size");
+	if (!size)
+	{
+		error = fz_throw("trailer missing Size entry");
+		goto cleanup;
+	}
+
+	pdf_logxref("  size %d at 0x%x\n", fz_toint(size), xref->startxref);
+
+	assert(xref->table == nil);
+
+	xref->len = fz_toint(size);
+	xref->cap = xref->len + 1; /* for hack to allow broken pdf generators with off-by-one errors */
+	xref->table = fz_malloc(xref->cap * sizeof(pdf_xrefentry));
+	for (i = 0; i < xref->cap; i++)
+	{
+		xref->table[i].ofs = 0;
+		xref->table[i].gen = 0;
+		xref->table[i].stmofs = 0;
+		xref->table[i].obj = nil;
+		xref->table[i].type = 0;
+	}
+
+	error = readxrefsections(xref, xref->startxref, buf, sizeof buf);
+	if (error)
+	{
+		error = fz_rethrow(error, "cannot read xref");
+		goto cleanup;
+	}
+
+	/* broken pdfs where first object is not free */
+	if (xref->table[0].type != 'f')
+	{
+		fz_warn("first object in xref is not free");
+		xref->table[0].type = 'f';
+	}
+
+	/* broken pdfs where freed objects have offset and gen set to 0
+	but still exits */
+	for (i = 0; i < xref->len; i++)
+		if (xref->table[i].type == 'n' && xref->table[i].ofs == 0 &&
+			xref->table[i].gen == 0 && xref->table[i].obj == nil)
+	{
+		fz_warn("object (%d %d R) has invalid offset, assumed missing", i, xref->table[i].gen);
+		xref->table[i].type = 'f';
+	}
+
+	return fz_okay;
+
+cleanup:
+	fz_dropstream(xref->file);
+	xref->file = nil;
+	free(xref->table);
+	xref->table = nil;
+	return error;
+}
+
+fz_error
+pdf_loadxref(pdf_xref *xref, char *filename)
+{
+	fz_error error;    
+	pdf_logxref("loadxref '%s' %p\n", filename, xref);
+
+	error = fz_openrfile(&xref->file, filename);
+	if (error)
+	{
+		return fz_rethrow(error, "cannot open file: '%s'", filename);
+	}
+	return pdf_loadxref2(xref);
+}
+
+#ifdef WIN32
+fz_error
+pdf_loadxrefw(pdf_xref *xref, wchar_t *filename)
+{
+	fz_error error = fz_openrfilew(&xref->file, filename);
+	if (error)
+	{
+		return fz_rethrow(error, "cannot open file");
+	}
+	return pdf_loadxref2(xref);
+}
+#endif
+
+#endif // SUMATRA_PDF

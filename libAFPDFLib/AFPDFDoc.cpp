@@ -1317,7 +1317,9 @@
 			renderDPI=IFZERO(renderDPI,18);
 			page=MAX(1,page);
 #ifdef _MUPDF
-				if(SupportsMuPDF() && GetUseMuPDF()){
+				// if(SupportsMuPDF() && GetUseMuPDF()) {
+				if(SupportsMuPDF() && GetUseMuPDF() &&
+				   m_OwnerPassword.empty() && m_UserPassword.empty()){
 					if(LoadFromMuPDF())
 					{
 						fz_pixmap *im = _mupdf->display(tp->out,page,m_Rotation,renderDPI/72,callbackAbortDisplay,this);
@@ -1491,7 +1493,9 @@
 			pdfDoc->m_LastPageRenderedByThread=page;
 
 #ifdef _MUPDF
-			if(pdfDoc->SupportsMuPDF() && pdfDoc->GetUseMuPDF()){
+			//if(pdfDoc->SupportsMuPDF() && pdfDoc->GetUseMuPDF()) {
+			if(pdfDoc->SupportsMuPDF() && pdfDoc->GetUseMuPDF() &&
+			   pdfDoc->m_OwnerPassword.empty() && pdfDoc->m_UserPassword.empty()){
 				if(pdfDoc->LoadFromMuPDF())
 				{
 					fz_pixmap *im = pdfDoc->_mupdf->display(param->out,page,pdfDoc->m_Rotation,renderDPI/72,callbackAbortDisplay,pdfDoc);

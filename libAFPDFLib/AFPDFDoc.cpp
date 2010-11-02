@@ -1823,12 +1823,12 @@
 			int rot = m_PDFDoc->getPageRotate(m_CurrentPage);
 
 			double contentHeight = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
-				contentHeight = m_PDFDoc->getPageCropWidth(m_CurrentPage) :
-				contentHeight = m_PDFDoc->getPageCropHeight(m_CurrentPage);
+				m_PDFDoc->getPageCropWidth(m_CurrentPage) :
+				m_PDFDoc->getPageCropHeight(m_CurrentPage);
 
 			double contentWidth = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
-				contentWidth = m_PDFDoc->getPageCropHeight(m_CurrentPage) :
-				contentWidth = m_PDFDoc->getPageCropWidth(m_CurrentPage);
+				m_PDFDoc->getPageCropHeight(m_CurrentPage) :
+				m_PDFDoc->getPageCropWidth(m_CurrentPage);
 
 			m_renderDPI = 72.0/contentWidth*width;
 			//Now we know the required DPI if there weren't any scrollbars
@@ -1870,12 +1870,12 @@
 
 			int rot = m_PDFDoc->getPageRotate(m_CurrentPage);
 			double contentHeight = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
-				contentHeight = m_PDFDoc->getPageCropWidth(m_CurrentPage) :
-				contentHeight = m_PDFDoc->getPageCropHeight(m_CurrentPage);
+				m_PDFDoc->getPageCropWidth(m_CurrentPage) :
+				m_PDFDoc->getPageCropHeight(m_CurrentPage);
 			
 			double contentWidth = (rot >= 45 && rot < 135) || (rot >= 225 && rot < 315) ?
-				contentWidth = m_PDFDoc->getPageCropHeight(m_CurrentPage) :
-				contentWidth = m_PDFDoc->getPageCropWidth(m_CurrentPage);
+				m_PDFDoc->getPageCropHeight(m_CurrentPage) :
+				m_PDFDoc->getPageCropWidth(m_CurrentPage);
 
 			m_renderDPI = 72.0/contentHeight*height;
 			//Now we know the required DPI if there weren't any scrollbars

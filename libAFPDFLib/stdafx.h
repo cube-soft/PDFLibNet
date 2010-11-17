@@ -36,8 +36,13 @@
 #include <wchar.h> 
 #include <tchar.h>
 
+#ifdef PDFLIBNET_ORIGINAL
+#include <atlstr.h>
+typedef CString string_type;
+#else
 #include <string>
 typedef std::basic_string<char> string_type;
+#endif
 
 #include "pdfdoc.h"
 #include "splashoutputdev.h"

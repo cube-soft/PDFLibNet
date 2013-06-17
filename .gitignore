@@ -12,6 +12,7 @@
 *.pch
 *.vspscc
 *.vssscc
+*.filters
 *_i.c
 *_p.c
 *.ncb

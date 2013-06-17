@@ -5,12 +5,21 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
+    <ProjectName>mupdf</ProjectName>
     <ProjectGuid>{63657C80-EADB-4FBC-A557-BE52F318CCDD}</ProjectGuid>
     <RootNamespace>mupdf</RootNamespace>
   </PropertyGroup>
@@ -20,7 +29,16 @@
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -30,22 +48,32 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\bin\x86\Debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\bin\x86\Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Configuration)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\bin\x86\Release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\bin\x64\Release\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>fitz;..\jpeg;fitzdraw;..\zlib;mupdf;..\freetype-2.4.1\include;jbig2dec;..\libopenjpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32; _WIN32; _DEBUG; OPJ_STATIC; NEED_MATH; NEED_GETTIMEOFDAY; HAVE_JBIG2DEC; USE_HINTING; HAVE_OPENJPEG; HAVE_STRING_H=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>fitz;..\jpeg;fitzdraw;..\zlib;mupdf;..\freetype-2.4.1\include;jbig2dec;..\libopenjpeg;.\baseutils;.\baseutils\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WIN32;_DEBUG;OPJ_STATIC;NEED_MATH;NEED_GETTIMEOFDAY;HAVE_JBIG2DEC;USE_HINTING;HAVE_OPENJPEG;HAVE_STRING_H=1;NOCJKFONT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -55,10 +83,20 @@
     <ProjectReference>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
-    <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
-    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>fitz;..\jpeg;fitzdraw;..\zlib;mupdf;..\freetype-2.4.1\include;jbig2dec;..\libopenjpeg;.\baseutils;.\baseutils\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WIN32;_DEBUG;OPJ_STATIC;NEED_MATH;NEED_GETTIMEOFDAY;HAVE_JBIG2DEC;USE_HINTING;HAVE_OPENJPEG;HAVE_STRING_H=1;NOCJKFONT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <ProjectReference>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -66,56 +104,90 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>fitz;..\jpeg;fitzdraw;..\zlib;mupdf;..\freetype-2.4.1\include;jbig2dec;..\libopenjpeg;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32; _WIN32; OPJ_STATIC; NEED_MATH; NEED_GETTIMEOFDAY; HAVE_JBIG2DEC; USE_HINTING; HAVE_OPENJPEG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>fitz;..\jpeg;fitzdraw;..\zlib;mupdf;..\freetype-2.4.1\include;jbig2dec;..\libopenjpeg;.\baseutils;.\baseutils\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WIN32;OPJ_STATIC;NEED_MATH;NEED_GETTIMEOFDAY;HAVE_JBIG2DEC;USE_HINTING;HAVE_OPENJPEG;HAVE_STRING_H=1;NOCJKFONT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <AdditionalIncludeDirectories>fitz;..\jpeg;fitzdraw;..\zlib;mupdf;..\freetype-2.4.1\include;jbig2dec;..\libopenjpeg;.\baseutils;.\baseutils\msvc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WIN32;OPJ_STATIC;NEED_MATH;NEED_GETTIMEOFDAY;HAVE_JBIG2DEC;USE_HINTING;HAVE_OPENJPEG;HAVE_STRING_H=1;NOCJKFONT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
-    <Lib>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(OutDir)\$(ProjectName).lib</OutputFile>
-    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="mupdf\pdf_annot.c" />
-    <ClCompile Include="mupdf\pdf_build.c" />
-    <ClCompile Include="mupdf\pdf_cmap.c" />
-    <ClCompile Include="mupdf\pdf_cmap_load.c" />
-    <ClCompile Include="mupdf\pdf_cmap_parse.c" />
-    <ClCompile Include="mupdf\pdf_cmap_table.c" />
-    <ClCompile Include="mupdf\pdf_colorspace1.c" />
-    <ClCompile Include="mupdf\pdf_colorspace2.c" />
-    <ClCompile Include="mupdf\pdf_crypt.c" />
-    <ClCompile Include="mupdf\pdf_debug.c" />
-    <ClCompile Include="mupdf\pdf_font.c" />
-    <ClCompile Include="mupdf\pdf_fontagl.c" />
-    <ClCompile Include="mupdf\pdf_fontenc.c" />
-    <ClCompile Include="mupdf\pdf_fontfilems.c" />
-    <ClCompile Include="mupdf\pdf_fontmtx.c" />
-    <ClCompile Include="mupdf\pdf_function.c" />
-    <ClCompile Include="mupdf\pdf_image.c" />
-    <ClCompile Include="mupdf\pdf_interpret.c" />
-    <ClCompile Include="mupdf\pdf_lex.c" />
-    <ClCompile Include="mupdf\pdf_nametree.c" />
-    <ClCompile Include="mupdf\pdf_open.c" />
-    <ClCompile Include="mupdf\pdf_outline.c" />
-    <ClCompile Include="mupdf\pdf_page.c" />
-    <ClCompile Include="mupdf\pdf_pagetree.c" />
-    <ClCompile Include="mupdf\pdf_parse.c" />
-    <ClCompile Include="mupdf\pdf_pattern.c" />
-    <ClCompile Include="mupdf\pdf_repair.c" />
-    <ClCompile Include="mupdf\pdf_resources.c" />
-    <ClCompile Include="mupdf\pdf_shade.c" />
-    <ClCompile Include="mupdf\pdf_shade1.c" />
-    <ClCompile Include="mupdf\pdf_shade4.c" />
-    <ClCompile Include="mupdf\pdf_store.c" />
-    <ClCompile Include="mupdf\pdf_stream.c" />
-    <ClCompile Include="mupdf\pdf_type3.c" />
-    <ClCompile Include="mupdf\pdf_unicode.c" />
-    <ClCompile Include="mupdf\pdf_xobject.c" />
-    <ClCompile Include="mupdf\pdf_xref.c" />
-    <ClCompile Include="fitz\ansi_stack.c" />
+    <ClCompile Include="baseutils\base_util.c" />
+    <ClCompile Include="baseutils\benc_util.c" />
+    <ClCompile Include="baseutils\dstring.c" />
+    <ClCompile Include="baseutils\file_util.c" />
+    <ClCompile Include="baseutils\geom_util.c" />
+    <ClCompile Include="baseutils\log_util.c" />
+    <ClCompile Include="baseutils\ms_ui_helper.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="baseutils\netstr.c" />
+    <ClCompile Include="baseutils\netstr_ut.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="baseutils\pdiff.cc" />
+    <ClCompile Include="baseutils\prefs_util.c" />
+    <ClCompile Include="baseutils\str_util.c" />
+    <ClCompile Include="baseutils\str_util_test.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="baseutils\strlist_util.c" />
+    <ClCompile Include="baseutils\test_benc.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="baseutils\test_file_util.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="baseutils\unit_tests_all.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="baseutils\utf_util.c" />
+    <ClCompile Include="baseutils\win_dib.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="baseutils\win_image.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="baseutils\win_util.c" />
+    <ClCompile Include="baseutils\WinUtil.cpp" />
+    <ClCompile Include="baseutils\wstr_util.c" />
     <ClCompile Include="fitz\base_cpudep.c" />
     <ClCompile Include="fitz\base_error.c" />
     <ClCompile Include="fitz\base_hash.c" />
@@ -128,32 +200,20 @@
     <ClCompile Include="fitz\crypt_arc4.c" />
     <ClCompile Include="fitz\crypt_crc32.c" />
     <ClCompile Include="fitz\crypt_md5.c" />
-    <ClCompile Include="fitz\filt_a85d.c" />
-    <ClCompile Include="fitz\filt_a85e.c" />
     <ClCompile Include="fitz\filt_aesd.c" />
-    <ClCompile Include="fitz\filt_ahxd.c" />
-    <ClCompile Include="fitz\filt_ahxe.c" />
     <ClCompile Include="fitz\filt_arc4.c" />
-    <ClCompile Include="fitz\filt_copy.c" />
+    <ClCompile Include="fitz\filt_basic.c" />
     <ClCompile Include="fitz\filt_dctd.c" />
-    <ClCompile Include="fitz\filt_dcte.c" />
     <ClCompile Include="fitz\filt_faxd.c" />
     <ClCompile Include="fitz\filt_faxdtab.c" />
-    <ClCompile Include="fitz\filt_faxe.c" />
-    <ClCompile Include="fitz\filt_faxetab.c" />
     <ClCompile Include="fitz\filt_flate.c" />
     <ClCompile Include="fitz\filt_jbig2d.c" />
-    <ClCompile Include="fitz\filt_jpxd_opj.c" />
+    <ClCompile Include="fitz\filt_jpxd.c" />
     <ClCompile Include="fitz\filt_lzwd.c" />
-    <ClCompile Include="fitz\filt_lzwe.c" />
-    <ClCompile Include="fitz\filt_null.c" />
     <ClCompile Include="fitz\filt_pipeline.c" />
     <ClCompile Include="fitz\filt_predict.c" />
-    <ClCompile Include="fitz\filt_rld.c" />
-    <ClCompile Include="fitz\filt_rle.c" />
     <ClCompile Include="fitz\node_misc1.c" />
     <ClCompile Include="fitz\node_misc2.c" />
-    <ClCompile Include="fitz\node_optimize.c" />
     <ClCompile Include="fitz\node_path.c" />
     <ClCompile Include="fitz\node_text.c" />
     <ClCompile Include="fitz\node_toxml.c" />
@@ -189,6 +249,44 @@
     <ClCompile Include="fitzdraw\pixmap.c" />
     <ClCompile Include="fitzdraw\porterduff.c" />
     <ClCompile Include="fitzdraw\render.c" />
+    <ClCompile Include="mupdf\pdf_annot.c" />
+    <ClCompile Include="mupdf\pdf_build.c" />
+    <ClCompile Include="mupdf\pdf_cmap.c" />
+    <ClCompile Include="mupdf\pdf_cmap_load.c" />
+    <ClCompile Include="mupdf\pdf_cmap_parse.c" />
+    <ClCompile Include="mupdf\pdf_cmap_table.c" />
+    <ClCompile Include="mupdf\pdf_colorspace1.c" />
+    <ClCompile Include="mupdf\pdf_colorspace2.c" />
+    <ClCompile Include="mupdf\pdf_crypt.c" />
+    <ClCompile Include="mupdf\pdf_debug.c" />
+    <ClCompile Include="mupdf\pdf_font.c" />
+    <ClCompile Include="mupdf\pdf_fontagl.c" />
+    <ClCompile Include="mupdf\pdf_fontenc.c" />
+    <ClCompile Include="mupdf\pdf_fontfile.c" />
+    <ClCompile Include="mupdf\pdf_fontmtx.c" />
+    <ClCompile Include="mupdf\pdf_function.c" />
+    <ClCompile Include="mupdf\pdf_image.c" />
+    <ClCompile Include="mupdf\pdf_interpret.c" />
+    <ClCompile Include="mupdf\pdf_lex.c" />
+    <ClCompile Include="mupdf\pdf_nametree.c" />
+    <ClCompile Include="mupdf\pdf_open.c" />
+    <ClCompile Include="mupdf\pdf_outline.c" />
+    <ClCompile Include="mupdf\pdf_page.c" />
+    <ClCompile Include="mupdf\pdf_pagetree.c" />
+    <ClCompile Include="mupdf\pdf_parse.c" />
+    <ClCompile Include="mupdf\pdf_pattern.c" />
+    <ClCompile Include="mupdf\pdf_repair.c" />
+    <ClCompile Include="mupdf\pdf_shade.c" />
+    <ClCompile Include="mupdf\pdf_shade1.c" />
+    <ClCompile Include="mupdf\pdf_shade4.c" />
+    <ClCompile Include="mupdf\pdf_store.c" />
+    <ClCompile Include="mupdf\pdf_stream.c" />
+    <ClCompile Include="mupdf\pdf_type3.c" />
+    <ClCompile Include="mupdf\pdf_unicode.c" />
+    <ClCompile Include="mupdf\pdf_xobject.c" />
+    <ClCompile Include="mupdf\pdf_xref.c" />
+    <ClCompile Include="jbig2dec\getopt.c" />
+    <ClCompile Include="jbig2dec\getopt1.c" />
     <ClCompile Include="jbig2dec\jbig2.c" />
     <ClCompile Include="jbig2dec\jbig2_arith.c" />
     <ClCompile Include="jbig2dec\jbig2_arith_iaid.c" />
@@ -197,7 +295,6 @@
     <ClCompile Include="jbig2dec\jbig2_halftone.c" />
     <ClCompile Include="jbig2dec\jbig2_huffman.c" />
     <ClCompile Include="jbig2dec\jbig2_image.c" />
-    <ClCompile Include="jbig2dec\jbig2_image_pbm.c" />
     <ClCompile Include="jbig2dec\jbig2_metadata.c" />
     <ClCompile Include="jbig2dec\jbig2_mmr.c" />
     <ClCompile Include="jbig2dec\jbig2_page.c" />
@@ -205,6 +302,28 @@
     <ClCompile Include="jbig2dec\jbig2_segment.c" />
     <ClCompile Include="jbig2dec\jbig2_symbol_dict.c" />
     <ClCompile Include="jbig2dec\jbig2_text.c" />
+    <ClCompile Include="jbig2dec\jbig2dec.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jbig2dec\pbm2png.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="jbig2dec\sha1.c" />
+    <ClCompile Include="fonts\cmap_cns.c" />
+    <ClCompile Include="fonts\cmap_gb.c" />
+    <ClCompile Include="fonts\cmap_japan.c" />
+    <ClCompile Include="fonts\cmap_korea.c" />
+    <ClCompile Include="fonts\cmap_tounicode.c" />
+    <ClCompile Include="fonts\font_misc.c" />
+    <ClCompile Include="fonts\font_mono.c" />
+    <ClCompile Include="fonts\font_sans.c" />
+    <ClCompile Include="fonts\font_serif.c" />
     <ClCompile Include="..\libopenjpeg\bio.c" />
     <ClCompile Include="..\libopenjpeg\cio.c" />
     <ClCompile Include="..\libopenjpeg\dwt.c" />
@@ -226,18 +345,59 @@
     <ClCompile Include="..\libopenjpeg\tgt.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="mupdf\mupdf.h" />
-    <ClInclude Include="fitz\ansi_stack.h" />
-    <ClInclude Include="fitz\filt_dctc.h" />
-    <ClInclude Include="fitz\filt_faxc.h" />
+    <ClInclude Include="baseutils\base_util.h" />
+    <ClInclude Include="baseutils\benc_util.h" />
+    <ClInclude Include="baseutils\dstring.h" />
+    <ClInclude Include="baseutils\file_util.h" />
+    <ClInclude Include="baseutils\geom_util.h" />
+    <ClInclude Include="baseutils\msvc\inttypes.h" />
+    <ClInclude Include="baseutils\log_util.h" />
+    <CustomBuildStep Include="baseutils\ms_ui_helper.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="baseutils\ms_ui_shguim.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="baseutils\netstr.h" />
+    <ClInclude Include="baseutils\pdiff.h" />
+    <ClInclude Include="baseutils\prefs_util.h" />
+    <ClInclude Include="baseutils\pstdint.h" />
+    <ClInclude Include="baseutils\msvc\stdint.h" />
+    <ClInclude Include="baseutils\str_strsafe.h" />
+    <ClInclude Include="baseutils\str_util.h" />
+    <ClInclude Include="baseutils\strlist_util.h" />
+    <ClInclude Include="baseutils\tstr_util.h" />
+    <ClInclude Include="baseutils\utf_util.h" />
+    <CustomBuildStep Include="baseutils\win_dib.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="baseutils\win_image.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="baseutils\win_util.h" />
+    <ClInclude Include="baseutils\WinUtil.hpp" />
+    <ClInclude Include="baseutils\wstr_util.h" />
     <ClInclude Include="fitz\filt_faxd.h" />
-    <ClInclude Include="fitz\filt_faxe.h" />
     <ClInclude Include="fitz\fitz.h" />
     <ClInclude Include="fitz\fitz_base.h" />
     <ClInclude Include="fitz\fitz_draw.h" />
     <ClInclude Include="fitz\fitz_stream.h" />
     <ClInclude Include="fitz\fitz_tree.h" />
+    <ClInclude Include="mupdf\mupdf.h" />
     <ClInclude Include="jbig2dec\config_win32.h" />
+    <ClInclude Include="jbig2dec\getopt.h" />
     <ClInclude Include="jbig2dec\jbig2.h" />
     <ClInclude Include="jbig2dec\jbig2_arith.h" />
     <ClInclude Include="jbig2dec\jbig2_arith_iaid.h" />
@@ -252,6 +412,7 @@
     <ClInclude Include="jbig2dec\jbig2_symbol_dict.h" />
     <ClInclude Include="jbig2dec\jbig2_text.h" />
     <ClInclude Include="jbig2dec\os_types.h" />
+    <ClInclude Include="jbig2dec\sha1.h" />
     <ClInclude Include="..\libopenjpeg\bio.h" />
     <ClInclude Include="..\libopenjpeg\cio.h" />
     <ClInclude Include="..\libopenjpeg\dwt.h" />

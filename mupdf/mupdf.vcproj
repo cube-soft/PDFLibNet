@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="mupdf"
 	ProjectGUID="{63657C80-EADB-4FBC-A557-BE52F318CCDD}"
 	RootNamespace="mupdf"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -16,7 +17,7 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="..\bin\x86\Debug\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"
@@ -39,13 +40,13 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="fitz; ..\jpeg; fitzdraw; ..\zlib; mupdf; ..\freetype-2.3.1\include; jbig2dec; ..\libopenjpeg"
-				PreprocessorDefinitions="WIN32; _WIN32; _DEBUG; OPJ_STATIC; NEED_MATH; NEED_GETTIMEOFDAY; HAVE_JBIG2DEC; USE_HINTING; HAVE_OPENJPEG; HAVE_STRING_H=1"
+				AdditionalIncludeDirectories="fitz;..\jpeg;fitzdraw;..\zlib;mupdf;&quot;..\freetype-2.4.1\include&quot;;jbig2dec;..\libopenjpeg;.\baseutils;.\baseutils\msvc"
+				PreprocessorDefinitions="WIN32;_WIN32;_DEBUG;OPJ_STATIC;NEED_MATH;NEED_GETTIMEOFDAY;HAVE_JBIG2DEC;USE_HINTING;HAVE_OPENJPEG;HAVE_STRING_H=1;NOCJKFONT"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
+				WarningLevel="0"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -60,8 +61,6 @@
 			<Tool
 				Name="VCLibrarianTool"
 				LinkLibraryDependencies="true"
-				AdditionalDependencies="..\bin\freetype231_D.lib ..\bin\libjpeg_D.lib ..\bin\zlib_D.lib ..\bin\mapsfonts.lib"
-				OutputFile="..\bin\$(ProjectName)_D.lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -81,7 +80,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			OutputDirectory="..\bin\x86\Release\"
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"
@@ -108,11 +107,11 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="false"
-				AdditionalIncludeDirectories="fitz; ..\jpeg; fitzdraw; ..\zlib; mupdf; ..\freetype-2.3.1\include; jbig2dec; ..\libopenjpeg"
-				PreprocessorDefinitions="WIN32; _WIN32; OPJ_STATIC; NEED_MATH; NEED_GETTIMEOFDAY; HAVE_JBIG2DEC; USE_HINTING; HAVE_OPENJPEG"
+				AdditionalIncludeDirectories="fitz;..\jpeg;fitzdraw;..\zlib;mupdf;&quot;..\freetype-2.4.1\include&quot;;jbig2dec;..\libopenjpeg;.\baseutils;.\baseutils\msvc"
+				PreprocessorDefinitions="WIN32;_WIN32;OPJ_STATIC;NEED_MATH;NEED_GETTIMEOFDAY;HAVE_JBIG2DEC;USE_HINTING;HAVE_OPENJPEG;HAVE_STRING_H=1;NOCJKFONT"
 				RuntimeLibrary="2"
-				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
+				WarningLevel="0"
+				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -126,8 +125,6 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				AdditionalDependencies="..\bin\freetype231.lib ..\bin\libjpeg.lib ..\bin\zlib.lib ..\bin\mapsfonts.lib "
-				OutputFile="..\bin\$(ProjectName).lib"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -150,186 +147,392 @@
 	</References>
 	<Files>
 		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			Name="baseutils"
 			>
 			<File
-				RelativePath=".\mupdf\pdf_annot.c"
+				RelativePath=".\baseutils\base_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_build.c"
+				RelativePath=".\baseutils\base_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_cmap.c"
+				RelativePath=".\baseutils\benc_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_cmap_load.c"
+				RelativePath=".\baseutils\benc_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_cmap_parse.c"
+				RelativePath=".\baseutils\dstring.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_cmap_table.c"
+				RelativePath=".\baseutils\dstring.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_colorspace1.c"
+				RelativePath=".\baseutils\file_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_colorspace2.c"
+				RelativePath=".\baseutils\file_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_crypt.c"
+				RelativePath=".\baseutils\geom_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_debug.c"
+				RelativePath=".\baseutils\geom_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_font.c"
+				RelativePath=".\baseutils\msvc\inttypes.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_fontagl.c"
+				RelativePath=".\baseutils\log_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_fontenc.c"
+				RelativePath=".\baseutils\log_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_fontfilems.c"
+				RelativePath=".\baseutils\ms_ui_helper.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\ms_ui_helper.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\ms_ui_shguim.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\netstr.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_fontmtx.c"
+				RelativePath=".\baseutils\netstr.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_function.c"
+				RelativePath=".\baseutils\netstr_ut.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\pdiff.cc"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_image.c"
+				RelativePath=".\baseutils\pdiff.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_interpret.c"
+				RelativePath=".\baseutils\prefs_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_lex.c"
+				RelativePath=".\baseutils\prefs_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_nametree.c"
+				RelativePath=".\baseutils\pstdint.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_open.c"
+				RelativePath=".\baseutils\msvc\stdint.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_outline.c"
+				RelativePath=".\baseutils\str_strsafe.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_page.c"
+				RelativePath=".\baseutils\str_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_pagetree.c"
+				RelativePath=".\baseutils\str_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_parse.c"
+				RelativePath=".\baseutils\str_util_test.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\strlist_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_pattern.c"
+				RelativePath=".\baseutils\strlist_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_repair.c"
+				RelativePath=".\baseutils\test_benc.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\test_file_util.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\tstr_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_resources.c"
+				RelativePath=".\baseutils\unit_tests_all.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\utf_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_shade.c"
+				RelativePath=".\baseutils\utf_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_shade1.c"
+				RelativePath=".\baseutils\win_dib.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\win_dib.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\win_image.cpp"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\win_image.h"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\baseutils\win_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_shade4.c"
+				RelativePath=".\baseutils\win_util.h"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_store.c"
+				RelativePath=".\baseutils\WinUtil.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_stream.c"
+				RelativePath=".\baseutils\WinUtil.hpp"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_type3.c"
+				RelativePath=".\baseutils\wstr_util.c"
 				>
 			</File>
 			<File
-				RelativePath=".\mupdf\pdf_unicode.c"
+				RelativePath=".\baseutils\wstr_util.h"
 				>
 			</File>
-			<File
-				RelativePath=".\mupdf\pdf_xobject.c"
-				>
-			</File>
-			<File
-				RelativePath=".\mupdf\pdf_xref.c"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl;inc;xsd"
-			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
-			>
-			<File
-				RelativePath=".\mupdf\mupdf.h"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Resource Files"
-			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
-			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
-			>
 		</Filter>
 		<Filter
 			Name="fitz"
 			>
-			<File
-				RelativePath=".\fitz\ansi_stack.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\ansi_stack.h"
-				>
-			</File>
 			<File
 				RelativePath=".\fitz\base_cpudep.c"
 				>
@@ -379,23 +582,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\fitz\filt_a85d.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_a85e.c"
-				>
-			</File>
-			<File
 				RelativePath=".\fitz\filt_aesd.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_ahxd.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_ahxe.c"
 				>
 			</File>
 			<File
@@ -403,23 +590,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\fitz\filt_copy.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_dctc.h"
+				RelativePath=".\fitz\filt_basic.c"
 				>
 			</File>
 			<File
 				RelativePath=".\fitz\filt_dctd.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_dcte.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_faxc.h"
 				>
 			</File>
 			<File
@@ -435,18 +610,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\fitz\filt_faxe.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_faxe.h"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_faxetab.c"
-				>
-			</File>
-			<File
 				RelativePath=".\fitz\filt_flate.c"
 				>
 			</File>
@@ -455,19 +618,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\fitz\filt_jpxd_opj.c"
+				RelativePath=".\fitz\filt_jpxd.c"
 				>
 			</File>
 			<File
 				RelativePath=".\fitz\filt_lzwd.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_lzwe.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_null.c"
 				>
 			</File>
 			<File
@@ -476,14 +631,6 @@
 			</File>
 			<File
 				RelativePath=".\fitz\filt_predict.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_rld.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\filt_rle.c"
 				>
 			</File>
 			<File
@@ -512,10 +659,6 @@
 			</File>
 			<File
 				RelativePath=".\fitz\node_misc2.c"
-				>
-			</File>
-			<File
-				RelativePath=".\fitz\node_optimize.c"
 				>
 			</File>
 			<File
@@ -664,10 +807,174 @@
 			</File>
 		</Filter>
 		<Filter
+			Name="mupdf"
+			>
+			<File
+				RelativePath=".\mupdf\mupdf.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_annot.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_build.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_cmap.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_cmap_load.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_cmap_parse.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_cmap_table.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_colorspace1.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_colorspace2.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_crypt.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_debug.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_font.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_fontagl.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_fontenc.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_fontfile.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_fontmtx.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_function.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_image.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_interpret.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_lex.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_nametree.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_open.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_outline.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_page.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_pagetree.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_parse.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_pattern.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_repair.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_shade.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_shade1.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_shade4.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_store.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_stream.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_type3.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_unicode.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_xobject.c"
+				>
+			</File>
+			<File
+				RelativePath=".\mupdf\pdf_xref.c"
+				>
+			</File>
+		</Filter>
+		<Filter
 			Name="jbig2dec"
 			>
 			<File
 				RelativePath=".\jbig2dec\config_win32.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jbig2dec\getopt.c"
+				>
+			</File>
+			<File
+				RelativePath=".\jbig2dec\getopt.h"
+				>
+			</File>
+			<File
+				RelativePath=".\jbig2dec\getopt1.c"
 				>
 			</File>
 			<File
@@ -735,10 +1042,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\jbig2dec\jbig2_image_pbm.c"
-				>
-			</File>
-			<File
 				RelativePath=".\jbig2dec\jbig2_metadata.c"
 				>
 			</File>
@@ -789,14 +1092,98 @@
 			<File
 				RelativePath=".\jbig2dec\jbig2dec.c"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\jbig2dec\os_types.h"
 				>
 			</File>
+			<File
+				RelativePath=".\jbig2dec\pbm2png.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					ExcludedFromBuild="true"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\jbig2dec\sha1.c"
+				>
+			</File>
+			<File
+				RelativePath=".\jbig2dec\sha1.h"
+				>
+			</File>
 		</Filter>
 		<Filter
-			Name="openjpeg"
+			Name="fonts"
+			>
+			<File
+				RelativePath=".\fonts\cmap_cns.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fonts\cmap_gb.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fonts\cmap_japan.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fonts\cmap_korea.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fonts\cmap_tounicode.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fonts\font_misc.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fonts\font_mono.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fonts\font_sans.c"
+				>
+			</File>
+			<File
+				RelativePath=".\fonts\font_serif.c"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="libopenjpeg"
 			>
 			<File
 				RelativePath="..\libopenjpeg\bio.c"

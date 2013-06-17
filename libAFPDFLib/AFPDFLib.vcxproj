@@ -48,6 +48,7 @@
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -65,6 +66,7 @@
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>false</CLRSupport>
     <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v90</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -587,19 +589,19 @@
     <ClInclude Include="XPDFParamsInterop.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\freetype-2.4.1\builds\win32\vc2008\freetype.vcxproj">
+    <ProjectReference Include="..\freetype-2.4.1\builds\win32\visualc\freetype.vcxproj">
       <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\mapsfonts\mapsfonts-2008.vcxproj">
+    <ProjectReference Include="..\mapsfonts\mapsfonts.vcxproj">
       <Project>{d1c99b00-1570-4285-aacc-8783adfa8c46}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\mupdf\mupdf-2008.vcxproj">
+    <ProjectReference Include="..\mupdf\mupdf.vcxproj">
       <Project>{63657c80-eadb-4fbc-a557-be52f318ccdd}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="..\xpdfWin\xpdfWin-2008.vcxproj">
+    <ProjectReference Include="..\xpdfWin\xpdfWin.vcxproj">
       <Project>{05e39e0d-7fc0-4b90-a43b-355c6b8bf0e6}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

@@ -1,5 +1,5 @@
 #include "PDFPage.h"
-#include <msclr\lock.h>
+//#include <msclr\lock.h>
 
 namespace PDFLibNet
 {
@@ -361,7 +361,7 @@ namespace PDFLibNet
 
 	void xPDFBinaryReader::_ReadFromStreamFunc(unsigned char *buffer,int dir, int pos, int len)
 	{
-		msclr::lock l(_readLock);
+		//msclr::lock l(_readLock);
 		if(this->BaseStream->Position != pos)
 		{
 			if(this->BaseStream->CanSeek){

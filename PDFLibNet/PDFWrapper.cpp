@@ -1,5 +1,9 @@
 #include "PDFWrapper.h"
 
+/* x64 (WindowsSDK 7.1) でのリンクエラーを回避するためのハック */
+#ifdef WIN64
+#include <string>
+#endif
 
 using namespace System::Runtime::InteropServices;
 

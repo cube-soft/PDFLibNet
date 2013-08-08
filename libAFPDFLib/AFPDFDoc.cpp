@@ -623,7 +623,14 @@
 		{
 			delete m_PDFDoc;
 			m_PDFDoc=0;
-		}	
+		}
+
+#ifdef _MUPDF
+		if(_mupdf!=0){
+			delete _mupdf;
+			_mupdf=0;
+		}
+#endif
 	}
 
 
@@ -835,10 +842,13 @@
 			delete m_PDFDoc;
 			m_PDFDoc=0;
 		}
+
+#ifdef _MUPDF
 		if(_mupdf!=0){
 			delete _mupdf;
 			_mupdf=0;
 		}
+#endif
 		
 		//Establecemos el color del papel
 		/*SplashColor paperColor;

@@ -825,7 +825,7 @@
 			CloseHandle(m_renderingThread);
 			m_renderingThread=NULL;
 		}
-
+		
 		InvalidateBitmapCache();
 
 		if(user_password!=NULL)
@@ -884,6 +884,7 @@
 						m_OwnerPassword = m_UserPassword;
 					}				
 					//Intentamos abrir con clave
+					delete m_PDFDoc;
 					m_PDFDoc = new PDFDoc(new GString(FileName), 
 							new GString(const_cast<char*>(m_OwnerPassword.c_str())), 
 							new GString(const_cast<char*>(m_UserPassword.c_str())));
